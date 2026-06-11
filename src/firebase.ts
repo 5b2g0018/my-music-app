@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+//import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore"; // 1. 👈 檢查有沒有引入這行
 
 // Your web app's Firebase configuration
@@ -16,7 +16,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+//const analytics = getAnalytics(app);
 
 // 2. 👈 關鍵！一定要加上這一行，把 db 建立並 export 給 App.tsx 使用
 export const db = getFirestore(app);

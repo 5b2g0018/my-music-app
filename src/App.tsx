@@ -511,7 +511,23 @@ function App() {
           fontWeight: 'bold'
         }}>
           <div className="eyebrow-dot" style={{ backgroundColor: theme === 'gd' ? '#000' : '#fff' }}></div>
-          {theme === 'gd' ? '🌼 COUP D\'ETAT！G-DRAGON 潮流藝術脈絡同步中' : theme === 'ive' ? '✨ WHAT\'S AFTER LIKE? IVE 閃耀大千金秀台已就位' : theme === 'babymonster' ? '👹 ATTENTION！BABYMONSTER 怪物新人重磅音浪突襲' : theme === 'aespa' ? '🪐 Welcome to KWANGYA！aespa 虛擬同步網絡已對接' : theme === 'blackpink' ? '🖤 BLACKPINK IN YOUR AREA！BLINK 烈焰重低音模組已啟動' : '🍭 ONE IN A MILLION！TWICE 9人全員應援板已聯動'}
+          {theme === 'gd' ? (
+            "🌼 COUP D'ETAT！G-DRAGON 潮流藝術脈絡同步中"
+          ) : theme === 'ive' ? (
+            "✨ WHAT'S AFTER LIKE? IVE 閃耀大千金秀台已就位"
+          ) : theme === 'babymonster' ? (
+            "👹 ATTENTION！BABYMONSTER 怪物新人重磅音浪突襲"
+          ) : theme === 'aespa' ? (
+            "🪐 Welcome to KWANGYA！aespa 虛擬同步網絡已對接"
+          ) : theme === 'blackpink' ? (
+            "🖤 BLACKPINK IN YOUR AREA！BLINK 烈焰重低音模組已啟動"
+          ) : theme === 'kpop' ? (
+            /* 🍭 這裡專門分給 TWICE 專用，再也不會跟經典風搶位置了！ */
+            "🍭 ONE IN A MILLION！TWICE 9人全員應援板已聯動"
+          ) : (
+            /* 🍂 這是專屬於你「經典暖米」背景的文青台詞 */
+            "📜 MEMOIR SYSTEM ｜ 經典暖米時光溫柔載入中，靜候你的日常篇章"
+          )}
         </div>
 
         <h1 className="fade-up visible" style={{
@@ -523,7 +539,7 @@ function App() {
             <>Wild & Young！<br /><em style={{ color: '#ffeb3b', fontStyle: 'normal', textShadow: '0 0 20px rgba(255,235,59,0.5)' }}>🌼 寫下不隨波逐流的權志龍狂放詩篇</em></>
           ) : theme === 'kpop' ? (
             /* 🍭 這裡幫你把 TWICE 補回來了！ */
-            <>ONE IN A MILLION！<br /><em style={{ color: '#ff9472', fontStyle: 'normal', textShadow: '0 0 25px rgba(242,112,156,0.9), 0 0 10px rgba(255,148,114,0.6)' }}>🍭 點亮 Candy Bong 留下我們珍貴的 Shining Moment</em></>
+            <>ONE IN A MILLION！<br /><em style={{ color: '#5c0632', fontStyle: 'normal', fontWeight: 'bold', textShadow: '0 0 10px rgba(255, 255, 255, 0.9), 1px 1px 2px rgba(0, 0, 0, 0.3)' }}>🍭 點亮 Candy Bong 留下我們珍貴的 Shining Moment</em></>
           ) : theme === 'ive' ? (
             <>That\'s My Style！<br /><em style={{ color: '#ff4081', fontStyle: 'normal', textShadow: '0 0 20px rgba(255,64,129,0.4)' }}>💎 鐫刻精緻耀眼的高貴千金生活誌</em></>
           ) : theme === 'babymonster' ? (
@@ -566,9 +582,15 @@ function App() {
           ) : theme === 'babymonster' ? (
             "「天生怪獸，天生狠角色」— 承襲美式硬核嘻哈的大勢力量，點燃你體內不服輸的怪物基因，在這裡寫下燃炸全場的新人傳奇。"
           ) : theme === 'aespa' ? (
-            "「頂峰相見，無人能擋」— 帶上你的粉紅應援氣球槌，在這裡刻下最具野心、最不服輸且充滿光芒的震撼瞬間。" // 這裡可以維持你原本的文字
-          ) : (
+            "「打破邊界，定義未來」— 穿越現實與虛擬交錯的世界，在這裡記錄每一次突破自我、每一次勇敢升級，寫下專屬於你的未來篇章。"
+          ) : theme === 'blackpink' ? (
             "「頂峰相見，無人能擋」— 帶上你的粉紅應援氣球槌，在這裡刻下最具野心、最不服輸且充滿光芒的震撼瞬間。"
+          ) : theme === 'kpop' ? (
+            /* 🍭 這是 TWICE 風格下的副標題文字 */
+            "「只要我們在一起，就是 ONE IN A MILLION」— 點亮甜蜜的 Candy Bong 應援光芒，在這裡用滿滿的愛與元氣，記錄下九位女孩與你最珍貴的閃耀瞬間。"
+          ) : (
+            /* 🍂 這是最重要補上的「經典暖米」預設文字，完美避開 TWICE 跑棚！ */
+            "「留住歲月裡的溫柔」— 靜下心來，把平凡的日常慢慢鋪陳，在這裡將每一段恬靜的時光寫成最精緻、最值得細細品味的溫暖詩篇。"
           )}
         </p>
 
