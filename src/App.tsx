@@ -232,7 +232,7 @@ function App() {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: '12px 24px', // 縮小上下間距，讓比例更精緻
+      padding: '12px 24px',
       background: 'var(--bg-color)',
       borderBottom: '1px solid var(--border)',
       position: 'sticky',
@@ -240,33 +240,51 @@ function App() {
       zIndex: 100,
       width: '100%',
       boxSizing: 'border-box',
-      gap: '16px' // 防止左右撞在一起
+      gap: '16px'
     }}>
-      {/* 左側標題：稍微縮小字體 (20px)，並強制不換行 */}
+      {/* 左側標題 */}
       <a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('home'); }} style={{
         textDecoration: 'none',
-        fontSize: '18px', // 從 24px 縮小，給右邊留生存空間
+        fontSize: '18px',
         fontWeight: 'bold',
         color: 'var(--text-main)',
-        whiteSpace: 'nowrap' // 絕對不換行
+        whiteSpace: 'nowrap'
       }}>
         {theme === 'gd' ? '🌼 G-DRAGON // ONE OF A KIND' : theme === 'kpop' ? '🍭 TWICE // ONE IN A MILLION' : theme === 'ive' ? '💎 IVE ✨ SHOW WHAT I HAVE' : theme === 'babymonster' ? '👹 BABYMONSTER // BATTER UP' : theme === 'aespa' ? '🪐 æ-Memoir // LIVE MY LIFE' : theme === 'blackpink' ? '🖤 BLACKPINK IN YOUR AREA' : 'Memoir'}
       </a>
 
-      {/* 中間選單：縮小間距，強制文字連在一起 */}
+      {/* 中間選單 */}
       <ul style={{
         display: 'flex',
         listStyle: 'none',
-        gap: '16px', // 從 28px 縮小
+        gap: '16px',
         margin: 0,
         padding: 0,
         alignItems: 'center',
-        flexShrink: 0 // 防止被壓縮
+        flexShrink: 0
       }}>
         <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('home'); }} style={{ textDecoration: 'none', color: 'var(--text-main)', fontWeight: '500', fontSize: '14px' }}>首頁功能</a></li>
         <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); if (!loggedInUser) { alert('請先登入！'); setCurrentView('login'); } else { setCurrentView('capsule'); } }} style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px' }}>📬 時光膠囊</a></li>
         <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); if (!loggedInUser) { alert('請先登入！'); setCurrentView('login'); } else { setCurrentView('review'); } }} style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px' }}>📊 年度回顧</a></li>
 
+        {/* 💻 開發者連結 */}
+        <li style={{ whiteSpace: 'nowrap' }}>
+          <a
+            href="https://5b2g0018.github.io/my/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              textDecoration: 'none',
+              color: 'var(--accent)',
+              fontWeight: 'bold',
+              fontSize: '14px'
+            }}
+          >
+            💻 開發者
+          </a>
+        </li>
+
+        {/* 🎨 風格切換 */}
         <li style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '4px', whiteSpace: 'nowrap' }}>
           <span style={{ fontSize: '12px', color: 'var(--text-sub)' }}>🎨 風格:</span>
           <select value={theme} onChange={(e) => setTheme(e.target.value as any)} style={{ padding: '4px 8px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer', outline: 'none', fontSize: '13px' }}>
@@ -280,52 +298,8 @@ function App() {
           </select>
         </li>
       </ul>
-
-      {/* 右側使用者狀態與登出：補齊所有人（包括 TWICE）的完整稱號判斷 */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        flexShrink: 1,
-        minWidth: 0 // 允許縮小
-      }}>
-        {loggedInUser ? (
-          <>
-            <span style={{
-              fontSize: '13px',
-              color: 'var(--text-main)',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis', // 如果信箱或名字真的太長，會自動變 ... 而不是擠爆斷行
-              maxWidth: '180px' // 限制最大寬度保護排版
-            }} title={loggedInUser}>
-              {/* 🔥 這裡幫你把所有人的專屬稱號判斷完整寫好了！ */}
-              {theme === 'gd'
-                ? `⚡ VIP [${loggedInUser}]`
-                : theme === 'kpop'
-                  ? `🍭 ONCE [${loggedInUser}]` // 補上 TWICE 的 ONCE 稱號！
-                  : theme === 'ive'
-                    ? `✨ DIVE [${loggedInUser}]`
-                    : theme === 'babymonster'
-                      ? `🩸 MONSTIEZ [${loggedInUser}]`
-                      : theme === 'aespa'
-                        ? `🪐 MY [${loggedInUser}]`
-                        : theme === 'blackpink'
-                          ? `💗 BLINK [${loggedInUser}]`
-                          : `👑 ${loggedInUser}`}
-            </span>
-            <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); }} style={{ textDecoration: 'none', color: 'var(--text-sub)', padding: '6px 12px', border: '1px solid var(--border)', borderRadius: '20px', fontSize: '12px', background: 'var(--bg-color)', whiteSpace: 'nowrap' }}>登出</a>
-          </>
-        ) : (
-          <>
-            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('login'); }} style={{ textDecoration: 'none', color: 'var(--text-main)', fontSize: '13px', whiteSpace: 'nowrap' }}>登入</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('register'); }} style={{ textDecoration: 'none', background: 'var(--accent)', color: '#fff', padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>免費開始</a>
-          </>
-        )}
-      </div>
     </nav>
-  )
-
+  );
 
   const handleLogout = () => {
     setLoggedInUser(null); setUserEmail(null); setMyDiaries([]); setCurrentView('home')
@@ -595,19 +569,78 @@ function App() {
         </p>
 
         <div className="hero-actions">
+          {/* 主要按鈕：開始寫日記 */}
           <a href="#" className="btn-hero btn-hero-primary"
-            style={{ background: theme === 'gd' ? '#ffeb3b' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : theme === 'aespa' ? 'linear-gradient(135deg, #a855f7, #06b6d4)' : theme === 'blackpink' ? '#ff007f' : 'var(--accent)', color: theme === 'gd' ? '#000' : '#fff', border: 'none' }}
-            onClick={(e) => { e.preventDefault(); if (!loggedInUser) { alert('請先登入帳號喔！'); setCurrentView('login'); } else { setCurrentView('editor'); } }}>
-            {theme === 'gd' ? '🎨 狂傲揮灑 藝術寫日記' : theme === 'ive' ? '👑 優雅登台 千金寫日記' : theme === 'babymonster' ? '🩸 猛獸暴走 怪物寫日記' : '開始寫日記'}
+            style={{
+              background:
+                theme === 'gd' ? '#ffeb3b' :
+                  theme === 'ive' ? '#ff4081' :
+                    theme === 'babymonster' ? '#ff1744' :
+                      theme === 'aespa' ? 'linear-gradient(135deg, #a855f7, #06b6d4)' :
+                        theme === 'blackpink' ? '#ff007f' :
+                          'var(--accent)',
+              color: theme === 'gd' ? '#000' : '#fff',
+              border: 'none'
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              if (!loggedInUser) {
+                alert('請先登入帳號喔！');
+                setCurrentView('login');
+              } else {
+                setCurrentView('editor');
+              }
+            }}
+          >
+            {theme === 'gd' ? '🎨 狂傲揮灑 藝術寫日記' :
+              theme === 'ive' ? '👑 優雅登台 千金寫日記' :
+                theme === 'babymonster' ? '🩸 猛獸暴走 怪物寫日記' :
+                  theme === 'aespa' ? '🚀 穿越 KWANGYA 未來寫日記' :
+                    theme === 'blackpink' ? '🖤💗 女王降臨 Born Pink寫日記' :
+                      theme === 'kpop' ? '🍭 心動滿分 青春寫日記' :
+                        '開始寫日記'}
           </a>
+
+          {/* 次要按鈕：看年度回顧 */}
           <a href="#" className="btn-hero btn-hero-secondary"
             style={{
-              background: theme === 'gd' || theme === 'ive' || theme === 'babymonster' || theme === 'aespa' || theme === 'blackpink' ? '#000' : 'var(--bg-sec)',
-              color: theme === 'gd' ? '#ffeb3b' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : theme === 'aespa' ? '#00ffff' : theme === 'blackpink' ? '#ff007f' : 'var(--text-main)',
-              border: theme === 'gd' ? '1px solid #ffeb3b' : theme === 'ive' ? '1px solid #ff4081' : theme === 'babymonster' ? '1px solid #ff1744' : theme === 'aespa' ? '1px solid #00ffff' : '1px solid #ff007f'
+              background:
+                theme === 'gd' || theme === 'ive' || theme === 'babymonster' || theme === 'aespa' || theme === 'blackpink'
+                  ? '#000'
+                  : 'var(--bg-sec)',
+              color:
+                theme === 'gd' ? '#ffeb3b' :
+                  theme === 'ive' ? '#ff4081' :
+                    theme === 'babymonster' ? '#ff1744' :
+                      theme === 'aespa' ? '#00ffff' :
+                        theme === 'blackpink' ? '#ff007f' :
+                          'var(--text-main)',
+              border:
+                theme === 'gd' ? '1px solid #ffeb3b' :
+                  theme === 'ive' ? '1px solid #ff4081' :
+                    theme === 'babymonster' ? '1px solid #ff1744' :
+                      theme === 'aespa' ? '1px solid #00ffff' :
+                        theme === 'blackpink' ? '1px solid #ff007f' :
+                          '1px solid var(--border)'
             }}
-            onClick={(e) => { e.preventDefault(); if (!loggedInUser) { alert('請先登入帳號喔！'); setCurrentView('login'); } else { setCurrentView('review'); } }}>
-            {theme === 'gd' ? '⚡ 讀取 無題 潮流舞台編年史' : theme === 'ive' ? '🎀 開啟 I AM 耀眼璀璨回顧' : theme === 'babymonster' ? '📢 觀看 SHEESH 怪物進化軌跡' : '看年度回顧'}
+            onClick={(e) => {
+              e.preventDefault();
+              if (!loggedInUser) {
+                alert('請先登入帳號喔！');
+                setCurrentView('login');
+              } else {
+                setCurrentView('review');
+              }
+            }}
+          >
+            {theme === 'gd' ? '⚡ 讀取 無題 潮流舞台編年史' :
+              theme === 'ive' ? '🎀 開啟 I AM 耀眼璀璨回顧' :
+                theme === 'babymonster' ? '📢 觀看 SHEESH 怪物進化軌跡' :
+                  theme === 'aespa' ? '🌌 解鎖 Supernova 星際成長紀錄' :
+                    theme === 'blackpink' ? '✨ 翻閱 Born Pink 女王傳奇篇章' :
+                      theme === 'kpop' ? '💝 收藏 ONE SPARK 青春回憶錄' :
+
+                        '看年度回顧'}
           </a>
         </div>
       </section>
