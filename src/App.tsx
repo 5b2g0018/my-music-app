@@ -298,62 +298,85 @@ function App() {
                           '🎵 今天的心情旋律 // 寫下你此時此刻的心靈協奏曲'}
             </label>
 
-            <select value={diaryMood} onChange={(e) => setDiaryMood(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)' }}>
-              {theme === 'gd' ? (
+            <select
+              value={diaryMood}
+              onChange={(e) => setDiaryMood(e.target.value)}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)' }}
+            >
+              {/* 🖤💗 BLACKPINK 主題 */}
+              {theme === 'blackpink' && (
                 <>
-                  <option>👑 Crooked (放蕩不羈！今天就是要瘋狂宣洩)</option>
-                  <option>🌼 Untitled, 2014 (無題溫柔，寫下深邃感性心聲)</option>
-                  <option>⚡ One Of A Kind (潮流唯一！老子天下最帥)</option>
-                  <option>🔥 Heartbreaker (震撼心碎，強烈狂放情感)</option>
-                  <option>💵 Crayon (瘋狂作畫！Get Your Crayon 靈感大爆發)</option>
+                  <option value="🔥 How You Like That (傲視全場！在逆境中絕地反擊、重回巔峰)">🔥 How You Like That (傲視全場！在逆境中絕地反擊、重回巔峰)</option>
+                  <option value="👑 Kill This Love (斬斷軟弱！大女主覺醒，揮別有毒的爛感情)">👑 Kill This Love (斬斷軟弱！大女主覺醒，揮別有毒的爛感情)</option>
+                  <option value="☠️ Pink Venom (致命粉紅毒蝶！優雅卻極具殺傷力的頂級魅力)">☠️ Pink Venom (致命粉紅毒蝶！優雅卻極具殺傷力的頂級魅力)</option>
+                  <option value="🌸 As If It's Your Last (最後初戀！拋開顧慮，今天就要愛得轟轟烈烈)">🌸 As If It's Your Last (最後初戀！拋開顧慮，今天就要愛得轟轟烈烈)</option>
+                  <option value="💵 Money (富婆姿態！靠自己最耀眼，今晚就是要高調奢華)">💵 Money (富婆姿態！靠自己最耀眼，今晚就是要高調奢華)</option>
                 </>
-              ) : theme === 'ive' ? (
+              )}
+
+              {/* 🪐 aespa 主題 */}
+              {theme === 'aespa' && (
                 <>
-                  <option>✨ I AM (主角是我！自信翱翔在最高天空)</option>
-                  <option>💎 LOVE DIVE (極致沉迷，勇敢跳入屬於我的絢麗愛戀)</option>
-                  <option>💖 Baddie (酷辣千金，叛逆又迷人的反派角色)</option>
-                  <option>👑 After LIKE (自信滿分，喜歡之後就是勇敢去愛)</option>
-                  <option>💄 Eleven (十一分完美，每一步都精緻無瑕)</option>
+                  <option value="💥 Supernova (新星爆發！我是世界的源頭，引領宇宙大爆炸)">💥 Supernova (新星爆發！我是世界的源頭，引領宇宙大爆炸)</option>
+                  <option value="🛸 Next Level (打破限制！越過重重難關，戰鬥力邁向下一階)">🛸 Next Level (打破限制！越過重重難關，戰鬥力邁向下一階)</option>
+                  <option value="🪐 Armageddon (世界末日！在混亂中打破常規，定義我自己的真實)">🪐 Armageddon (世界末日！在混亂中打破常規，定義我自己的真實)</option>
+                  <option value="🐍 Black Mamba (直面心魔！在迷惘與誘惑中保持清醒，擊碎幻象)">🐍 Black Mamba (直面心魔！在迷惘與誘惑中保持清醒，擊碎幻象)</option>
+                  <option value="🌶️ Spicy (辛辣嗆爽！展現最自由不羈、熱辣肆意的夏日惡女風範)">🌶️ Spicy (辛辣嗆爽！展現最自由不羈、熱辣肆意的夏日惡女風範)</option>
                 </>
-              ) : theme === 'babymonster' ? (
+              )}
+
+              {/* 🍭 TWICE (kpop) 主題 */}
+              {theme === 'kpop' && (
                 <>
-                  <option>👹 SHEESH (怪物大招！全場驚嘆的震撼實力爆發)</option>
-                  <option>🐾 BATTER UP (強棒出擊！新人姿態橫掃戰場)</option>
-                  <option>🔥 FOREVER (永恆燃燒，充滿美式酷颯的自信光芒)</option>
-                  <option>📢 LIKE THAT (美式慵懶重節奏，極致抓耳魅力)</option>
-                  <option>🩸 CLIK CLAK (硬核地下饒舌，純粹嘻哈態度全開)</option>
+                  <option value="🍭 What is Love? (少女悸動！滿腦子粉紅泡泡，憧憬電影般的浪漫)">🍭 What is Love? (少女悸動！滿腦子粉紅泡泡，憧憬電影般的浪漫)</option>
+                  <option value="🏹 CHEER UP (害羞應援！元氣滿滿，大聲為自己和身邊的人加油打氣)">🏹 CHEER UP (害羞應援！元氣滿滿，大聲為自己和身邊的人加油打氣)</option>
+                  <option value="🚨 SIGNAL (狂發信號！心意怎麼還不相通？讓人又急又可愛的推拉)">🚨 SIGNAL (狂發信號！心意怎麼還不相通？讓人又急又可愛的推拉)</option>
+                  <option value="💃 Fancy (勇敢追愛！危險又迷人，不管了、就是要直接向你奔去)">💃 Fancy (勇敢追愛！危險又迷人，不管了、就是要直接向你奔去)</option>
+                  <option value="🧪 SCIENTIST (戀愛科學！別再苦苦研究心算，跟著直覺愛就對了)">🧪 SCIENTIST (戀愛科學！別再苦苦研究心算，跟著直覺愛就對了)</option>
                 </>
-              ) : theme === 'blackpink' ? (
+              )}
+
+              {/* 👑 G-DRAGON 主題 */}
+              {theme === 'gd' && (
                 <>
-                  <option>🔥 How You Like That (傲視全場！在逆境中絕地反擊、重回巔峰)</option>
-                  <option>👑 Kill This Love (斬斷軟弱！大女主覺醒，揮別有毒的爛感情)</option>
-                  <option>☠️ Pink Venom (致命粉紅毒蝶！優雅卻極具殺傷力的頂級魅力)</option>
-                  <option>🌸 As If It's Your Last (最後初戀！拋開顧慮，今天就要愛得轟轟烈烈)</option>
-                  <option>💵 Money (富婆姿態！靠自己最耀眼，今晚就是要高調奢華)</option>
+                  <option value="👑 Crooked (放蕩不羈！今天就是要瘋狂宣洩)">👑 Crooked (放蕩不羈！今天就是要瘋狂宣洩)</option>
+                  <option value="🌼 Untitled, 2014 (無題溫柔，寫下深邃感性心聲)">🌼 Untitled, 2014 (無題溫柔，寫下深邃感性心聲)</option>
+                  <option value="⚡ One Of A Kind (潮流唯一！老子天下最帥)">⚡ One Of A Kind (潮流唯一！老子天下最帥)</option>
+                  <option value="🔥 Heartbreaker (震撼心碎，強烈狂放情感)">🔥 Heartbreaker (震撼心碎，強烈狂放情感)</option>
+                  <option value="💵 Crayon (瘋狂作畫！Get Your Crayon 靈感大爆發)">💵 Crayon (瘋狂作畫！Get Your Crayon 靈感大爆發)</option>
                 </>
-              ) : theme === 'aespa' ? (
+              )}
+
+              {/* 💎 IVE 主題 */}
+              {theme === 'ive' && (
                 <>
-                  <option>💥 Supernova (新星爆發！我是世界的源頭，引領宇宙大爆炸)</option>
-                  <option>🛸 Next Level (打破限制！越過重重難關，戰鬥力邁向下一階)</option>
-                  <option>🪐 Armageddon (世界末日！在混亂中打破常規，定義我自己的真實)</option>
-                  <option>🐍 Black Mamba (直面心魔！在迷惘與誘惑中保持清醒，擊碎幻象)</option>
-                  <option>🌶️ Spicy (辛辣嗆爽！展現最自由不羈、熱辣肆意的夏日惡女風範)</option>
+                  <option value="✨ I AM (主角是我！自信翱翔在最高天空)">✨ I AM (主角是我！自信翱翔在最高天空)</option>
+                  <option value="💎 LOVE DIVE (極致沉迷，勇敢跳入屬於我的絢麗愛戀)">💎 LOVE DIVE (極致沉迷，勇敢跳入屬於我的絢麗愛戀)</option>
+                  <option value="💖 Baddie (酷辣千金，叛逆又迷人的反派角色)">💖 Baddie (酷辣千金，叛逆又迷人的反派角色)</option>
+                  <option value="👑 After LIKE (自信滿分，喜歡之後就是勇敢去愛)">👑 After LIKE (自信滿分，喜歡之後就是勇敢去愛)</option>
+                  <option value="💄 Eleven (十一分完美，每一步都精緻無瑕)">💄 Eleven (十一分完美，每一步都精緻無瑕)</option>
                 </>
-              ) : theme === 'kpop' ? ( /* 這裡代表 TWICE */
+              )}
+
+              {/* 👹 BABYMONSTER 主題 */}
+              {theme === 'babymonster' && (
                 <>
-                  <option>🍭 What is Love? (少女悸動！滿腦子粉紅泡泡，憧憬電影般的浪漫)</option>
-                  <option>🏹 CHEER UP (害羞應援！元氣滿滿，大聲為自己和身邊的人加油打氣)</option>
-                  <option>🚨 SIGNAL (狂發信號！心意怎麼還不相通？讓人又急又可愛的推拉)</option>
-                  <option>💃 Fancy (勇敢追愛！危險又迷人，不管了、就是要直接向你奔去)</option>
-                  <option>🧪 SCIENTIST (戀愛科學！別再苦苦研究心算，跟著直覺愛就對了)</option>
+                  <option value="👹 SHEESH (怪物大招！全場驚嘆的震撼實力爆發)">👹 SHEESH (怪物大招！全場驚嘆的震撼實力爆發)</option>
+                  <option value="🐾 BATTER UP (強棒出擊！新人姿態橫掃戰場)">🐾 BATTER UP (強棒出擊！新人姿態橫掃戰場)</option>
+                  <option value="🔥 FOREVER (永恆燃燒，充滿美式酷颯的自信光芒)">🔥 FOREVER (永恆燃燒，充滿美式酷颯的自信光芒)</option>
+                  <option value="📢 LIKE THAT (美式慵懶重節奏，極致抓耳魅力)">📢 LIKE THAT (美式慵懶重節奏，極致抓耳魅力)</option>
+                  <option value="🩸 CLIK CLAK (硬核地下饒舌，純粹嘻哈態度全開)">🩸 CLIK CLAK (硬核地下饒舌，純粹嘻哈態度全開)</option>
                 </>
-              ) : ( /* 這裡代表 經典/Default 模式 */
+              )}
+
+
+              {/* 🌿 經典/Default 模式 */}
+              {!['blackpink', 'aespa', 'kpop', 'gd', 'ive', 'babymonster'].includes(theme) && (
                 <>
-                  <option>☀️ 陽光普照 (心情晴空萬里，對生活充滿了前行的動力)</option>
-                  <option>🌿 歲月靜好 (像喝了一杯熱茶，內心無比平靜而知足)</option>
-                  <option>🌧️ 孤獨雨季 (情緒有點低落，只想靜靜地跟自己相處一陣子)</option>
-                  <option>🚀 滿血復活 (戰鬥力滿點！準備好去征服所有大大小小的挑戰)</option>
-                  <option>🌌 靈感星空 (思緒飛揚，腦海裡全是奇思妙想與未來的憧憬)</option>
+                  <option value="☀️ 陽光普照 (心情晴空萬里，對生活充滿了前行的動力)">☀️ 陽光普照 (心情晴空萬里，對生活充滿了前行的動力)</option>
+                  <option value="🌧️ 孤獨雨季 (情緒有點低落，只想靜靜地跟自己相處一陣子)">🌧️ 孤獨雨季 (情緒有點低落，只想靜靜地跟自己相處一陣子)</option>
+                  <option value="🚀 滿血復活 (戰鬥力滿點！準備好去征服所有大大小小的挑戰)">🚀 滿血復活 (戰鬥力滿點！準備好去征服所有大大小小的挑戰)</option>
+                  <option value="🌌 靈感星空 (思緒飛揚，腦海裡全是奇思妙想與未來的憧憬)">🌌 靈感星空 (思緒飛揚，腦海裡全是奇思妙想與未來的憧憬)</option>
                 </>
               )}
             </select>
