@@ -286,10 +286,18 @@ function App() {
         <div style={{ maxWidth: '700px', margin: '40px auto', padding: '40px', background: 'var(--bg-color)', border: '1px solid var(--border)', borderRadius: '16px', position: 'relative' }}>
           {renderThemeDecorations()}
           <button onClick={() => setCurrentView('home')} style={{ background: 'none', border: 'none', color: 'var(--text-sub)', cursor: 'pointer', marginBottom: '20px' }}>← 返回首頁</button>
+
           <div style={{ marginBottom: '24px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-              {theme === 'gd' ? '🎵 注入權志龍音樂靈魂！挑選代表你今日特立獨行態度的 GD 神曲' : theme === 'ive' ? '🎵 啟動耀眼高貴濾鏡！選擇契合今日大千金心情的 IVE 頂奢名曲' : theme === 'babymonster' ? '🎵 猛獸出籠！選擇釋放你今日怪物實力的 BABYMONSTER 重磅黑馬歌' : '今天的心情旋律'}
+              {theme === 'gd' ? '🎵 注入權志龍音樂靈魂！挑選代表你今日特立獨行態度的 GD 神曲' :
+                theme === 'ive' ? '🎵 啟動耀眼高貴濾鏡！選擇契合今日大千金心情的 IVE 頂奢名曲' :
+                  theme === 'babymonster' ? '🎵 猛獸出籠！選擇釋放你今日怪物實力的 BABYMONSTER 重磅黑馬歌' :
+                    theme === 'blackpink' ? '🎵 生人勿近女王降臨！釋放你今日最颯、最霸氣的 BLACKPINK 狂放黑粉魂' :
+                      theme === 'aespa' ? '🎵 虛擬現實同步解析！召喚你的 æ，開啟今日 aespa 曠野戰鬥模式' :
+                        theme === 'kpop' ? '🎵 活力甜度大爆表！注入 TWICE 專屬滿滿多巴胺，點亮你的元氣少女心' :
+                          '🎵 今天的心情旋律 // 寫下你此時此刻的心靈協奏曲'}
             </label>
+
             <select value={diaryMood} onChange={(e) => setDiaryMood(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)' }}>
               {theme === 'gd' ? (
                 <>
@@ -317,15 +325,40 @@ function App() {
                 </>
               ) : theme === 'blackpink' ? (
                 <>
-                  <option>🔥 How You Like That (傲視全場)</option><option>👑 Kill This Love (斬斷軟弱)</option>
+                  <option>🔥 How You Like That (傲視全場！在逆境中絕地反擊、重回巔峰)</option>
+                  <option>👑 Kill This Love (斬斷軟弱！大女主覺醒，揮別有毒的爛感情)</option>
+                  <option>☠️ Pink Venom (致命粉紅毒蝶！優雅卻極具殺傷力的頂級魅力)</option>
+                  <option>🌸 As If It's Your Last (最後初戀！拋開顧慮，今天就要愛得轟轟烈烈)</option>
+                  <option>💵 Money (富婆姿態！靠自己最耀眼，今晚就是要高調奢華)</option>
                 </>
-              ) : (
+              ) : theme === 'aespa' ? (
                 <>
-                  <option>😊 開心</option><option>🌿 平靜</option><option>🚀 有動力</option>
+                  <option>💥 Supernova (新星爆發！我是世界的源頭，引領宇宙大爆炸)</option>
+                  <option>🛸 Next Level (打破限制！越過重重難關，戰鬥力邁向下一階)</option>
+                  <option>🪐 Armageddon (世界末日！在混亂中打破常規，定義我自己的真實)</option>
+                  <option>🐍 Black Mamba (直面心魔！在迷惘與誘惑中保持清醒，擊碎幻象)</option>
+                  <option>🌶️ Spicy (辛辣嗆爽！展現最自由不羈、熱辣肆意的夏日惡女風範)</option>
+                </>
+              ) : theme === 'kpop' ? ( /* 這裡代表 TWICE */
+                <>
+                  <option>🍭 What is Love? (少女悸動！滿腦子粉紅泡泡，憧憬電影般的浪漫)</option>
+                  <option>🏹 CHEER UP (害羞應援！元氣滿滿，大聲為自己和身邊的人加油打氣)</option>
+                  <option>🚨 SIGNAL (狂發信號！心意怎麼還不相通？讓人又急又可愛的推拉)</option>
+                  <option>💃 Fancy (勇敢追愛！危險又迷人，不管了、就是要直接向你奔去)</option>
+                  <option>🧪 SCIENTIST (戀愛科學！別再苦苦研究心算，跟著直覺愛就對了)</option>
+                </>
+              ) : ( /* 這裡代表 經典/Default 模式 */
+                <>
+                  <option>☀️ 陽光普照 (心情晴空萬里，對生活充滿了前行的動力)</option>
+                  <option>🌿 歲月靜好 (像喝了一杯熱茶，內心無比平靜而知足)</option>
+                  <option>🌧️ 孤獨雨季 (情緒有點低落，只想靜靜地跟自己相處一陣子)</option>
+                  <option>🚀 滿血復活 (戰鬥力滿點！準備好去征服所有大大小小的挑戰)</option>
+                  <option>🌌 靈感星空 (思緒飛揚，腦海裡全是奇思妙想與未來的憧憬)</option>
                 </>
               )}
             </select>
           </div>
+
           <div style={{ marginBottom: '24px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>日記標題</label>
             <input type="text" placeholder={theme === 'gd' ? "輸入充滿潮流藝術感的靈魂標題..." : theme === 'ive' ? "輸入精緻高貴的大千金專屬標題..." : theme === 'babymonster' ? "輸入擊碎常規的怪物新人硬核標題..." : "給今天一個標題..."} value={diaryTitle} onChange={(e) => setDiaryTitle(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-color)', color: 'var(--text-main)', boxSizing: 'border-box' }} />
