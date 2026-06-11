@@ -1,11 +1,184 @@
-﻿html {
-  scroll-behavior: smooth;
+﻿/* ==================== 1. 主題變數設定 ==================== */
+:root,
+[data-theme="classic"] {
+  --bg-color: #fff;
+  --bg-sec: #faf9f6;
+  --text-main: #2a241e;
+  --text-sub: #8c7e6e;
+  --accent: #c9933a;
+  --border: #e6dfd5;
+  --font-family: 'Noto Sans TC', system-ui, sans-serif;
+  --bg-pattern: none;
+  /* 經典風保持乾淨 */
 }
 
+[data-theme="cute"] {
+  --bg-color: #fff5f7;
+  --bg-sec: #ffe3e8;
+  --text-main: #6c4146;
+  --text-sub: #a87c82;
+  --accent: #ff7597;
+  --border: #ffd0da;
+  --font-family: 'Fredoka One', 'Noto Sans TC', sans-serif;
+  /* 🧸 可愛風背景：愛心與小圓點鋪滿 */
+  --bg-pattern: radial-gradient(#ffb3c6 10%, transparent 10%), radial-gradient(#ffb3c6 10%, transparent 10%);
+  --bg-pattern-size: 40px 40px;
+  --bg-pattern-pos: 0 0, 20px 20px;
+}
+
+/* 🎮 麥塊方塊像素風 (Minecraft Pixel Style) */
+[data-theme="anime"] {
+  --bg-color: #7c9d61;
+  /* 麥塊經典草地綠 */
+  --bg-sec: #866043;
+  /* 經典泥土木頭棕 */
+  --text-main: #ffffff;
+  /* 白色純淨字 */
+  --text-sub: #f1ebd9;
+  /* 沙子淺黃色內文 */
+  --accent: #55ffff;
+  /* 附魔鑽石藍（焦點色） */
+  --border: #4a3321;
+  /* 泥土深色邊框 */
+  --font-family: 'Courier New', 'Press Start 2P', 'Noto Sans TC', monospace;
+  /* 像素感等寬字體 */
+
+  /* 🧱 麥塊背景：打造成像素方塊格子紋理 */
+  --bg-pattern: linear-gradient(rgba(0, 0, 0, 0.15) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.15) 2px, transparent 2px);
+  --bg-pattern-size: 20px 20px;
+  /* 緊密的像素方塊感 */
+  --bg-pattern-pos: center center;
+}
+
+[data-theme="kpop"] {
+  --bg-color: #ffffff;
+  --bg-sec: #fff0fa;
+  --text-main: #d0006f;
+  /* 亮眼的 TWICE 專屬蜜桃粉紅 */
+  --text-sub: #7b1fa2;
+  --accent: #ff4081;
+  --border: #ffd1e8;
+  --font-family: 'Helvetica Neue', sans-serif;
+  --bg-pattern: none;
+  /* 清空這邊，交給 App.tsx 來渲染圖片 */
+}
+
+/* ==================== 2. 全域基礎與背景圖案注入 ==================== */
 body {
+  background-color: var(--bg-color);
+  background-image: var(--bg-pattern);
+  background-size: var(--bg-pattern-size, auto);
+  background-position: var(--bg-pattern-pos, center);
+  color: var(--text-main);
+  font-family: var(--font-family);
   margin: 0;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-#root {
-  min-height: 100vh;
+/* 讓整頁的主要大區塊都帶有動態花紋背景 */
+.hero,
+section {
+  background-image: var(--bg-pattern);
+  background-size: var(--bg-pattern-size, auto);
+  background-position: var(--bg-pattern-pos, center);
+  transition: all 0.3s ease;
+}
+
+.hero {
+  position: relative;
+  padding: 100px 20px;
+  text-align: center;
+}
+
+/* 標題與內文 */
+.hero h1 {
+  font-size: 54px;
+  line-height: 1.2;
+  margin: 20px 0;
+  color: var(--text-main);
+  font-weight: 800;
+}
+
+.hero h1 em {
+  font-style: normal;
+  color: var(--accent);
+  position: relative;
+}
+
+.hero-sub {
+  font-size: 17px;
+  color: var(--text-sub);
+  max-width: 600px;
+  margin: 0 auto 40px;
+  line-height: 1.6;
+}
+
+/* 小標籤 */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-sec);
+  border: 1px solid var(--border);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text-sub);
+  font-weight: 600;
+}
+
+.eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+/* 按鈕樣式調諧 */
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.btn-hero {
+  padding: 14px 32px;
+  border-radius: 25px;
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.btn-hero-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.btn-hero-secondary {
+  background: var(--bg-sec);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+}
+
+footer {
+  padding: 40px;
+  text-align: center;
+  background: var(--bg-sec);
+  border-top: 1px solid var(--border);
+  color: var(--text-sub);
+}
+
+/* 淡入動畫 */
+.fade-up {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.fade-up.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
