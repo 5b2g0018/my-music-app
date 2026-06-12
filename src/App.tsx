@@ -144,8 +144,7 @@ function App() {
     };
 
     // 2. 從瀏覽器中把以前存過的膠囊撈出來，如果沒有就建立空陣列
-    const existingCapsules = JSON.parse(localStorage.getItem('timeCapsules')) || [];
-
+    const existingCapsules = JSON.parse(localStorage.getItem('timeCapsules') || '[]') || [];
     // 3. 把今天這封新信塞進去，並重新存回瀏覽器
     existingCapsules.push(newCapsule);
     localStorage.setItem('timeCapsules', JSON.stringify(existingCapsules));
@@ -188,11 +187,16 @@ function App() {
     }
   }
 
-  const moodCounts = myDiaries.reduce((acc: { [key: string]: number }, item) => {
-    const m = item.mood.split(' ')[1] || item.mood;
+  const moodCounts = myDiaries.reduce((acc: { [key: string]: number }, item: any) => {
+    // 💡 安全防護：如果這篇日記沒選歌或沒心情，給它一個預設文字
+    const moodString = item.mood || '😊 開心';
+
+    // 切割出 Emoji 後面的純文字作為統計 Key
+    const m = moodString.split(' ')[1] || moodString;
+
     acc[m] = (acc[m] || 0) + 1;
     return acc;
-  }, {})
+  }, {});
 
   // 🎨 主題專屬漂浮霸氣小裝飾
   const renderThemeDecorations = () => {
@@ -1177,15 +1181,13 @@ function App() {
       <div style={{ maxWidth: '1200px', margin: '24px auto 0 auto', padding: '0 20px' }}>
         {(() => {
           try {
-            const capsules = JSON.parse(localStorage.getItem('timeCapsules')) || [];
-            const today = new Date().toISOString().split('T')[0]; // 自動獲取今日日期
+            const capsules = JSON.parse(localStorage.getItem('timeCapsules') || '[]') || []; const today = new Date().toISOString().split('T')[0]; // 自動獲取今日日期
 
             // 找出今天或今天以前到期，且尚未拆封 (isOpened === false) 的時光膠囊
-            const unlockedCapsules = capsules.filter(c => today >= c.unlockDate && !c.isOpened);
-
+            const unlockedCapsules = capsules.filter((c: any) => today >= c.unlockDate && !c.isOpened);
             if (unlockedCapsules.length === 0) return null;
 
-            return unlockedCapsules.map(capsule => (
+            return unlockedCapsules.map((capsule: any) => (
               <div key={capsule.id} style={{
                 background: 'linear-gradient(135deg, #fff3cd, #ffeeba)',
                 border: '2px solid #ffc107',
@@ -1222,8 +1224,8 @@ function App() {
 
                 <button
                   onClick={() => {
-                    const allCapsules = JSON.parse(localStorage.getItem('timeCapsules')) || [];
-                    const updated = allCapsules.map(c => c.id === capsule.id ? { ...c, isOpened: true } : c);
+                    const allCapsules = JSON.parse(localStorage.getItem('timeCapsules') || '[]') || [];
+                    const updated = allCapsules.map((c: any) => c.id === capsule.id ? { ...c, isOpened: true } : c);
                     localStorage.setItem('timeCapsules', JSON.stringify(updated));
                     window.location.reload();
                   }}
