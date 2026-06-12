@@ -18,27 +18,35 @@ const aespaBg = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=
 const gdragonBg = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1500&auto=format&fit=crop"
 
 // ✨ IVE 華麗大千金視覺大圖（充滿少女鑽石光芒、精緻高奢感的夢幻派對視覺）
-const iveBg = "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=1500&auto=format&fit=crop";
+const iveBg = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1500&auto=format&fit=crop";
 
 // 👹 BABYMONSTER 怪物新人大圖（充滿地下重工業嘻哈、煙霧與暗黑美式街頭感）
 const babymonsterBg = "https://images.unsplash.com/photo-1557672172-298e090bd0f1?q=80&w=1500&auto=format&fit=crop"
 
 interface DiaryItem {
-  id: string
-  title: string
-  content: string
-  mood: string
-  date: string
-  timestamp: number
+  id: number;
+  title: string;
+  content: string;
+  date: string;
+  mood?: string;
+  // 🔒 請務必手動加上這兩行（? 代表選填，這樣舊日記才不會壞掉）
+  isLocked?: boolean;
+  password?: string;
 }
 
 function App() {
   const [currentView, setCurrentView] = useState<'home' | 'editor' | 'register' | 'login' | 'capsule' | 'review'>('home')
   // 🛠️ 擴充主題類型：加入 gd, ive, babymonster
   const [theme, setTheme] = useState<'classic' | 'blackpink' | 'aespa' | 'kpop' | 'gd' | 'ive' | 'babymonster'>('classic')
-  const [diaryTitle, setDiaryTitle] = useState('')
-  const [diaryContent, setDiaryContent] = useState('')
-  const [diaryMood, setDiaryMood] = useState('😊 開心')
+  const [diaryTitle, setDiaryTitle] = useState('');
+  const [diaryContent, setDiaryContent] = useState('');
+
+  // 🔒 秘密日記專用狀態（全部在這裡排排站好，保證不再報錯！）
+  const [isDiaryLocked, setIsDiaryLocked] = useState<boolean>(false);
+  const [diaryPassword, setDiaryPassword] = useState<string>('');
+  const [unlockedDiaryIds, setUnlockedDiaryIds] = useState<number[]>([]); // 👈 就是漏了這行，下面才會崩潰！
+
+  const [diaryMood, setDiaryMood] = useState('😊 開心');
   const [myDiaries, setMyDiaries] = useState<DiaryItem[]>([])
 
   const [futureLetter, setFutureLetter] = useState('')
@@ -59,26 +67,41 @@ function App() {
 
   const fetchUserDiaries = async (email: string) => {
     try {
-      const q = query(collection(db, 'diaries'), where('userEmail', '==', email))
-      const querySnapshot = await getDocs(q)
-      const diariesList: DiaryItem[] = []
+      const q = query(collection(db, 'diaries'), where('userEmail', '==', email));
+      const querySnapshot = await getDocs(q);
+      const diariesList: any[] = []; // 先用 any[] 承接，避免型別嚴格比對衝突
+
       querySnapshot.forEach((doc) => {
-        const data = doc.data()
+        const data = doc.data();
+
+        // 🛠️ 核心修正：將字串 id 轉換為數字，如果無法轉換則使用時間戳記
+        const numericId = isNaN(Number(doc.id)) ? Date.now() + Math.random() : Number(doc.id);
+
         diariesList.push({
-          id: doc.id,
-          title: data.title,
-          content: data.content,
-          mood: data.mood,
-          date: data.date,
-          timestamp: data.timestamp || Date.now()
-        })
-      })
-      diariesList.sort((b, a) => a.timestamp - b.timestamp)
-      setMyDiaries(diariesList)
+          id: numericId,
+          title: data.title || '無標題',
+          content: data.content || '',
+          mood: data.mood || '😊 開心',
+          date: data.date || '',
+          timestamp: data.timestamp || Date.now(),
+          // 🔒 補接雲端資料庫的加密鎖定欄位
+          isLocked: data.isLocked || false,
+          password: data.password || ''
+        });
+      });
+
+      // 排序日記（依據時間戳記）
+      diariesList.sort((b, a) => {
+        const timeA = a.timestamp?.seconds ? a.timestamp.seconds : new Date(a.timestamp).getTime();
+        const timeB = b.timestamp?.seconds ? b.timestamp.seconds : new Date(b.timestamp).getTime();
+        return timeA - timeB;
+      });
+
+      setMyDiaries(diariesList);
     } catch (error) {
-      console.error(error)
+      console.error("撈取雲端日記失敗：", error);
     }
-  }
+  };
 
   const handleSaveDiary = async () => {
     if (!diaryTitle.trim() || !diaryContent.trim()) {
@@ -109,11 +132,29 @@ function App() {
   }
 
   const handleSaveCapsule = () => {
-    if (!futureLetter.trim()) return
-    alert(`封存成功！時光膠囊將在 ${unlockDate} 解鎖。`)
-    setFutureLetter('')
-    setCurrentView('home')
-  }
+    if (!futureLetter.trim()) return;
+
+    // 1. 建立這封未來的信的完整資料物件
+    const newCapsule = {
+      id: Date.now(), // 獨一無二的 ID
+      content: futureLetter, // 信件內容
+      createdAt: new Date().toISOString().split('T')[0], // 寫信的日期 (YYYY-MM-DD)
+      unlockDate: unlockDate, // 你設定的解鎖日期 (YYYY-MM-DD)
+      isOpened: false // 預設是還沒被拆封
+    };
+
+    // 2. 從瀏覽器中把以前存過的膠囊撈出來，如果沒有就建立空陣列
+    const existingCapsules = JSON.parse(localStorage.getItem('timeCapsules')) || [];
+
+    // 3. 把今天這封新信塞進去，並重新存回瀏覽器
+    existingCapsules.push(newCapsule);
+    localStorage.setItem('timeCapsules', JSON.stringify(existingCapsules));
+
+    // 4. 成功提示與跳轉
+    alert(`🎉 封存成功！時光膠囊已安全埋入地下，將在 ${unlockDate} 解鎖傳送給你。`);
+    setFutureLetter('');
+    setCurrentView('home');
+  };
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -382,14 +423,81 @@ function App() {
             </select>
           </div>
 
+          {/* 🏷️ 日記標題 */}
           <div style={{ marginBottom: '24px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>日記標題</label>
             <input type="text" placeholder={theme === 'gd' ? "輸入充滿潮流藝術感的靈魂標題..." : theme === 'ive' ? "輸入精緻高貴的大千金專屬標題..." : theme === 'babymonster' ? "輸入擊碎常規的怪物新人硬核標題..." : "給今天一個標題..."} value={diaryTitle} onChange={(e) => setDiaryTitle(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-color)', color: 'var(--text-main)', boxSizing: 'border-box' }} />
           </div>
+
+          {/* 📝 日記內容（複製人二號已被消滅，現在全宇宙只剩這一個！） */}
           <div style={{ marginBottom: '32px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>日記內容</label>
-            <textarea rows={10} placeholder={theme === 'gd' ? "揮灑你的不羈與感性，像在牆上塗鴉一樣，寫下今天最不隨波逐流的真實故事吧！" : theme === 'ive' ? "讓字句閃爍鑽石般的光澤，紀錄今天那些優雅、精采且不負時光的璀璨生活碎片..." : theme === 'babymonster' ? "踏著最凶狠的重低音鼓點，寫下今天那些野蠻生長、充滿野心與驚艷全場的高能瞬間！" : "寫下今天發生的精彩故事吧..."} value={diaryContent} onChange={(e) => setDiaryContent(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-color)', color: 'var(--text-main)', boxSizing: 'border-box', lineHeight: '1.6' }} />
+            <textarea
+              rows={10}
+              placeholder={theme === 'gd' ? "揮灑你的不羈與感性，像在牆上塗鴉一樣，寫下今天最不隨波逐流的真實故事吧！" : theme === 'ive' ? "讓字句閃爍鑽石般的光澤，紀錄今天那些優雅、精采且不負時光的璀璨生活碎片..." : theme === 'babymonster' ? "踏著最凶狠的重低音鼓點，寫下今天那些野蠻生長、充滿野心與驚艷全場的高能瞬間！" : "寫下今天發生的精彩故事吧..."}
+              value={diaryContent}
+              onChange={(e) => setDiaryContent(e.target.value)}
+              style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-color)', color: 'var(--text-main)', boxSizing: 'border-box', lineHeight: '1.6' }}
+            />
           </div>
+
+          {/* 🔒 2. 祕密日記上鎖設定區塊（只有這一個正牌面板！） */}
+          <div style={{
+            background: 'var(--bg-sec, rgba(0,0,0,0.02))',
+            padding: '20px',
+            borderRadius: '12px',
+            border: isDiaryLocked ? `1px solid ${theme === 'gd' ? '#ffeb3b' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--accent)'}` : '1px solid var(--border)',
+            marginBottom: '32px',
+            transition: 'all 0.3s'
+          }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 'bold', color: 'var(--text-main)', fontSize: '16px' }}>
+              <input
+                type="checkbox"
+                checked={isDiaryLocked}
+                onChange={(e) => {
+                  setIsDiaryLocked(e.target.checked);
+                  if (!e.target.checked) setDiaryPassword(''); // 取消勾選時自動幫你把殘留密碼清空
+                }}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+              {theme === 'gd' ? "🔒 開啟黑金保險箱（將此篇設定為 G-DRAGON 級私密日記）" :
+                theme === 'ive' ? "🔒 啟動大千金隱私防線（將此篇設定為奢華私密日記）" :
+                  theme === 'babymonster' ? "🔒 封鎖怪物禁區（將此篇設定為高能私密日記）" :
+                    "🔒 將此篇日記設定為【祕密日記】"}
+            </label>
+
+            {/* 🔑 當打勾上鎖時，才會優雅地展開密碼輸入框 */}
+            {isDiaryLocked && (
+              <div style={{ marginTop: '15px' }}>
+                <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: 'var(--text-sub)' }}>
+                  請設定此篇日記的專屬解鎖暗號：
+                </p>
+                <input
+                  type="password"
+                  placeholder={
+                    theme === 'gd' ? "請輸入此篇權志龍狂放詩篇的專屬暗號..." :
+                      theme === 'ive' ? "請輸入解鎖大千金精緻生活誌的璀璨密碼..." :
+                        theme === 'babymonster' ? "請輸入闖入怪獸禁區的重低音密鑰..." :
+                          "請輸入此篇日記的專屬解鎖密碼..."
+                  }
+                  value={diaryPassword}
+                  onChange={(e) => setDiaryPassword(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border)',
+                    background: 'var(--bg-color)',
+                    color: 'var(--text-main)',
+                    boxSizing: 'border-box',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 💾 3. 按鈕功能區 */}
           <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end' }}>
             <button onClick={() => setCurrentView('home')} style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)' }}>取消</button>
             <button onClick={handleSaveDiary} style={{ padding: '12px 32px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>儲存日記</button>
@@ -811,7 +919,7 @@ function App() {
           backgroundImage: theme === 'gd'
             ? `linear-gradient(to bottom, rgba(15,15,15,0.65), rgba(25,20,10,0.9)), url(${gdragonBg})`
             : theme === 'ive'
-              ? `linear-gradient(to bottom, rgba(255,240,245,0.55), rgba(230,245,255,0.78)), url(${iveBg})`
+              ? `linear-gradient(to bottom, rgba(13,32,70,0.45), rgba(10,12,25,0.85)), url(${iveBg})` /* 🔮 微調遮罩深邃度，讓舞台光芒更乾淨，字體更立體 */
               : theme === 'babymonster'
                 ? `linear-gradient(to bottom, rgba(20,5,5,0.6), rgba(15,5,5,0.92)), url(${babymonsterBg})`
                 : theme === 'aespa'
@@ -852,10 +960,8 @@ function App() {
           ) : theme === 'blackpink' ? (
             "🖤 BLACKPINK IN YOUR AREA！BLINK 烈焰重低音模組已啟動"
           ) : theme === 'kpop' ? (
-            /* 🍭 這裡專門分給 TWICE 專用，再也不會跟經典風搶位置了！ */
             "🍭 ONE IN A MILLION！TWICE 9人全員應援板已聯動"
           ) : (
-            /* 🍂 這是專屬於你「經典暖米」背景的文青台詞 */
             "📜 MEMOIR SYSTEM ｜ 經典暖米時光溫柔載入中，靜候你的日常篇章"
           )}
         </div>
@@ -863,46 +969,92 @@ function App() {
         <h1 className="fade-up visible" style={{
           textAlign: 'center',
           /* 🔥 確保所有風格都能在深色/漸層背景下亮起純白字 */
-          color: theme === 'classic' ? 'inherit' : '#fff'
+          color: theme === 'classic' ? 'inherit' : '#fff',
+          lineHeight: '1.4'
         }}>
           {theme === 'gd' ? (
-            <>Wild & Young！<br /><em style={{ color: '#ffeb3b', fontStyle: 'normal', textShadow: '0 0 20px rgba(255,235,59,0.5)' }}>🌼 寫下不隨波逐流的權志龍狂放詩篇</em></>
-          ) : theme === 'kpop' ? (
-            /* 🍭 TWICE：幫第一行白字加上黑陰影，第二行深紫字加上發光與深色描邊，這樣在粉紅背景下超級清晰！ */
             <>
-              <span style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 0, 0, 0.3)' }}>ONE IN A MILLION！</span>
+              <span style={{ fontFamily: '"Playfair Display", "Georgia", "Times New Roman", serif', fontStyle: 'italic', fontWeight: 'normal', fontSize: '1.2em', textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+                Wild & Young !
+              </span>
               <br />
-              <em style={{ color: '#5c0632', fontStyle: 'normal', fontWeight: 'bold', textShadow: '0 0 10px rgba(255, 255, 255, 0.9), 1px 1px 3px rgba(0, 0, 0, 0.5)' }}>
+              <em style={{ color: '#ffeb3b', fontStyle: 'normal', fontSize: '24px', fontWeight: 'bold', textShadow: '0 0 20px rgba(255,23,59,0.5)' }}>🌼 寫下不隨波逐流的權志龍狂放詩篇</em>
+            </>
+          ) : theme === 'kpop' ? ( /* 🍭 TWICE */
+            <>
+              <span style={{ fontFamily: '"Playfair Display", "Georgia", "Times New Roman", serif', fontStyle: 'italic', fontWeight: 'normal', fontSize: '1.2em', textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 0, 0, 0.3)' }}>
+                One In A Million !
+              </span>
+              <br />
+              <em style={{ color: '#5c0632', fontStyle: 'normal', fontSize: '24px', fontWeight: 'bold', textShadow: '0 0 10px rgba(255, 255, 255, 0.9), 1px 1px 3px rgba(0, 0, 0, 0.5)' }}>
                 🍭 點亮 Candy Bong 留下我們珍貴的 Shining Moment
               </em>
             </>
-          ) : theme === 'ive' ? (
-            /* 💎 IVE：幫第一行白字加上寶藍/深色陰影，讓大千金視覺更有層次不被背景吃掉 */
+          ) : theme === 'ive' ? ( /* 💎 IVE 奢華耀眼修正版 */
             <>
-              <span style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.4), 0 0 12px rgba(0, 50, 150, 0.3)' }}>That's My Style！</span>
+              <span style={{ fontFamily: '"Playfair Display", "Georgia", "Times New Roman", serif', fontStyle: 'italic', fontWeight: 'normal', fontSize: '1.2em', textShadow: '0 2px 8px rgba(0, 0, 0, 0.4)' }}>
+                That's My Style !
+              </span>
               <br />
-              <em style={{ color: '#ff4081', fontStyle: 'normal', textShadow: '0 0 20px rgba(255,64,129,0.4), 1px 1px 2px rgba(0,0,0,0.3)' }}>
+              {/* 🤍 字體換成最高級的純白色，搭配精心調配的星空藍發光，在舞台上超級清楚！ */}
+              <em style={{
+                color: '#ffffff',
+                fontStyle: 'normal',
+                fontSize: '24px',
+                fontWeight: 'bold',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 229, 255, 0.7), 0 0 5px rgba(255, 64, 129, 0.5)'
+              }}>
                 💎 鐫刻精緻耀眼的高貴千金生活誌
               </em>
             </>
-          ) : theme === 'babymonster' ? (
-            <>Caught My Eye！<br /><em style={{ color: '#ff1744', fontStyle: 'normal', textShadow: '0 0 25px rgba(255,23,68,0.7)' }}>😈 釋放摧枯拉朽的怪物新人黑馬紀錄</em></>
-          ) : theme === 'aespa' ? (
-            <>Su-Su-Supernova！<br /><em style={{ color: '#00ffff', fontStyle: 'normal', textShadow: '0 0 25px rgba(0,255,255,0.8)' }}>🪐 跨越次元編譯你的超現實回憶</em></>
-          ) : theme === 'blackpink' ? (
-            <>Born Pink！<br /><em style={{ color: '#ff007f', fontStyle: 'normal', textShadow: '0 0 20px rgba(255,0,127,0.6)' }}>🔥 撰寫統治全場的女王日記</em></>
-          ) : (
-            <>寫下你每日的心得吧!<br /><em>✨ 留下我們珍貴的 Shining Moment</em></>
+          ) : theme === 'babymonster' ? ( /* 👹 BABYMONSTER */
+            <>
+              <span style={{ fontFamily: '"Playfair Display", "Georgia", "Times New Roman", serif', fontStyle: 'italic', fontWeight: 'normal', fontSize: '1.2em', textShadow: '0 2px 8px rgba(0, 0, 0, 0.6)' }}>
+                Caught My Eye !
+              </span>
+              <br />
+              <em style={{ color: '#ff1744', fontStyle: 'normal', fontSize: '24px', fontWeight: 'bold', textShadow: '0 0 15px rgba(255,23,68,0.5)' }}>
+                😈 釋放摧枯拉朽的怪物新人黑馬紀錄
+              </em>
+            </>
+          ) : theme === 'blackpink' ? ( /* 🖤💗 BLACKPINK */
+            <>
+              <span style={{ fontFamily: '"Playfair Display", "Georgia", "Times New Roman", serif', fontStyle: 'italic', fontWeight: 'normal', fontSize: '1.2em', textShadow: '0 2px 8px rgba(0, 0, 0, 0.6)' }}>
+                In Your Area !
+              </span>
+              <br />
+              <em style={{ color: '#f02ec6', fontStyle: 'normal', fontSize: '24px', fontWeight: 'bold', textShadow: '0 0 15px rgba(240,46,198,0.5)' }}>
+                🖤💗 登上王座的女王傳奇終焉回憶錄
+              </em>
+            </>
+          ) : theme === 'aespa' ? ( /* 🪐 aespa */
+            <>
+              <span style={{ fontFamily: '"Playfair Display", "Georgia", "Times New Roman", serif', fontStyle: 'italic', fontWeight: 'normal', fontSize: '1.2em', textShadow: '0 2px 8px rgba(0, 0, 0, 0.6)' }}>
+                Synk Dive !
+              </span>
+              <br />
+              <em style={{ color: '#06b6d4', fontStyle: 'normal', fontSize: '24px', fontWeight: 'bold', textShadow: '0 0 15px rgba(6,182,212,0.5)' }}>
+                🪐 跨越虛擬現實的曠野戰鬥編年史
+              </em>
+            </>
+          ) : ( /* ✨ 經典模式 */
+            <>
+              <span style={{ fontFamily: '"Playfair Display", "Georgia", "Times New Roman", serif', fontStyle: 'italic', fontWeight: 'normal', fontSize: '1.2em', color: 'var(--accent)' }}>
+                Shining Moment !
+              </span>
+              <br />
+              <em style={{ fontStyle: 'normal', fontSize: '24px', fontWeight: 'bold' }}>
+                ✨ 留下我們珍貴的時光協奏曲
+              </em>
+            </>
           )}
         </h1>
 
-        {/* 🚀 尋找程式碼中的這一段並替換 style */}
         <p className="hero-sub fade-up visible" style={{
           textAlign: 'center',
           maxWidth: '650px',
           lineHeight: '1.8',
-          fontSize: '17px', // 微調放大字體
-          /* 🔥 核心關鍵：根據不同風格給予最明顯的顏色、加粗與文字陰影 */
+          fontSize: '17px',
           fontWeight: '600',
           color: theme === 'classic' ? 'var(--text-main)' : '#ffffff',
           textShadow: theme === 'classic'
@@ -910,14 +1062,13 @@ function App() {
             : theme === 'gd'
               ? '0 2px 10px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.9)'
               : theme === 'ive'
-                ? '0 2px 8px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.8)'
+                ? '0 2px 10px rgba(0,0,0,0.85), 0 1px 4px rgba(0,0,0,0.9)'
                 : theme === 'babymonster'
                   ? '0 2px 10px rgba(0,0,0,0.95), 0 1px 4px rgba(0,0,0,0.9)'
                   : theme === 'aespa'
                     ? '0 2px 12px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.9)'
-                    : '0 2px 8px rgba(0,0,0,0.8)' // blackpink & kpop 預設深色陰影
-        }}
-        >
+                    : '0 2px 8px rgba(0,0,0,0.8)'
+        }}>
           {theme === 'gd' ? (
             "「八九不離十，我是唯一的潮流」— 踏入 GD 的黑金高街實驗室，像揮灑噴漆一般，留住你最特立獨行、不可一世的靈魂印記。"
           ) : theme === 'ive' ? (
@@ -925,19 +1076,18 @@ function App() {
           ) : theme === 'babymonster' ? (
             "「天生怪獸，天生狠角色」— 承襲美式硬核嘻哈的大勢力量，點燃你體內不服輸的怪物基因，在這裡寫下燃炸全場的新人傳奇。"
           ) : theme === 'aespa' ? (
-            "「打破邊界，定義未來」— 穿越現實與虛擬交錯的世界，在這裡記錄每一次突破自我、每一次勇敢升級，寫下專屬於你的未來篇章。"
+            "「打破邊界，定義未來」— 穿越現實與虛擬交錯的世界，在這裡記錄每一次突破自我、每一次勇敢升級，寫下專專屬於你的未來篇章。"
           ) : theme === 'blackpink' ? (
             "「頂峰相見，無人能擋」— 帶上你的粉紅應援氣球槌，在這裡刻下最具野心、最不服輸且充滿光芒的震撼瞬間。"
           ) : theme === 'kpop' ? (
-            /* 🍭 這是 TWICE 風格下的副標題文字 */
             "「只要我們在一起，就是 ONE IN A MILLION」— 點亮甜蜜的 Candy Bong 應援光芒，在這裡用滿滿的愛與元氣，記錄下九位女孩與你最珍貴的閃耀瞬間。"
           ) : (
-            /* 🍂 這是最重要補上的「經典暖米」預設文字，完美避開 TWICE 跑棚！ */
             "「留住歲月裡的溫柔」— 靜下心來，把平凡的日常慢慢鋪陳，在這裡將每一段恬靜的時光寫成最精緻、最值得細細品味的溫暖詩篇。"
           )}
         </p>
 
-        <div className="hero-actions">
+        {/* 🚀 【就是這裡！】動作按鈕區塊，乖乖回歸原本的位置囉 */}
+        <div className="hero-actions" style={{ display: 'flex', gap: '15px', marginTop: '20px', zIndex: 2 }}>
           {/* 主要按鈕：開始寫日記 */}
           <a href="#" className="btn-hero btn-hero-primary"
             style={{
@@ -949,7 +1099,12 @@ function App() {
                         theme === 'blackpink' ? '#ff007f' :
                           'var(--accent)',
               color: theme === 'gd' ? '#000' : '#fff',
-              border: 'none'
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '30px',
+              fontWeight: '700',
+              textDecoration: 'none',
+              transition: 'all 0.2s'
             }}
             onClick={(e) => {
               e.preventDefault();
@@ -990,7 +1145,12 @@ function App() {
                     theme === 'babymonster' ? '1px solid #ff1744' :
                       theme === 'aespa' ? '1px solid #00ffff' :
                         theme === 'blackpink' ? '1px solid #ff007f' :
-                          '1px solid var(--border)'
+                          '1px solid var(--border)',
+              padding: '12px 24px',
+              borderRadius: '30px',
+              fontWeight: '700',
+              textDecoration: 'none',
+              transition: 'all 0.2s'
             }}
             onClick={(e) => {
               e.preventDefault();
@@ -1007,12 +1167,86 @@ function App() {
                 theme === 'babymonster' ? '📢 觀看 SHEESH 怪物進化軌跡' :
                   theme === 'aespa' ? '🌌 解鎖 Supernova 星際成長紀錄' :
                     theme === 'blackpink' ? '✨ 翻閱 Born Pink 女王傳奇篇章' :
-                      theme === 'kpop' ? '💝 收藏 ONE SPARK 青春回憶錄' :
-
+                      theme === 'kpop' ? '💝 收藏 ONE SPARK 青春回憶录' :
                         '看年度回顧'}
           </a>
         </div>
       </section>
+
+      {/* 📬 【自動清查】時光膠囊解鎖區域：放置於主畫面最下方 */}
+      <div style={{ maxWidth: '1200px', margin: '24px auto 0 auto', padding: '0 20px' }}>
+        {(() => {
+          try {
+            const capsules = JSON.parse(localStorage.getItem('timeCapsules')) || [];
+            const today = new Date().toISOString().split('T')[0]; // 自動獲取今日日期
+
+            // 找出今天或今天以前到期，且尚未拆封 (isOpened === false) 的時光膠囊
+            const unlockedCapsules = capsules.filter(c => today >= c.unlockDate && !c.isOpened);
+
+            if (unlockedCapsules.length === 0) return null;
+
+            return unlockedCapsules.map(capsule => (
+              <div key={capsule.id} style={{
+                background: 'linear-gradient(135deg, #fff3cd, #ffeeba)',
+                border: '2px solid #ffc107',
+                padding: '24px',
+                borderRadius: '16px',
+                marginBottom: '24px',
+                boxShadow: '0 4px 15px rgba(255,193,7,0.15)',
+                color: '#856404',
+                textAlign: 'left'
+              }}>
+                <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 'bold' }}>
+                  📬 叮咚！你有一封來自過去的時光信件已安全送達！
+                </h3>
+                <p style={{ margin: '0 0 16px 0', fontSize: '14px', opacity: 0.9 }}>
+                  這是你在 <strong>{capsule.createdAt}</strong> 封存寫給未來自己的悄悄話。
+                  你設定的解鎖目標日 <strong>{capsule.unlockDate}</strong> 已經順利抵達囉！
+                </p>
+
+                {/* 顯示信件內文 */}
+                <div style={{
+                  background: 'rgba(255,255,255,0.85)',
+                  padding: '18px',
+                  borderRadius: '10px',
+                  marginBottom: '16px',
+                  fontStyle: 'italic',
+                  whiteSpace: 'pre-wrap',
+                  borderLeft: '5px solid #ffc107',
+                  color: '#333',
+                  fontSize: '15px',
+                  lineHeight: '1.6'
+                }}>
+                  「 {capsule.content} 」
+                </div>
+
+                <button
+                  onClick={() => {
+                    const allCapsules = JSON.parse(localStorage.getItem('timeCapsules')) || [];
+                    const updated = allCapsules.map(c => c.id === capsule.id ? { ...c, isOpened: true } : c);
+                    localStorage.setItem('timeCapsules', JSON.stringify(updated));
+                    window.location.reload();
+                  }}
+                  style={{
+                    background: '#856404',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  👌 收到了，謝謝過去的自己！
+                </button>
+              </div>
+            ));
+          } catch (e) {
+            return null;
+          }
+        })()}
+      </div>
 
       {/* 📜 雲端歷史日記列表區 */}
       <section style={{ padding: '80px 20px' }}>
@@ -1025,37 +1259,105 @@ function App() {
           </p>
 
           {!loggedInUser ? (
+            /* 1️⃣ 訪客狀態提示 */
             <div style={{ textAlign: 'center', padding: '50px 30px', background: 'var(--bg-color)', borderRadius: '16px', border: '2px dashed var(--border)', color: 'var(--text-sub)' }}>
               <p style={{ fontSize: '16px', marginBottom: '16px' }}>目前處於訪客狀態，請先登入帳號來解鎖與查看您的歷史雲端日記！</p>
               <button onClick={() => setCurrentView('login')} style={{ padding: '10px 24px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>立刻前往登入</button>
             </div>
           ) : myDiaries.length === 0 ? (
+            /* 2️⃣ 登入但查無日記提示 */
             <div style={{ textAlign: 'center', padding: '50px 30px', background: 'var(--bg-color)', borderRadius: '16px', border: '2px dashed var(--border)', color: 'var(--text-sub)' }}>
               <p style={{ fontSize: '16px' }}>歡迎回來！目前雲端上還沒有您的紀錄。點擊上方按鈕留下第一筆回憶吧！</p>
             </div>
           ) : (
+            /* 3️⃣ 正常渲染你的日記清單 */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {myDiaries.map((diary) => (
-                <div key={diary.id} style={{ background: 'var(--bg-color)', padding: '28px', borderRadius: '16px', border: '1px solid var(--border)', boxShadow: '0 4px 20px rgba(0,0,0,0.01)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '14px', color: 'var(--text-sub)' }}>📅 {diary.date}</span>
-                    <span style={{
-                      background: theme === 'gd' || theme === 'ive' || theme === 'babymonster' ? '#000' : 'var(--bg-sec)',
-                      color: theme === 'gd' ? '#ffeb3b' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--text-main)',
-                      padding: '4px 12px', borderRadius: '20px', fontSize: '13px',
-                      border: theme === 'gd' ? '1px solid #ffeb3b' : theme === 'ive' ? '1px solid #ff4081' : theme === 'babymonster' ? '1px solid #ff1744' : '1px solid var(--border)',
-                      fontWeight: 'bold'
-                    }}>{diary.mood}</span>
+              {myDiaries.map((diary) => {
+                // 🎨 根據當前追星主題動態決定「鎖定標籤與隱私盒子」的邊框顏色
+                const themeAlertColor = theme === 'gd' ? '#ffeb3b' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--accent)';
+
+                return (
+                  <div key={diary.id} style={{ background: 'var(--bg-color)', padding: '28px', borderRadius: '16px', border: '1px solid var(--border)', boxShadow: '0 4px 20px rgba(0,0,0,0.01)', marginBottom: '20px' }}>
+
+                    {/* 日期與心情 */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '14px', color: 'var(--text-sub)' }}>
+                        📅 {diary.date} {diary.isLocked && ' 🔒 [祕密日記]'}
+                      </span>
+                      <span style={{
+                        background: theme === 'gd' || theme === 'ive' || theme === 'babymonster' ? '#000' : 'var(--bg-sec)',
+                        color: theme === 'gd' ? '#ffeb3b' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--text-main)',
+                        padding: '4px 12px', borderRadius: '20px', fontSize: '13px',
+                        border: theme === 'gd' ? '1px solid #ffeb3b' : theme === 'ive' ? '1px solid #ff4081' : theme === 'babymonster' ? '1px solid #ff1744' : '1px solid var(--border)',
+                        fontWeight: 'bold'
+                      }}>{diary.mood || '😊 開心'}</span>
+                    </div>
+
+                    {/* 日記標題 */}
+                    <h3 style={{ fontSize: '20px', margin: '0 0 12px 0', fontWeight: '700', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      {diary.title}
+                      {diary.isLocked && (
+                        <span style={{
+                          fontSize: '12px',
+                          padding: '2px 8px',
+                          borderRadius: '20px',
+                          background: 'rgba(255,23,68,0.15)',
+                          color: '#ff1744',
+                          border: '1px solid #ff1744',
+                          fontWeight: 'bold'
+                        }}>
+                          密碼鎖定
+                        </span>
+                      )}
+                    </h3>
+
+                    {/* 🔐 日記內文防禦核心區塊 */}
+                    <div style={{ fontSize: '16px', color: 'var(--text-main)', margin: '0', lineHeight: '1.7' }}>
+                      {diary.isLocked ? (
+                        /* 🙈 有上鎖的日記：彈窗輸入密碼解鎖 */
+                        <div
+                          onClick={() => {
+                            const inputPass = prompt('🔑 這是一篇祕密日記，請輸入密碼進行解鎖：');
+                            if (inputPass === null) return;
+
+                            if (inputPass === diary.password) {
+                              alert(`🔓 解鎖成功！【${diary.title}】的內容如下：\n\n${diary.content}`);
+                            } else {
+                              alert('❌ 密碼錯誤！不能偷看小祕密喔～');
+                            }
+                          }}
+                          style={{
+                            background: theme === 'gd' || theme === 'ive' || theme === 'babymonster' ? '#111' : 'var(--bg-sec, rgba(0,0,0,0.03))',
+                            border: `1px dashed ${themeAlertColor}`,
+                            padding: '24px',
+                            borderRadius: '12px',
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            marginTop: '10px'
+                          }}
+                        >
+                          <p style={{ margin: '0 0 6px 0', fontWeight: 'bold', color: themeAlertColor }}>
+                            🔒 {theme === 'gd' ? '潮流保險箱已加密保護' : theme === 'ive' ? '大千金隱私防線已啟動' : theme === 'babymonster' ? '怪物禁區已被安全封鎖' : '此篇日記已被安全加密'}
+                          </p>
+                          <span style={{ fontSize: '13px', color: 'var(--text-sub)', textDecoration: 'underline', opacity: 0.85 }}>
+                            點擊此處並輸入專屬解鎖暗號閱讀全文 🔓
+                          </span>
+                        </div>
+                      ) : (
+                        /* 📝 平常沒上鎖的公開日記 */
+                        <p style={{ fontSize: '16px', color: 'var(--text-sub)', margin: '0', whiteSpace: 'pre-wrap', lineHeight: '1.7' }}>
+                          {diary.content}
+                        </p>
+                      )}
+                    </div>
+
                   </div>
-                  <h3 style={{ fontSize: '20px', margin: '0 0 12px 0', fontWeight: '700' }}>{diary.title}</h3>
-                  <p style={{ fontSize: '16px', color: 'var(--text-sub)', margin: '0', whiteSpace: 'pre-wrap', lineHeight: '1.7' }}>{diary.content}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
       </section>
-
       {/* 🔮 頁尾 */}
       <footer>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}>
