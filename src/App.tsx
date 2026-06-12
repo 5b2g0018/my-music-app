@@ -3,7 +3,7 @@ import './App.css'
 
 // 💡 引入音樂 App Firebase 設定
 import { db } from './firebase'
-import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore'
+import { doc, getDoc, setDoc, collection, query, where, getDocs, updateDoc, deleteDoc } from 'firebase/firestore'
 
 // 🍭 TWICE 
 const twiceAllMembersBg = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1500&auto=format&fit=crop"
@@ -25,21 +25,29 @@ const babymonsterBg = "https://images.unsplash.com/photo-1557672172-298e090bd0f1
 
 interface DiaryItem {
   id: string
+  userEmail?: string
+  author?: string
   title: string
   content: string
   mood: string
   date: string
   timestamp: number
+  isSecret?: boolean
+  password?: string
+  isPublic?: boolean
 }
 
 function App() {
-  const [currentView, setCurrentView] = useState<'home' | 'editor' | 'register' | 'login' | 'capsule' | 'review'>('home')
+  const [currentView, setCurrentView] = useState<'home' | 'editor' | 'register' | 'login' | 'capsule' | 'review' | 'publicWall'>('home')
   // 🛠️ 擴充主題類型：加入 gd, ive, babymonster
   const [theme, setTheme] = useState<'classic' | 'blackpink' | 'aespa' | 'kpop' | 'gd' | 'ive' | 'babymonster'>('classic')
   const [diaryTitle, setDiaryTitle] = useState('')
   const [diaryContent, setDiaryContent] = useState('')
   const [diaryMood, setDiaryMood] = useState('😊 開心')
   const [myDiaries, setMyDiaries] = useState<DiaryItem[]>([])
+  const [isSecret, setIsSecret] = useState(false)
+  const [diaryPassword, setDiaryPassword] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   const [futureLetter, setFutureLetter] = useState('')
   const [unlockDate, setUnlockDate] = useState('2027-01-01')
@@ -52,6 +60,8 @@ function App() {
 
   const [loggedInUser, setLoggedInUser] = useState<string | null>(null)
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [publicDiaries, setPublicDiaries] = useState<DiaryItem[]>([])
+  const [isPublic, setIsPublic] = useState(false)
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
@@ -60,21 +70,56 @@ function App() {
   const fetchUserDiaries = async (email: string) => {
     try {
       const q = query(collection(db, 'diaries'), where('userEmail', '==', email))
-      const querySnapshot = await getDocs(q)
+      const snap = await getDocs(q)
       const diariesList: DiaryItem[] = []
-      querySnapshot.forEach((doc) => {
-        const data = doc.data()
+      snap.forEach((d) => {
+        const data = d.data()
         diariesList.push({
-          id: doc.id,
+          id: d.id,
+          userEmail: data.userEmail,
+          author: data.author,
           title: data.title,
           content: data.content,
           mood: data.mood,
           date: data.date,
-          timestamp: data.timestamp || Date.now()
+          timestamp: data.timestamp || Date.now(),
+          isSecret: data.isSecret || false,
+          password: data.password || undefined,
+          isPublic: data.isPublic || false
         })
       })
       diariesList.sort((b, a) => a.timestamp - b.timestamp)
       setMyDiaries(diariesList)
+      // 同時抓取所有公開日記
+      await fetchPublicDiaries()
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const fetchPublicDiaries = async () => {
+    try {
+      const q = query(collection(db, 'diaries'), where('isPublic', '==', true))
+      const snap = await getDocs(q)
+      const publicList: DiaryItem[] = []
+      snap.forEach((d) => {
+        const data = d.data()
+        publicList.push({
+          id: d.id,
+          userEmail: data.userEmail,
+          author: data.author,
+          title: data.title,
+          content: data.content,
+          mood: data.mood,
+          date: data.date,
+          timestamp: data.timestamp || Date.now(),
+          isSecret: data.isSecret || false,
+          password: data.password || undefined,
+          isPublic: true
+        })
+      })
+      publicList.sort((b, a) => a.timestamp - b.timestamp)
+      setPublicDiaries(publicList)
     } catch (error) {
       console.error(error)
     }
@@ -92,19 +137,87 @@ function App() {
     }
     try {
       const now = Date.now()
-      const diaryId = `${userEmail}_${now}`
+      const diaryId = editingId || `${userEmail}_${now}`
       const today = new Date()
       const dateString = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`
 
-      await setDoc(doc(db, 'diaries', diaryId), {
-        userEmail, title: diaryTitle.trim(), content: diaryContent.trim(), mood: diaryMood, date: dateString, timestamp: now
-      })
-      alert('日記成功儲存至雲端！')
+      if (isSecret && isPublic) {
+        alert('日記不能同時設定為秘密和公開，請選擇一種模式。')
+        return
+      }
+      const payload: any = {
+        userEmail,
+        author: loggedInUser,
+        title: diaryTitle.trim(),
+        content: diaryContent.trim(),
+        mood: diaryMood,
+        date: dateString,
+        timestamp: now,
+        isSecret: isSecret || false,
+        isPublic: isPublic || false
+      }
+      if (isSecret && diaryPassword.trim()) payload.password = diaryPassword.trim()
+
+      if (editingId) {
+        await updateDoc(doc(db, 'diaries', diaryId), payload)
+        alert('日記更新完成！')
+      } else {
+        await setDoc(doc(db, 'diaries', diaryId), payload)
+        alert('日記成功儲存至雲端！')
+      }
       setDiaryTitle(''); setDiaryContent('')
+      setIsSecret(false); setDiaryPassword(''); setEditingId(null); setIsPublic(false)
       await fetchUserDiaries(userEmail)
       setCurrentView('home')
     } catch (error) {
       alert('儲存失敗，請確認 Firebase 資料庫 Rules 權限。')
+    }
+  }
+
+  const handleDeleteDiary = async (id: string) => {
+    if (!confirm('確定要刪除這篇日記嗎？此動作無法回復。')) return
+    try {
+      await deleteDoc(doc(db, 'diaries', id))
+      if (userEmail) await fetchUserDiaries(userEmail)
+    } catch (err) {
+      console.error(err)
+      alert('刪除失敗')
+    }
+  }
+
+  const handleEditDiary = (d: DiaryItem) => {
+    setEditingId(d.id)
+    setDiaryTitle(d.title)
+    setDiaryContent(d.content)
+    setDiaryMood(d.mood)
+    setIsSecret(!!d.isSecret)
+    setDiaryPassword(d.password || '')
+    setIsPublic(!!d.isPublic)
+    setCurrentView('editor')
+  }
+
+  const handleTogglePublic = async (id: string, currentPublicStatus: boolean) => {
+    try {
+      await updateDoc(doc(db, 'diaries', id), { isPublic: !currentPublicStatus })
+      if (userEmail) await fetchUserDiaries(userEmail)
+      alert(!currentPublicStatus ? '已設為公開日記，所有人都能看到！' : '已取消公開，恢復為私人日記。')
+    } catch (err) {
+      console.error(err)
+      alert('操作失敗')
+    }
+  }
+
+  const handleViewDiary = (d: DiaryItem) => {
+    if (d.isSecret) {
+      const pw = prompt('此為秘密日記，請輸入密碼以查看內容')
+      if (!pw) return
+      if (pw === d.password) {
+        alert(`標題: ${d.title}\n\n${d.content}`)
+      } else {
+        alert('密碼錯誤')
+      }
+    } else {
+      alert(`標題: ${d.title}\n\n${d.content}`)
     }
   }
 
@@ -196,6 +309,7 @@ function App() {
           flexShrink: 0
         }}>
           <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('home'); }} style={{ textDecoration: 'none', color: 'var(--text-main)', fontWeight: '500', fontSize: '14px' }}>首頁功能</a></li>
+          <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('publicWall'); }} style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px' }}>🌍 社區日記牆</a></li>
           <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); if (!loggedInUser) { alert('請先登入！'); setCurrentView('login'); } else { setCurrentView('capsule'); } }} style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px' }}>📬 時光膠囊</a></li>
           <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); if (!loggedInUser) { alert('請先登入！'); setCurrentView('login'); } else { setCurrentView('review'); } }} style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px' }}>📊 年度回顧</a></li>
 
@@ -218,7 +332,7 @@ function App() {
 
           {/* 🎨 風格切換 */}
           <li style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '4px', whiteSpace: 'nowrap' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-sub)' }}>🎨 風格:</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-sub)' }}></span>
             <select value={theme} onChange={(e) => setTheme(e.target.value as any)} style={{ padding: '4px 8px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer', outline: 'none', fontSize: '13px' }}>
               <option value="classic">🍂 經典暖米</option>
               <option value="blackpink">🖤 BLACKPINK 霸氣黑粉</option>
@@ -367,9 +481,36 @@ function App() {
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>日記內容</label>
             <textarea rows={10} placeholder={theme === 'gd' ? "揮灑你的不羈與感性，像在牆上塗鴉一樣，寫下今天最不隨波逐流的真實故事吧！" : theme === 'ive' ? "讓字句閃爍鑽石般的光澤，紀錄今天那些優雅、精采且不負時光的璀璨生活碎片..." : theme === 'babymonster' ? "踏著最凶狠的重低音鼓點，寫下今天那些野蠻生長、充滿野心與驚艷全場的高能瞬間！" : "寫下今天發生的精彩故事吧..."} value={diaryContent} onChange={(e) => setDiaryContent(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-color)', color: 'var(--text-main)', boxSizing: 'border-box', lineHeight: '1.6' }} />
           </div>
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end' }}>
-            <button onClick={() => setCurrentView('home')} style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)' }}>取消</button>
-            <button onClick={handleSaveDiary} style={{ padding: '12px 32px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>儲存日記</button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                <input type="checkbox" checked={isSecret} onChange={(e) => {
+                  const checked = e.target.checked
+                  setIsSecret(checked)
+                  if (checked) {
+                    setIsPublic(false)
+                  }
+                }} /> 設為秘密日記
+              </label>
+              {isSecret && (
+                <input type="password" placeholder="設定密碼以保護此日記" value={diaryPassword} onChange={(e) => setDiaryPassword(e.target.value)} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)' }} />
+              )}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                <input type="checkbox" checked={isPublic} onChange={(e) => {
+                  const checked = e.target.checked
+                  setIsPublic(checked)
+                  if (checked) {
+                    setIsSecret(false)
+                    setDiaryPassword('')
+                  }
+                }} /> 設為公開日記
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end' }}>
+              <button onClick={() => { setCurrentView('home'); setEditingId(null); setIsSecret(false); setDiaryPassword(''); setIsPublic(false); setDiaryTitle(''); setDiaryContent('') }} style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)' }}>取消</button>
+              <button onClick={handleSaveDiary} style={{ padding: '12px 32px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>{editingId ? '更新日記' : '儲存日記'}</button>
+            </div>
           </div>
         </div>
       </>
@@ -742,6 +883,104 @@ function App() {
     );
   }
 
+  if (currentView === 'publicWall') {
+    return (
+      <>
+        {renderNavbar()}
+        <section style={{
+          maxWidth: '1200px',
+          margin: '60px auto',
+          padding: '60px 20px',
+          borderRadius: '24px',
+          backgroundImage: theme === 'gd'
+            ? `linear-gradient(to bottom, rgba(0,0,0,0.52), rgba(0,0,0,0.22)), url(${gdragonBg})`
+            : theme === 'ive'
+              ? `linear-gradient(to bottom, rgba(10,4,12,0.52), rgba(10,4,12,0.22)), url(${iveBg})`
+              : theme === 'babymonster'
+                ? `linear-gradient(to bottom, rgba(10,10,10,0.6), rgba(10,10,10,0.25)), url(${babymonsterBg})`
+                : theme === 'aespa'
+                  ? `linear-gradient(to bottom, rgba(8,8,20,0.55), rgba(8,8,20,0.28)), url(${aespaBg})`
+                  : theme === 'blackpink'
+                    ? `linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0.25)), url(${blackpinkBg})`
+                    : theme === 'kpop'
+                      ? `linear-gradient(to bottom, rgba(20,10,20,0.4), rgba(20,10,20,0.1)), url(${twiceAllMembersBg})`
+                      : 'var(--bg-pattern)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.16)'
+        }}>
+          <div style={{ marginBottom: '40px' }}>
+            <h2 style={{ fontSize: '36px', fontWeight: '900', margin: '0 0 16px 0', color: theme === 'classic' ? 'var(--text-main)' : '#fff' }}>🌍 社區日記牆</h2>
+            <p style={{ fontSize: '16px', color: theme === 'classic' ? 'var(--text-sub)' : 'rgba(255,255,255,0.82)', margin: 0 }}>歡迎瀏覽所有公開分享的日記，感受來自四面八方的故事與心情。</p>
+          </div>
+
+          {publicDiaries.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-sub)' }}>
+              <p style={{ fontSize: '18px' }}>還沒有公開日記呢 📝</p>
+              <p style={{ fontSize: '14px', margin: '10px 0 0 0' }}>快來分享你的故事吧！</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+              {publicDiaries.map((diary) => (
+                <div key={diary.id} style={{
+                  background: theme === 'blackpink' ? 'rgba(0,0,0,0.55)' : theme === 'aespa' ? 'rgba(8,8,20,0.68)' : theme === 'gd' ? 'rgba(8,8,8,0.7)' : theme === 'ive' ? 'rgba(255,250,255,0.82)' : theme === 'babymonster' ? 'rgba(10,10,10,0.72)' : theme === 'kpop' ? 'rgba(255,245,250,0.92)' : 'var(--bg-sec)',
+                  padding: '24px',
+                  borderRadius: '16px',
+                  border: '1px solid var(--border)',
+                  boxShadow: theme === 'classic' ? '0 4px 20px rgba(0,0,0,0.05)' : '0 6px 24px rgba(0,0,0,0.12)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-sub)', marginBottom: '8px' }}>✍️ {diary.author || '匿名使用者'}</div>
+                      <h3 style={{ fontSize: '18px', margin: '0 0 8px 0', fontWeight: '700' }}>{diary.title}</h3>
+                      <div style={{ fontSize: '12px', color: 'var(--text-sub)', marginBottom: '12px' }}>📅 {diary.date}</div>
+                    </div>
+                    <span style={{
+                      background: theme === 'gd' || theme === 'ive' || theme === 'babymonster' ? '#000' : 'var(--bg-color)',
+                      color: theme === 'gd' ? '#ffeb3b' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--accent)',
+                      padding: '4px 12px', borderRadius: '20px', fontSize: '12px',
+                      border: theme === 'gd' ? '1px solid #ffeb3b' : theme === 'ive' ? '1px solid #ff4081' : theme === 'babymonster' ? '1px solid #ff1744' : 'none',
+                      fontWeight: 'bold',
+                      whiteSpace: 'nowrap'
+                    }}>{diary.mood}</span>
+                  </div>
+                  <p style={{ fontSize: '14px', color: 'var(--text-main)', margin: 0, lineHeight: '1.6', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>{diary.content}</p>
+                  <div style={{ marginTop: '12px' }}>
+                    <button onClick={() => handleViewDiary(diary)} style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>閱讀完整日記</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* 🔮 頁尾 */}
+        <footer style={{ marginTop: '80px' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', padding: '0 20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+              <div style={{ textAlign: 'left' }}>
+                <a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('home'); }} style={{ textDecoration: 'none', color: 'var(--text-main)', fontWeight: 'bold', fontSize: '22px' }}>
+                  Mem<em>oir</em>
+                </a>
+                <p style={{ fontSize: '13px', color: 'var(--text-sub)', margin: '8px 0 0 0', maxWidth: '300px' }}>
+                  用音樂與文字，將你每一天的珍貴情感與旋律，安全地封存在雲端。
+                </p>
+              </div>
+            </div>
+            <hr style={{ width: '100%', border: 'none', borderTop: '1px solid var(--border)', margin: '10px 0' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '13px', color: 'var(--text-sub)', flexWrap: 'wrap', gap: '10px' }}>
+              <span>© 2026 Memoir. All rights reserved.</span>
+            </div>
+          </div>
+        </footer>
+      </>
+    );
+  }
+
   if (currentView === 'register' || currentView === 'login') {
     return (
       <>
@@ -1024,8 +1263,27 @@ function App() {
                       fontWeight: 'bold'
                     }}>{diary.mood}</span>
                   </div>
-                  <h3 style={{ fontSize: '20px', margin: '0 0 12px 0', fontWeight: '700' }}>{diary.title}</h3>
-                  <p style={{ fontSize: '16px', color: 'var(--text-sub)', margin: '0', whiteSpace: 'pre-wrap', lineHeight: '1.7' }}>{diary.content}</p>
+                  <h3 style={{ fontSize: '20px', margin: '0 0 12px 0', fontWeight: '700' }}>{diary.title} {diary.isSecret ? <span style={{marginLeft: '8px', fontSize: '14px'}}>🔒</span> : null}</h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                    <div style={{ flex: 1 }}>
+                      {diary.isSecret ? (
+                        <p style={{ fontSize: '16px', color: 'var(--text-sub)', margin: 0 }}>🔒 這是一篇秘密日記，請按「查看」並輸入密碼以檢視內容。</p>
+                      ) : (
+                        <p style={{ fontSize: '16px', color: 'var(--text-sub)', margin: 0, whiteSpace: 'pre-wrap', lineHeight: '1.7' }}>{diary.content}</p>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <button onClick={() => handleViewDiary(diary)} style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer' }}>查看</button>
+                      {diary.userEmail === userEmail && (
+                        <>
+                          <button onClick={() => handleEditDiary(diary)} style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--bg-sec)', cursor: 'pointer' }}>編輯</button>
+                          <button onClick={() => handleDeleteDiary(diary.id)} style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #ff6b6b', background: 'transparent', color: '#ff6b6b', cursor: 'pointer' }}>刪除</button>
+                          <button onClick={() => handleTogglePublic(diary.id, !!diary.isPublic)} style={{ padding: '8px 12px', borderRadius: '10px', border: diary.isPublic ? '1px solid #00d084' : '1px solid var(--border)', background: 'transparent', color: diary.isPublic ? '#00d084' : 'var(--text-main)', cursor: 'pointer' }}>{diary.isPublic ? '🌍 已公開' : '🔒 設為公開'}</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
