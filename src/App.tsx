@@ -1079,39 +1079,81 @@ function App() {
         <h1 className="fade-up visible" style={{
           textAlign: 'center',
           /* 🔥 確保所有風格都能在深色/漸層背景下亮起純白字 */
-          color: theme === 'classic' ? 'inherit' : '#fff'
+          color: theme === 'classic' ? 'inherit' : '#fff',
+          /* ✨ 全局中文字體優化 */
+          fontFamily: '"PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif',
+          letterSpacing: '1px'
         }}>
           {theme === 'gd' ? (
-            <>Wild & Young！<br /><em style={{ color: '#ffeb3b', fontStyle: 'normal', textShadow: '0 0 20px rgba(255,235,59,0.5)' }}>🌼 寫下不隨波逐流的權志龍狂放詩篇</em></>
-          ) : theme === 'kpop' ? (
-            /* 🍭 TWICE：幫第一行白字加上黑陰影，第二行深紫字加上發光與深色描邊，這樣在粉紅背景下超級清晰！ */
             <>
-              <span style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 0, 0, 0.3)' }}>ONE IN A MILLION！</span>
+              <span style={{ fontFamily: '"Montserrat", sans-serif', fontWeight: '900' }}>Wild & Young！</span>
               <br />
-              <em style={{ color: '#5c0632', fontStyle: 'normal', fontWeight: 'bold', textShadow: '0 0 10px rgba(255, 255, 255, 0.9), 1px 1px 3px rgba(0, 0, 0, 0.5)' }}>
+              <em style={{ fontSize: '1.3rem', color: '#ffeb3b', fontStyle: 'italic', letterSpacing: '2px', textShadow: '0 0 20px rgba(255,235,59,0.5)' }}>🌼 寫下不隨波逐流的權志龍狂放詩篇</em>
+            </>
+          ) : theme === 'kpop' ? (
+            /* 🍭 TWICE */
+            <>
+              <span style={{ fontFamily: '"Montserrat", sans-serif', fontWeight: '900', textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 0, 0, 0.3)' }}>ONE IN A MILLION！</span>
+              <br />
+              <em style={{ fontSize: '1.3rem', color: '#5c0632', fontStyle: 'italic', fontWeight: 'bold', letterSpacing: '2px', textShadow: '0 0 10px rgba(255, 255, 255, 0.9), 1px 1px 3px rgba(0, 0, 0, 0.5)' }}>
                 🍭 點亮 Candy Bong 留下我們珍貴的 Shining Moment
               </em>
             </>
           ) : theme === 'ive' ? (
-            /* 💎 IVE：幫第一行白字加上寶藍/深色陰影，讓大千金視覺更有層次不被背景吃掉 */
+            /* 💎 IVE */
             <>
-              <span style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.4), 0 0 12px rgba(0, 50, 150, 0.3)' }}>That's My Style！</span>
+              <span style={{ fontFamily: '"Playfair Display", serif', fontStyle: 'italic', fontWeight: '700', textShadow: '0 2px 8px rgba(0, 0, 0, 0.4), 0 0 12px rgba(0, 50, 150, 0.3)' }}>That's My Style！</span>
               <br />
-              <em style={{ color: '#ff4081', fontStyle: 'normal', textShadow: '0 0 20px rgba(255,64,129,0.4), 1px 1px 2px rgba(0,0,0,0.3)' }}>
+              <em style={{ fontSize: '1.3rem', color: '#ff4081', fontStyle: 'italic', letterSpacing: '2px', textShadow: '0 0 20px rgba(255,64,129,0.4), 1px 1px 2px rgba(0,0,0,0.3)' }}>
                 💎 鐫刻精緻耀眼的高貴千金生活誌
               </em>
             </>
           ) : theme === 'babymonster' ? (
-            <>Caught My Eye！<br /><em style={{ color: '#ff1744', fontStyle: 'normal', textShadow: '0 0 25px rgba(255,23,68,0.7)' }}>😈 釋放摧枯拉朽的怪物新人黑馬紀錄</em></>
+            <>
+              <span style={{ fontFamily: '"Montserrat", sans-serif', fontWeight: '900' }}>Caught My Eye！</span>
+              <br />
+              <em style={{ fontSize: '1.3rem', color: '#ff1744', fontStyle: 'italic', letterSpacing: '2px', textShadow: '0 0 25px rgba(255,23,68,0.7)' }}>😈 釋放摧枯拉朽的怪物新人黑馬紀錄</em>
+            </>
           ) : theme === 'aespa' ? (
-            <>Su-Su-Supernova！<br /><em style={{ color: '#00ffff', fontStyle: 'normal', textShadow: '0 0 25px rgba(0,255,255,0.8)' }}>🪐 跨越次元編譯你的超現實回憶</em></>
+            <>
+              <span style={{ fontFamily: '"Montserrat", sans-serif', fontWeight: '900' }}>Su-Su-Supernova！</span>
+              <br />
+              <em style={{ fontSize: '1.3rem', color: '#00ffff', fontStyle: 'italic', letterSpacing: '2px', textShadow: '0 0 25px rgba(0,255,255,0.8)' }}>🪐 跨越次元編譯你的超現實回憶</em>
+            </>
           ) : theme === 'blackpink' ? (
-            <>Born Pink！<br /><em style={{ color: '#ff007f', fontStyle: 'normal', textShadow: '0 0 20px rgba(255,0,127,0.6)' }}>🔥 撰寫統治全場的女王日記</em></>
+            /* 🔥 BLACKPINK：大字級 4.2rem 藝術英文字 + 1.3rem 質感斜體中文字 */
+            <>
+              <span style={{ 
+                fontFamily: '"Playfair Display", serif', 
+                fontStyle: 'italic', 
+                fontWeight: '900', 
+                fontSize: '4.2rem', 
+                letterSpacing: '2px', 
+                textShadow: '0 4px 15px rgba(0,0,0,0.6), 0 0 25px rgba(255,0,127,0.5)' 
+              }}>
+                Born Pink！
+              </span>
+              <br />
+              <em style={{ 
+                fontSize: '1.3rem', 
+                color: '#ff007f', 
+                fontStyle: 'italic', 
+                fontWeight: '900', 
+                letterSpacing: '3px', 
+                textShadow: '0 0 15px rgba(255,0,127,0.8), 0 0 30px rgba(255,0,127,0.4), 2px 2px 4px rgba(0,0,0,0.6)' 
+              }}>
+                🔥 撰寫統治全場的女王日記
+              </em>
+            </>
           ) : (
-            <>寫下你每日的心得吧!<br /><em>✨ 留下我們珍貴的 Shining Moment</em></>
+            /* ✨ 預設 Classic 主題 */
+            <>
+              寫下你每日的心得吧!
+              <br />
+              <em style={{ fontSize: '1.3rem', fontStyle: 'italic' }}>✨ 留下我們珍貴的 Shining Moment</em>
+            </>
           )}
         </h1>
-
         {/* 🚀 尋找程式碼中的這一段並替換 style */}
         <p className="hero-sub fade-up visible" style={{
           textAlign: 'center',
