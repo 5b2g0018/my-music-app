@@ -52,16 +52,93 @@
 }
 
 [data-theme="kpop"] {
-  --bg-color: #ffffff;
-  --bg-sec: #fff0fa;
-  --text-main: #d0006f;
+  --bg-color: #fff2f9;
+  --bg-sec: #ffe6f4;
+  --text-main: #7d1a4d;
   /* 亮眼的 TWICE 專屬蜜桃粉紅 */
-  --text-sub: #7b1fa2;
-  --accent: #ff4081;
-  --border: #ffd1e8;
+  --text-sub: #bf5e8d;
+  --accent: #ff2477;
+  --border: #ffdae8;
   --font-family: 'Helvetica Neue', sans-serif;
-  --bg-pattern: none;
-  /* 清空這邊，交給 App.tsx 來渲染圖片 */
+  --bg-pattern: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.92) 0%, transparent 12%),
+    radial-gradient(circle at 80% 12%, rgba(255,255,255,0.8) 0%, transparent 14%),
+    radial-gradient(circle at 60% 80%, rgba(255, 255, 255, 0.7) 0%, transparent 12%),
+    linear-gradient(135deg, rgba(255, 246, 250, 0.92), rgba(255, 216, 235, 0.94));
+  --bg-pattern-size: 160px 160px, 200px 200px, 180px 180px, auto;
+  --bg-pattern-pos: 0 0, 50px 30px, 100px 120px, center;
+}
+
+[data-theme="blackpink"] {
+  --bg-color: #100714;
+  --bg-sec: rgba(255, 255, 255, 0.08);
+  --text-main: #fbeefe;
+  --text-sub: rgba(255, 255, 255, 0.75);
+  --accent: #ff2fb8;
+  --border: rgba(255, 47, 184, 0.22);
+  --font-family: 'Inter', sans-serif;
+  --bg-pattern: radial-gradient(circle at 20% 20%, rgba(255, 47, 184, 0.16) 0%, transparent 15%),
+    radial-gradient(circle at 80% 15%, rgba(255, 255, 255, 0.12) 0%, transparent 16%),
+    linear-gradient(135deg, rgba(16, 7, 20, 0.96), rgba(9, 3, 14, 0.9));
+  --bg-pattern-size: 180px 180px, 220px 220px, auto;
+  --bg-pattern-pos: 0 0, 80px 40px, center;
+}
+
+[data-theme="aespa"] {
+  --bg-color: #040816;
+  --bg-sec: #071426;
+  --text-main: #d7f9ff;
+  --text-sub: #8ae4ff;
+  --accent: #62f0ff;
+  --border: #1d3c5c;
+  --font-family: 'Inter', sans-serif;
+  --bg-pattern: radial-gradient(circle at 30% 15%, rgba(98, 240, 255, 0.18) 0%, transparent 14%),
+    radial-gradient(circle at 75% 10%, rgba(255, 255, 255, 0.1) 0%, transparent 15%),
+    linear-gradient(180deg, rgba(4, 8, 22, 0.95), rgba(5, 10, 28, 0.94));
+  --bg-pattern-size: 160px 160px, 220px 220px, auto;
+  --bg-pattern-pos: 10px 10px, 90px 40px, center;
+}
+
+[data-theme="gd"] {
+  --bg-color: #0d0b0a;
+  --bg-sec: #171211;
+  --text-main: #f8e75f;
+  --text-sub: #d8c58c;
+  --accent: #ffee75;
+  --border: #3a2f28;
+  --font-family: 'Inter', sans-serif;
+  --bg-pattern: radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.08) 0%, transparent 12%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  --bg-pattern-size: 80px 80px, 40px 40px, 40px 40px;
+  --bg-pattern-pos: 0 0, 0 0, 20px 20px;
+}
+
+[data-theme="ive"] {
+  --bg-color: #f7f9ff;
+  --bg-sec: #eef2ff;
+  --text-main: #1a1e31;
+  --text-sub: #6b7280;
+  --accent: #5b86ff;
+  --border: #d9e2ff;
+  --font-family: 'Inter', sans-serif;
+  --bg-pattern: radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.92) 0%, transparent 14%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(233, 239, 255, 0.88));
+  --bg-pattern-size: 180px 180px, auto;
+  --bg-pattern-pos: 0 0, center;
+}
+
+[data-theme="babymonster"] {
+  --bg-color: #10050b;
+  --bg-sec: #1b0912;
+  --text-main: #ffe7f0;
+  --text-sub: #f6abc8;
+  --accent: #ff2f7f;
+  --border: #5b0c22;
+  --font-family: 'Inter', sans-serif;
+  --bg-pattern: radial-gradient(circle at 20% 20%, rgba(255, 47, 127, 0.14) 0%, transparent 14%),
+    linear-gradient(135deg, rgba(18, 2, 8, 0.94), rgba(8, 0, 10, 0.98));
+  --bg-pattern-size: 180px 180px, auto;
+  --bg-pattern-pos: 0 0, center;
 }
 
 /* ==================== 2. 全域基礎與背景圖案注入 ==================== */
@@ -74,6 +151,26 @@ body {
   font-family: var(--font-family);
   margin: 0;
   transition: background 0.3s ease, color 0.3s ease;
+}
+
+select,
+select option,
+input,
+textarea,
+button {
+  color: var(--text-main) !important;
+  background: var(--bg-sec);
+}
+
+select {
+  border: 1px solid var(--border);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+select option {
+  background: var(--bg-color) !important;
+  color: var(--text-main) !important;
 }
 
 /* 讓整頁的主要大區塊都帶有動態花紋背景 */

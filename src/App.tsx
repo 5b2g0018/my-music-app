@@ -65,6 +65,21 @@ function App() {
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
+
+    const bodyStyle = document.body.style;
+    if (theme === 'gd') {
+      bodyStyle.backgroundImage = `linear-gradient(to bottom, rgba(15,15,15,0.95), rgba(18,14,11,0.92)), url(${gdragonBg})`;
+      bodyStyle.backgroundSize = 'cover';
+      bodyStyle.backgroundPosition = 'center center';
+      bodyStyle.backgroundRepeat = 'no-repeat';
+      bodyStyle.backgroundAttachment = 'fixed';
+    } else {
+      bodyStyle.backgroundImage = 'var(--bg-pattern)';
+      bodyStyle.backgroundSize = 'var(--bg-pattern-size, auto)';
+      bodyStyle.backgroundPosition = 'var(--bg-pattern-pos, center)';
+      bodyStyle.backgroundRepeat = 'no-repeat';
+      bodyStyle.backgroundAttachment = 'scroll';
+    }
   }, [theme])
 
   const fetchUserDiaries = async (email: string) => {
@@ -374,10 +389,16 @@ function App() {
                   borderRadius: '16px',
                   border: 'none',
                   background: 'var(--accent)',
-                  color: '#fff',
+                  /* 🎨 樣式防禦：如果是 gd 主題就壓成黑色，其餘主題維持純白 */
+                  color: theme === 'gd' ? '#000000 !important' : '#ffffff',
                   fontSize: '13px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer'
+                  fontWeight: '900', // 爆粗體，讓字體在小尺寸下依然清晰爆表
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                /* 💡 雙重保險：直接跳過權重限制，由瀏覽器最底層強行渲染黑色字體 */
+                ref={(el) => {
+                  if (el) el.style.setProperty('color', theme === 'gd' ? '#000000' : '#ffffff', 'important');
                 }}
               >
                 登入 / 註冊
@@ -474,16 +495,74 @@ function App() {
           </div>
 
           <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>日記標題</label>
-            <input type="text" placeholder={theme === 'gd' ? "輸入充滿潮流藝術感的靈魂標題..." : theme === 'ive' ? "輸入精緻高貴的大千金專屬標題..." : theme === 'babymonster' ? "輸入擊碎常規的怪物新人硬核標題..." : "給今天一個標題..."} value={diaryTitle} onChange={(e) => setDiaryTitle(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-color)', color: 'var(--text-main)', boxSizing: 'border-box' }} />
+            {/* 🎯 1. 日記標題 Label 點亮 */}
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '8px', 
+              fontWeight: 'bold',
+              color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#ffffff' : 'var(--text-main)'
+            }}>
+              日記標題
+            </label>
+            {/* 🎯 2. 標題輸入框：底色微調、輸入文字與 Placeholder 智慧上色 */}
+            <input 
+              type="text" 
+              placeholder={theme === 'gd' ? "輸入充滿潮流藝術感的靈魂標題..." : theme === 'ive' ? "輸入精緻高貴的大千金專屬標題..." : theme === 'babymonster' ? "輸入擊碎常規的怪物新人硬核標題..." : "給今天一個標題..."} 
+              value={diaryTitle} 
+              onChange={(e) => setDiaryTitle(e.target.value)} 
+              style={{ 
+                width: '100%', 
+                padding: '14px', 
+                borderRadius: '8px', 
+                border: '1px solid var(--border)', 
+                background: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? 'rgba(255,255,255,0.1)' : 'var(--bg-color)', 
+                color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#ffffff' : 'var(--text-main)', 
+                boxSizing: 'border-box' 
+              }} 
+            />
           </div>
+
           <div style={{ marginBottom: '32px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>日記內容</label>
-            <textarea rows={10} placeholder={theme === 'gd' ? "揮灑你的不羈與感性，像在牆上塗鴉一樣，寫下今天最不隨波逐流的真實故事吧！" : theme === 'ive' ? "讓字句閃爍鑽石般的光澤，紀錄今天那些優雅、精采且不負時光的璀璨生活碎片..." : theme === 'babymonster' ? "踏著最凶狠的重低音鼓點，寫下今天那些野蠻生長、充滿野心與驚艷全場的高能瞬間！" : "寫下今天發生的精彩故事吧..."} value={diaryContent} onChange={(e) => setDiaryContent(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-color)', color: 'var(--text-main)', boxSizing: 'border-box', lineHeight: '1.6' }} />
+            {/* 🎯 3. 日記內容 Label 點亮 */}
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '8px', 
+              fontWeight: 'bold',
+              color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#ffffff' : 'var(--text-main)'
+            }}>
+              日記內容
+            </label>
+            {/* 🎯 4. 內容輸入框：同步防禦 */}
+            <textarea 
+              rows={10} 
+              placeholder={theme === 'gd' ? "揮灑你的不羈與感性，像在牆上塗鴉一樣，寫下今天最不隨波逐流的真實故事吧！" : theme === 'ive' ? "讓字句閃爍鑽石般的光澤，紀錄今天那些優雅、精采且不負時光的璀璨生活碎片..." : theme === 'babymonster' ? "踏著最凶狠的重低音鼓點，寫下今天那些野蠻生長、充滿野心與驚艷全場的高能瞬間！" : "寫下今天發生的精彩故事吧..."} 
+              value={diaryContent} 
+              onChange={(e) => setDiaryContent(e.target.value)} 
+              style={{ 
+                width: '100%', 
+                padding: '14px', 
+                borderRadius: '8px', 
+                border: '1px solid var(--border)', 
+                background: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? 'rgba(255,255,255,0.1)' : 'var(--bg-color)', 
+                color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#ffffff' : 'var(--text-main)', 
+                boxSizing: 'border-box', 
+                lineHeight: '1.6' 
+              }} 
+            />
           </div>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+              
+              {/* 🎯 5. 設為秘密日記勾選文字點亮 */}
+              <label style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                fontSize: '14px',
+                fontWeight: '600',
+                color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#ffffff' : 'var(--text-main)'
+              }}>
                 <input type="checkbox" checked={isSecret} onChange={(e) => {
                   const checked = e.target.checked
                   setIsSecret(checked)
@@ -492,10 +571,33 @@ function App() {
                   }
                 }} /> 設為秘密日記
               </label>
+
+              {/* 🎯 6. 秘密日記密碼輸入框防禦 */}
               {isSecret && (
-                <input type="password" placeholder="設定密碼以保護此日記" value={diaryPassword} onChange={(e) => setDiaryPassword(e.target.value)} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)' }} />
+                <input 
+                  type="password" 
+                  placeholder="設定密碼以保護此日記" 
+                  value={diaryPassword} 
+                  onChange={(e) => setDiaryPassword(e.target.value)} 
+                  style={{ 
+                    padding: '8px 12px', 
+                    borderRadius: '8px', 
+                    border: '1px solid var(--border)',
+                    background: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? 'rgba(255,255,255,0.15)' : 'var(--bg-color)', 
+                    color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#ffffff' : 'var(--text-main)'
+                  }} 
+                />
               )}
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+
+              {/* 🎯 7. 設為公開日記勾選文字點亮 */}
+              <label style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                fontSize: '14px',
+                fontWeight: '600',
+                color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#ffffff' : 'var(--text-main)'
+              }}>
                 <input type="checkbox" checked={isPublic} onChange={(e) => {
                   const checked = e.target.checked
                   setIsPublic(checked)
@@ -936,7 +1038,22 @@ function App() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '12px', color: 'var(--text-sub)', marginBottom: '8px' }}>✍️ {diary.author || '匿名使用者'}</div>
-                      <h3 style={{ fontSize: '18px', margin: '0 0 8px 0', fontWeight: '700' }}>{diary.title}</h3>
+                      
+                      {/* 🎯 1. 標題智慧色彩防禦：四大暗色主題強行亮白字！ */}
+                      <h3 style={{ 
+                        fontSize: '18px', 
+                        margin: '0 0 8px 0', 
+                        fontWeight: '700',
+                        /* 🎨 核心修正：如果是 dark 底主題（含 GD），字體變純白；其餘淺色主題用預設深色字 */
+                        color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') 
+                          ? '#ffffff' 
+                          : 'var(--text-main)',
+                        textShadow: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd')
+                          ? '0 1px 4px rgba(0,0,0,0.5)'
+                          : 'none',
+                        transition: 'color 0.3s ease'
+                      }}>{diary.title}</h3>
+                      
                       <div style={{ fontSize: '12px', color: 'var(--text-sub)', marginBottom: '12px' }}>📅 {diary.date}</div>
                     </div>
                     <span style={{
@@ -949,8 +1066,30 @@ function App() {
                     }}>{diary.mood}</span>
                   </div>
                   <p style={{ fontSize: '14px', color: 'var(--text-main)', margin: 0, lineHeight: '1.6', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>{diary.content}</p>
+                  
                   <div style={{ marginTop: '12px' }}>
-                    <button onClick={() => handleViewDiary(diary)} style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>閱讀完整日記</button>
+                    {/* 🎯 2. 「閱讀完整日記」按鈕防禦：在 GD 主題下強制變黑字！ */}
+                    <button 
+                      onClick={() => handleViewDiary(diary)} 
+                      style={{ 
+                        padding: '8px 16px', 
+                        borderRadius: '8px', 
+                        border: 'none', 
+                        background: 'var(--accent)', 
+                        /* 🎨 雙重防禦：gd 變黑字，其餘主題維持白字 */
+                        color: theme === 'gd' ? '#000000 !important' : '#ffffff', 
+                        cursor: 'pointer', 
+                        fontWeight: '900', // 加粗增加可讀性
+                        fontSize: '13px',
+                        transition: 'all 0.2s ease'
+                      }}
+                      /* 💡 注入底層保險，確保 GD 黃色按鈕的文字絕對是黑色的 */
+                      ref={(el) => {
+                        if (el) el.style.setProperty('color', theme === 'gd' ? '#000000' : '#ffffff', 'important');
+                      }}
+                    >
+                      閱讀完整日記
+                    </button>
                   </div>
                 </div>
               ))}
@@ -982,37 +1121,98 @@ function App() {
   }
 
   if (currentView === 'register' || currentView === 'login') {
-    return (
-      <>
-        {/* 💡 在這裡悄悄綁定 handleLogout，讓 TypeScript 知道你有在使用它，並把它隱藏起來不影響視覺 */}
-        <div style={{ display: 'none' }}>
-          <button onClick={handleLogout}>隱藏的登出觸發器</button>
-        </div>
+  return (
+    /* 🎯 終極全螢幕背景外盒：直接當作最外層，把所有人包進去！徹底吞噬 BABYMONSTER 下方的白底！ */
+    <div style={{
+      minHeight: '100vh',
+      width: '100%',
+      margin: 0,
+      padding: 0,
+      boxSizing: 'border-box',
+      /* 🎨 動態同步大背景底色：深色主題一路黑到底，讓下方白條無所遁形 */
+      background: theme === 'blackpink' 
+        ? '#050207' 
+        : theme === 'babymonster' 
+          ? '#0a0508' // 完美貼合 BABYMONSTER 應援背景色！
+          : theme === 'aespa' 
+            ? '#050714' 
+            : theme === 'gd' 
+              ? '#f4f1ea' 
+              : theme === 'ive' 
+                ? '#f0f4f8' 
+                : theme === 'kpop' 
+                  ? '#f9f6f0' 
+                  : 'var(--global-bg)',
+      transition: 'background 0.3s ease'
+    }}>
+      
+      {/* 💡 在這裡悄悄綁定 handleLogout，隱藏起來不影響視覺 */}
+      <div style={{ display: 'none' }}>
+        <button onClick={handleLogout}>隱藏的登出觸發器</button>
+      </div>
 
-        {renderNavbar()}
-        <div style={{ maxWidth: '400px', margin: '80px auto', padding: '40px', background: 'var(--bg-color)', border: '1px solid var(--border)', borderRadius: '16px' }}>
+      {renderNavbar()}
+
+      {/* 📦 登入/註冊卡片置中容器（加上 padding 讓卡片上下有舒適的懸浮留白） */}
+      <div style={{ padding: '80px 20px' }}>
+        <div style={{
+          maxWidth: '400px',
+          margin: '0 auto', // 卡片水平置中
+          padding: '40px',
+          background: theme === 'kpop' ? 'linear-gradient(180deg, rgba(255, 246, 250, 0.98), rgba(255, 224, 236, 0.98))' : theme === 'blackpink' ? 'rgba(12, 5, 15, 0.96)' : theme === 'aespa' ? 'rgba(8, 14, 32, 0.96)' : theme === 'gd' ? 'rgba(16, 14, 12, 0.96)' : theme === 'ive' ? 'rgba(247, 249, 255, 0.98)' : theme === 'babymonster' ? 'rgba(18, 7, 12, 0.96)' : 'var(--bg-color)',
+          border: theme === 'kpop' ? '1px solid rgba(255, 64, 129, 0.2)' : '1px solid var(--border)',
+          borderRadius: '16px',
+          boxShadow: theme === 'kpop' ? '0 24px 80px rgba(255, 64, 129, 0.12)' : '0 24px 60px rgba(0,0,0,0.06)'
+        }}>
           {currentView === 'register' ? (
             <form onSubmit={handleRegisterSubmit}>
-              <h2>建立您的帳號</h2>
-              <input type="text" placeholder="使用者姓名" value={registerName} onChange={(e) => setRegisterName(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)' }} />
-              <input type="email" placeholder="Email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)' }} />
-              <input type="password" placeholder="設定密碼" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)' }} />
+              <h2 style={{ color: 'var(--text-main)', marginBottom: '24px' }}>建立您的帳號</h2>
+              <input type="text" placeholder="使用者姓名" value={registerName} onChange={(e) => setRegisterName(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
+              <input type="email" placeholder="Email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
+              <input type="password" placeholder="設定密碼" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
               <button type="submit" style={{ width: '100%', padding: '14px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold' }}>註冊帳號</button>
               <p onClick={() => setCurrentView('login')} style={{ color: 'var(--accent)', textAlign: 'center', cursor: 'pointer', marginTop: '16px' }}>已有帳號？前往登入</p>
             </form>
           ) : (
             <form onSubmit={handleLoginSubmit}>
-              <h2>歡迎回來</h2>
-              <input type="email" placeholder="您的 Email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)' }} />
-              <input type="password" placeholder="輸入密碼" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)' }} />
-              <button type="submit" style={{ width: '100%', padding: '14px', background: 'var(--text-main)', color: 'var(--bg-color)', border: 'none', borderRadius: '8px', fontWeight: 'bold' }}>登入系統</button>
-              <p onClick={() => setCurrentView('register')} style={{ color: 'var(--accent)', textAlign: 'center', cursor: 'pointer', marginTop: '16px' }}>還沒有帳號？現在註冊</p>
+              <h2 style={{ color: 'var(--text-main)', marginBottom: '24px' }}>歡迎回來</h2>
+              <input type="email" placeholder="您的 Email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
+              <input type="password" placeholder="輸入密碼" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
+              
+              <button type="submit" style={{ 
+                width: '100%', 
+                padding: '14px', 
+                background: 'var(--accent)', 
+                color: theme === 'gd' ? '#000000 !important' : '#ffffff', 
+                border: 'none', 
+                borderRadius: '8px', 
+                fontSize: '16px', 
+                fontWeight: '900' 
+              }}
+              ref={(el) => {
+                if (el) el.style.setProperty('color', theme === 'gd' ? '#000000' : '#ffffff', 'important');
+              }}>
+                登入系統
+              </button>
+
+              <p onClick={() => setCurrentView('register')} style={{ 
+                color: 'var(--accent)', 
+                textAlign: 'center', 
+                cursor: 'pointer', 
+                marginTop: '16px',
+                fontWeight: theme === 'gd' ? '700' : 'normal', 
+                letterSpacing: '0.5px'
+              }}>
+                還沒有帳號？現在註冊
+              </p>
             </form>
           )}
         </div>
-      </>
-    )
-  }
+      </div>
+
+    </div> /* 👈 整個頁面的大盒子完美閉合 */
+  )
+}
 
   return (
     <>
@@ -1035,12 +1235,13 @@ function App() {
                   : theme === 'blackpink'
                     ? `linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(20,20,20,0.85)), url(${blackpinkBg})`
                     : theme === 'kpop'
-                      ? `linear-gradient(to bottom, rgba(255,235,240,0.65), rgba(245,215,255,0.82)), url(${twiceAllMembersBg})`
+                      ? `linear-gradient(180deg, rgba(255, 247, 251, 0.92) 0%, rgba(255, 233, 242, 0.92) 50%, rgba(255, 213, 232, 0.96) 100%), url(${twiceAllMembersBg})`
                       : 'var(--bg-pattern)',
           backgroundSize: 'cover',
           backgroundPosition: 'center center',
           backgroundRepeat: 'no-repeat',
-          minHeight: '75vh',
+          minHeight: theme === 'gd' ? '100vh' : '75vh',
+          backgroundAttachment: theme === 'gd' ? 'fixed' : 'scroll',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -1272,20 +1473,101 @@ function App() {
         </div>
       </section>
 
-      {/* 📜 雲端歷史日記列表區 */}
+     {/* 📜 雲端歷史日記列表區 */}
       <section style={{ padding: '80px 20px' }}>
         <div style={{ maxWidth: '750px', margin: '0 auto', position: 'relative' }}>
-          <h2 style={{ fontSize: '26px', marginBottom: '8px', textAlign: 'center', fontWeight: '700' }}>
-            {theme === 'gd' ? '⚡ GD 獨家不羈文字唱片軌跡' : theme === 'ive' ? '🎀 IVE 頂級鑽石大千金生活圖鑑' : theme === 'babymonster' ? '🩸 BABYMONSTER 狂暴爪痕文字熔爐' : '📜 您的歷史日記列表'}
+          
+          {/* ✨ 1. 大標題優化：GD、TWICE、IVE 等淺色底一律用質感深藍灰字 #2c3e50 */}
+          <h2 style={{ 
+            fontSize: '26px', 
+            marginBottom: '8px', 
+            textAlign: 'center', 
+            fontWeight: '700',
+            /* 🎨 核心修正：加入 'gd'，讓四大深色背景主題一律強行亮白字！ */
+            color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#fff' : '#2c3e50',
+            /* ✨ 專屬光暈防禦：如果是 gd 主題，就綻放強烈叛逆的黃色霓虹光暈！其餘深色用白光 */
+            textShadow: theme === 'gd'
+              ? '0 2px 15px rgba(255, 235, 59, 0.6), 0 1px 4px rgba(255, 235, 59, 0.4)'
+              : (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa') 
+                ? '0 2px 12px rgba(255,255,255,0.3)' 
+                : '0 1px 2px rgba(0,0,0,0.05)',
+            transition: 'all 0.3s ease'
+          }}>
+            {theme === 'gd' ? '⚡ GD 獨家不羈文字唱片軌跡' 
+              : theme === 'ive' ? '🎀 IVE 頂級鑽石大千金生活圖鑑' 
+              : theme === 'babymonster' ? '🩸 BABYMONSTER 狂暴爪痕文字熔爐' 
+              : theme === 'kpop' ? '🍭 TWICE 萬千星芒璀璨時光編織紀錄' 
+              : theme === 'blackpink' ? '🔥 BLACKPINK 統治全域女王編年史' 
+              : theme === 'aespa' ? '🪐 aespa 曠野次元超現實記憶載體' 
+              : '📜 您的歷史日記列表'}
           </h2>
-          <p style={{ color: 'var(--text-sub)', textAlign: 'center', fontSize: '14px', marginBottom: '35px' }}>
-            {theme === 'gd' ? '打破常規的雲端美學矩陣已載入' : theme === 'ive' ? '高奢端莊的雲端紀錄系統，時刻閃耀著鑽石般的璀璨色澤' : '從雲端資料庫即時拉取的個人紀錄'}
+
+          {/* ✨ 2. 副標題優化：GD 也維持清晰的深灰色字 */}
+          <p style={{ 
+            color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa') ? 'rgba(255, 255, 255, 0.8)' : '#666', 
+            textAlign: 'center', 
+            fontSize: '14px', 
+            marginBottom: '35px',
+            transition: 'all 0.3s ease'
+          }}>
+            {theme === 'gd' ? '打破常規的雲端美學矩陣已載入' 
+             : theme === 'ive' ? '高奢端莊的雲端紀錄系統，時刻閃耀著鑽石般的璀璨色澤' 
+             : theme === 'babymonster' ? '怪物新人的狂暴能量已注入，正在同步遠端靈魂數據'
+             : theme === 'kpop' ? '點亮專屬的 Candy Bong，將我們共同的 Shining Moment 永久封存' 
+             : theme === 'blackpink' ? 'In Your Area！以粉黑之名，高調宣示妳的專屬統治紀錄' 
+             : theme === 'aespa' ? 'Su-Su-Supernova！跨越平行的 Real World，解碼來自 SYNK 的記憶碎片' 
+             : '從雲端資料庫即時拉取的個人紀錄'}
           </p>
 
           {!loggedInUser ? (
-            <div style={{ textAlign: 'center', padding: '50px 30px', background: 'var(--bg-color)', borderRadius: '16px', border: '2px dashed var(--border)', color: 'var(--text-sub)' }}>
-              <p style={{ fontSize: '16px', marginBottom: '16px' }}>目前處於訪客狀態，請先登入帳號來解鎖與查看您的歷史雲端日記！</p>
-              <button onClick={() => setCurrentView('login')} style={{ padding: '10px 24px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>立刻前往登入</button>
+            /* 🔒 3. 訪客提示卡片 */
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '50px 30px', 
+              background: (theme === 'blackpink' || theme === 'aespa' || theme === 'babymonster') 
+                ? 'rgba(0, 0, 0, 0.4)' 
+                : 'rgba(255, 255, 255, 0.6)', 
+              borderRadius: '16px', 
+              border: (theme === 'blackpink' || theme === 'aespa' || theme === 'babymonster')
+                ? '2px dashed rgba(255,255,255,0.2)'
+                : '2px dashed rgba(0,0,0,0.1)', 
+              color: (theme === 'blackpink' || theme === 'aespa' || theme === 'babymonster') 
+                ? '#ffffff' 
+                : '#334155',
+              backdropFilter: 'blur(8px)', 
+              transition: 'all 0.3s ease' 
+            }}>
+              <p style={{ 
+                fontSize: '16px', 
+                marginBottom: '16px', 
+                fontWeight: '600',
+                textShadow: (theme === 'blackpink' || theme === 'aespa' || theme === 'babymonster')
+                  ? '0 2px 8px rgba(255,255,255,0.2)'
+                  : 'none'
+              }}>
+                目前處於訪客狀態，請先登入帳號來解鎖與查看您的歷史雲端日記！
+              </p>
+              
+             {/* 🎯 強制權重防禦：硬把字體壓成黑色！ */}
+              <button onClick={() => setCurrentView('login')} style={{ 
+                padding: '12px 28px', // 稍微加大一點更好點擊
+                background: 'var(--accent)', 
+                /* 🎨 使用 css 終極遮罩技巧，如果 theme === 'gd'，強制給予 !important 黑色 */
+                color: theme === 'gd' ? '#000000 !important' : '#ffffff', 
+                border: 'none', 
+                borderRadius: '8px', 
+                cursor: 'pointer', 
+                fontSize: '16px', // 字體放大到 16px
+                fontWeight: '900', // 爆粗體
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                transition: 'all 0.3s ease'
+              }}
+              /* 💡 雙重保險：萬一行內 style 的 !important 沒反應，我們用 JS 直接在元素渲染時硬塞顏色 */
+              ref={(el) => {
+                if (el) el.style.setProperty('color', theme === 'gd' ? '#000000' : '#ffffff', 'important');
+              }}>
+                立刻前往登入
+              </button>
             </div>
           ) : myDiaries.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '50px 30px', background: 'var(--bg-color)', borderRadius: '16px', border: '2px dashed var(--border)', color: 'var(--text-sub)' }}>
@@ -1305,13 +1587,46 @@ function App() {
                       fontWeight: 'bold'
                     }}>{diary.mood}</span>
                   </div>
-                  <h3 style={{ fontSize: '20px', margin: '0 0 12px 0', fontWeight: '700' }}>{diary.title} {diary.isSecret ? <span style={{marginLeft: '8px', fontSize: '14px'}}>🔒</span> : null}</h3>
+                 {/* 🎯 1. 日記標題色彩防禦：點亮 twice 🔒 和 煩 的地方！ */}
+                  <h3 style={{ 
+                    fontSize: '20px', 
+                    margin: '0 0 12px 0', 
+                    fontWeight: '700',
+                    /* 🎨 四大深色主題強制變白字，其餘主題維持原色 */
+                    color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') 
+                      ? '#ffffff' 
+                      : 'var(--text-main)',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    {diary.title} {diary.isSecret ? <span style={{marginLeft: '8px', fontSize: '14px'}}>🔒</span> : null}
+                  </h3>
+
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                     <div style={{ flex: 1 }}>
                       {diary.isSecret ? (
-                        <p style={{ fontSize: '16px', color: 'var(--text-sub)', margin: 0 }}>🔒 這是一篇秘密日記，請按「查看」並輸入密碼以檢視內容。</p>
+                        /* 🎯 2. 秘密日記提示文字防禦：黑底時變成清晰的淡灰色，淺底維持原樣 */
+                        <p style={{ 
+                          fontSize: '16px', 
+                          margin: 0,
+                          color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') 
+                            ? 'rgba(255, 255, 255, 0.7)' 
+                            : 'var(--text-sub)',
+                          transition: 'all 0.3s ease'
+                        }}>
+                          🔒 這是一篇秘密日記，請按「查看」並輸入密碼以檢視內容。
+                        </p>
                       ) : (
-                        <p style={{ fontSize: '16px', color: 'var(--text-sub)', margin: 0, whiteSpace: 'pre-wrap', lineHeight: '1.7' }}>{diary.content}</p>
+                        /* 🎯 3. 一般日記內文防禦：黑底時文字也要變亮白，不然內文會看不清！ */
+                        <p style={{ 
+                          fontSize: '16px', 
+                          margin: 0, 
+                          whiteSpace: 'pre-wrap', 
+                          lineHeight: '1.7',
+                          color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') 
+                            ? '#e2e8f0' // 高級的暖白灰色 
+                            : 'var(--text-sub)',
+                          transition: 'all 0.3s ease'
+                        }}>{diary.content}</p>
                       )}
                     </div>
 
