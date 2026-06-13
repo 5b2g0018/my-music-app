@@ -1,4 +1,4 @@
-﻿/* ==================== 1. 主題變數設定 ==================== */
+/* ==================== 1. 主題變數設定 ==================== */
 :root,
 [data-theme="classic"] {
   --bg-color: #fff;
@@ -20,48 +20,112 @@
   --accent: #ff7597;
   --border: #ffd0da;
   --font-family: 'Fredoka One', 'Noto Sans TC', sans-serif;
-  /* 🧸 可愛風背景：愛心與小圓點鋪滿 */
   --bg-pattern: radial-gradient(#ffb3c6 10%, transparent 10%), radial-gradient(#ffb3c6 10%, transparent 10%);
   --bg-pattern-size: 40px 40px;
   --bg-pattern-pos: 0 0, 20px 20px;
 }
 
-/* 🎮 麥塊方塊像素風 (Minecraft Pixel Style) */
 [data-theme="anime"] {
   --bg-color: #7c9d61;
-  /* 麥塊經典草地綠 */
   --bg-sec: #866043;
-  /* 經典泥土木頭棕 */
   --text-main: #ffffff;
-  /* 白色純淨字 */
   --text-sub: #f1ebd9;
-  /* 沙子淺黃色內文 */
   --accent: #55ffff;
-  /* 附魔鑽石藍（焦點色） */
   --border: #4a3321;
-  /* 泥土深色邊框 */
   --font-family: 'Courier New', 'Press Start 2P', 'Noto Sans TC', monospace;
-  /* 像素感等寬字體 */
-
-  /* 🧱 麥塊背景：打造成像素方塊格子紋理 */
   --bg-pattern: linear-gradient(rgba(0, 0, 0, 0.15) 2px, transparent 2px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.15) 2px, transparent 2px);
   --bg-pattern-size: 20px 20px;
-  /* 緊密的像素方塊感 */
   --bg-pattern-pos: center center;
 }
 
 [data-theme="kpop"] {
-  --bg-color: #ffffff;
-  --bg-sec: #fff0fa;
-  --text-main: #d0006f;
-  /* 亮眼的 TWICE 專屬蜜桃粉紅 */
-  --text-sub: #7b1fa2;
-  --accent: #ff4081;
-  --border: #ffd1e8;
+  --bg-color: #fff2f9;
+  --bg-sec: #ffe6f4;
+  --text-main: #7d1a4d;
+  --text-sub: #bf5e8d;
+  --accent: #ff2477;
+  --border: #ffdae8;
   --font-family: 'Helvetica Neue', sans-serif;
-  --bg-pattern: none;
-  /* 清空這邊，交給 App.tsx 來渲染圖片 */
+  --bg-pattern: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.92) 0%, transparent 12%),
+    radial-gradient(circle at 80% 12%, rgba(255, 255, 255, 0.8) 0%, transparent 14%),
+    radial-gradient(circle at 60% 80%, rgba(255, 255, 255, 0.7) 0%, transparent 12%),
+    linear-gradient(135deg, rgba(255, 246, 250, 0.92), rgba(255, 216, 235, 0.94));
+  --bg-pattern-size: 160px 160px, 200px 200px, 180px 180px, auto;
+  --bg-pattern-pos: 0 0, 50px 30px, 100px 120px, center;
+}
+
+[data-theme="blackpink"] {
+  --bg-color: #100714;
+  --bg-sec: rgba(255, 255, 255, 0.08);
+  --text-main: #fbeefe;
+  --text-sub: rgba(255, 255, 255, 0.75);
+  --accent: #ff2fb8;
+  --border: rgba(255, 47, 184, 0.22);
+  --font-family: 'Inter', sans-serif;
+  --bg-pattern: radial-gradient(circle at 20% 20%, rgba(255, 47, 184, 0.16) 0%, transparent 15%),
+    radial-gradient(circle at 80% 15%, rgba(255, 255, 255, 0.12) 0%, transparent 16%),
+    linear-gradient(135deg, rgba(16, 7, 20, 0.96), rgba(9, 3, 14, 0.9));
+  --bg-pattern-size: 180px 180px, 220px 220px, auto;
+  --bg-pattern-pos: 0 0, 80px 40px, center;
+}
+
+[data-theme="aespa"] {
+  --bg-color: #040816;
+  --bg-sec: #071426;
+  --text-main: #d7f9ff;
+  --text-sub: #8ae4ff;
+  --accent: #62f0ff;
+  --border: #1d3c5c;
+  --font-family: 'Inter', sans-serif;
+  --bg-pattern: radial-gradient(circle at 30% 15%, rgba(98, 240, 255, 0.18) 0%, transparent 14%),
+    radial-gradient(circle at 75% 10%, rgba(255, 255, 255, 0.1) 0%, transparent 15%),
+    linear-gradient(180deg, rgba(4, 8, 22, 0.95), rgba(5, 10, 28, 0.94));
+  --bg-pattern-size: 160px 160px, 220px 220px, auto;
+  --bg-pattern-pos: 10px 10px, 90px 40px, center;
+}
+
+[data-theme="gd"] {
+  --bg-color: #0d0b0a;
+  --bg-sec: #171211;
+  --text-main: #f8e75f;
+  --text-sub: #d8c58c;
+  --accent: #ffee75;
+  --border: #3a2f28;
+  --font-family: 'Inter', sans-serif;
+  --bg-pattern: radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.08) 0%, transparent 12%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  --bg-pattern-size: 80px 80px, 40px 40px, 40px 40px;
+  --bg-pattern-pos: 0 0, 0 0, 20px 20px;
+}
+
+[data-theme="ive"] {
+  --bg-color: #f7f9ff;
+  --bg-sec: #eef2ff;
+  --text-main: #1a1e31;
+  --text-sub: #6b7280;
+  --accent: #5b86ff;
+  --border: #d9e2ff;
+  --font-family: 'Inter', sans-serif;
+  --bg-pattern: radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.92) 0%, transparent 14%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(233, 239, 255, 0.88));
+  --bg-pattern-size: 180px 180px, auto;
+  --bg-pattern-pos: 0 0, center;
+}
+
+[data-theme="babymonster"] {
+  --bg-color: #10050b;
+  --bg-sec: #1b0912;
+  --text-main: #ffe7f0;
+  --text-sub: #f6abc8;
+  --accent: #ff2f7f;
+  --border: #5b0c22;
+  --font-family: 'Inter', sans-serif;
+  --bg-pattern: radial-gradient(circle at 20% 20%, rgba(255, 47, 127, 0.14) 0%, transparent 14%),
+    linear-gradient(135deg, rgba(18, 2, 8, 0.94), rgba(8, 0, 10, 0.98));
+  --bg-pattern-size: 180px 180px, auto;
+  --bg-pattern-pos: 0 0, center;
 }
 
 /* ==================== 2. 全域基礎與背景圖案注入 ==================== */
@@ -74,6 +138,26 @@ body {
   font-family: var(--font-family);
   margin: 0;
   transition: background 0.3s ease, color 0.3s ease;
+}
+
+select,
+select option,
+input,
+textarea,
+button {
+  color: var(--text-main) !important;
+  background: var(--bg-sec);
+}
+
+select {
+  border: 1px solid var(--border);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+select option {
+  background: var(--bg-color) !important;
+  color: var(--text-main) !important;
 }
 
 /* 讓整頁的主要大區塊都帶有動態花紋背景 */
@@ -140,6 +224,7 @@ section {
   display: flex;
   gap: 16px;
   justify-content: center;
+  margin-top: 20px;
 }
 
 .btn-hero {
@@ -181,4 +266,381 @@ footer {
 .fade-up.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* ==================== 3. 📸 粉絲相簿 (Gallery) ==================== */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.gallery-card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg-sec);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  aspect-ratio: 1;
+  cursor: pointer;
+}
+
+.gallery-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+  color: white;
+  padding: 12px 10px 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.gallery-card:hover .gallery-overlay {
+  opacity: 1;
+}
+
+/* ==================== 4. 📅 追星行事曆 (Calendar) ==================== */
+.calendar-container {
+  background: var(--bg-color);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.calendar-grid-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: bold;
+  font-size: 13px;
+  color: var(--text-sub);
+  margin-bottom: 8px;
+  gap: 4px;
+}
+
+.calendar-grid-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day-cell {
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  position: relative;
+  background: var(--bg-sec);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.calendar-day-cell:hover {
+  background: var(--bg-color);
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+
+.calendar-day-cell.other-month {
+  opacity: 0.35;
+}
+
+.calendar-day-cell.today {
+  border: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-sec));
+}
+
+.calendar-day-num {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text-main);
+}
+
+.calendar-day-dots {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.calendar-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.calendar-dot.diary { background: var(--accent); }
+.calendar-dot.concert { background: #ff1744; }
+.calendar-dot.birthday { background: #ff80ab; }
+.calendar-dot.comeback { background: #00e5ff; }
+.calendar-dot.other { background: #a855f7; }
+
+/* ==================== 5. 💬 應援互動 (Likes & Comments) ==================== */
+.like-comment-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.interaction-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-sub);
+  transition: all 0.2s ease;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.interaction-btn:hover,
+.interaction-btn.liked {
+  background: var(--bg-sec);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.interaction-btn.liked {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.comments-panel {
+  margin-top: 12px;
+  padding: 14px;
+  background: var(--bg-sec);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.comment-item {
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 8px 10px;
+  background: var(--bg-color);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.comment-author {
+  font-weight: 700;
+  color: var(--accent);
+  margin-right: 6px;
+}
+
+.comment-date {
+  font-size: 11px;
+  color: var(--text-sub);
+  margin-left: 6px;
+  opacity: 0.7;
+}
+
+.comment-input-container {
+  display: flex;
+  gap: 8px;
+}
+
+.comment-input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  outline: none;
+  background: var(--bg-color);
+  color: var(--text-main) !important;
+  transition: border-color 0.2s;
+}
+
+.comment-input:focus {
+  border-color: var(--accent);
+}
+
+.comment-submit-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: white !important;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 13px;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.comment-submit-btn:hover { opacity: 0.85; }
+
+/* ==================== 6. ⚙️ 個人設定 Modal + Bias ==================== */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeInOverlay 0.2s ease;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background: var(--bg-color);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  width: 92%;
+  max-width: 460px;
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  animation: slideUpModal 0.25s ease;
+}
+
+@keyframes slideUpModal {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Bias icon badge in navbar */
+.bias-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-sec);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.bias-badge:hover {
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+
+/* ==================== 7. 📊 K-Pop Wrapped Chart Bars ==================== */
+.wrapped-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.wrapped-bar-label {
+  width: 120px;
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.wrapped-bar-track {
+  flex: 1;
+  height: 10px;
+  background: rgba(128,128,128,0.15);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.wrapped-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  background: var(--accent);
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wrapped-bar-count {
+  font-size: 12px;
+  font-weight: 700;
+  width: 36px;
+  text-align: right;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* ==================== 8. Diary Card Enhancements ==================== */
+.diary-card {
+  background: var(--bg-color);
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.diary-card:hover {
+  box-shadow: 0 6px 24px rgba(0,0,0,0.09);
+  transform: translateY(-2px);
+}
+
+.diary-photo {
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-top: 12px;
+  border: 1px solid var(--border);
 }
