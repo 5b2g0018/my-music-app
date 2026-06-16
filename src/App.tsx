@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
 // 💡 引入音樂 App Firebase 設定
@@ -23,6 +23,14 @@ const iveBg = "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80
 // 👹 BABYMONSTER 怪物新人大圖（充滿地下重工業嘻哈、煙霧與暗黑美式街頭感）
 const babymonsterBg = "https://images.unsplash.com/photo-1557672172-298e090bd0f1?q=80&w=1500&auto=format&fit=crop"
 
+// 💜 BTS 主題大圖 (防彈少年團深紫色星夜/舞台視覺)
+const btsBg = "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=1500&auto=format&fit=crop"
+
+// 💎 SEVENTEEN 主題大圖 (雙官色 Rose Quartz & Serenity 寧靜粉藍粉雲/晚霞)
+const seventeenBg = "https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=1500&auto=format&fit=crop"
+
+// 🌸 Anime 日本動漫主題大圖 (新海誠風格蔚藍天空與粉櫻綻放)
+const animeBg = "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1500&auto=format&fit=crop"
 interface Comment {
   author: string
   text: string
@@ -47,15 +55,51 @@ interface DiaryItem {
   likedBy?: string[]
   comments?: Comment[]
   bias?: string
+  bgm?: string
+}
+
+interface TimeCapsuleItem {
+  id: string
+  userEmail: string
+  content: string
+  unlockDate: string
+  createdAt: number
+  isOpened: boolean
+}
+
+interface CheerItem {
+  id: string
+  userEmail: string
+  author: string
+  content: string
+  createdAt: number
+}
+
+interface CountdownEventItem {
+  id: string
+  userEmail: string
+  title: string
+  targetDate: string
+  createdAt: number
+}
+
+interface ScheduleItem {
+  id: string
+  userEmail: string
+  title: string
+  date: string
+  type: 'comeback' | 'concert' | 'birthday' | 'show' | 'other'
+  createdAt: number
 }
 
 function App() {
-  const [currentView, setCurrentView] = useState<'home' | 'editor' | 'register' | 'login' | 'capsule' | 'review' | 'publicWall'>('home')
-  // 🛠️ 擴充主題類型：加入 gd, ive, babymonster
-  const [theme, setTheme] = useState<'classic' | 'blackpink' | 'aespa' | 'kpop' | 'gd' | 'ive' | 'babymonster'>('classic')
+  const [currentView, setCurrentView] = useState<'home' | 'editor' | 'register' | 'login' | 'capsule' | 'review' | 'publicWall' | 'viewer'>('home')
+  // 🛠️ 擴充主題類型：加入 bts, seventeen, anime
+  const [theme, setTheme] = useState<'classic' | 'blackpink' | 'aespa' | 'kpop' | 'gd' | 'ive' | 'babymonster' | 'bts' | 'seventeen' | 'anime'>('classic')
   const [diaryTitle, setDiaryTitle] = useState('')
   const [diaryContent, setDiaryContent] = useState('')
   const [diaryMood, setDiaryMood] = useState('😊 開心')
+  const [diaryBgm, setDiaryBgm] = useState('')
   const [myDiaries, setMyDiaries] = useState<DiaryItem[]>([])
   const [isSecret, setIsSecret] = useState(false)
   const [diaryPassword, setDiaryPassword] = useState('')
@@ -77,10 +121,296 @@ function App() {
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
 
-  const [loggedInUser, setLoggedInUser] = useState<string | null>(null)
-  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [loggedInUser, setLoggedInUser] = useState<string | null>(() => localStorage.getItem('loggedInUser'))
+  const [userEmail, setUserEmail] = useState<string | null>(() => localStorage.getItem('userEmail'))
   const [publicDiaries, setPublicDiaries] = useState<DiaryItem[]>([])
   const [isPublic, setIsPublic] = useState(false)
+
+  // 👥 使用者名稱快取
+  const [usersCache, setUsersCache] = useState<{ [email: string]: string }>({})
+
+  // 📬 時光膠囊狀態
+  const [timeCapsules, setTimeCapsules] = useState<TimeCapsuleItem[]>([])
+
+  // ⚙️ 設定 Modal 狀態與使用者名稱修改
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const [newUsername, setNewUsername] = useState('')
+
+  // 📣 應援跑馬燈狀態
+  const [cheers, setCheers] = useState<CheerItem[]>([])
+  const [showAddCheerModal, setShowAddCheerModal] = useState(false)
+  const [newCheerContent, setNewCheerContent] = useState('')
+
+  // 📅 K-Pop 追星中控台 & 行事曆 & 倒數
+  const [schedules, setSchedules] = useState<ScheduleItem[]>([])
+  const [countdownEvents, setCountdownEvents] = useState<CountdownEventItem[]>([])
+  const [currentTime, setCurrentTime] = useState<number>(Date.now())
+  const [showAddCountdownModal, setShowAddCountdownModal] = useState(false)
+  const [newCountdownTitle, setNewCountdownTitle] = useState('')
+  const [newCountdownDate, setNewCountdownDate] = useState('')
+  const [showAddScheduleModal, setShowAddScheduleModal] = useState(false)
+  const [newScheduleTitle, setNewScheduleTitle] = useState('')
+  const [newScheduleDate, setNewScheduleDate] = useState('')
+  const [newScheduleType, setNewScheduleType] = useState<'comeback' | 'concert' | 'birthday' | 'show' | 'other'>('comeback')
+  const [expandedCapsules, setExpandedCapsules] = useState<string[]>([])
+  const toggleExpandCapsule = (id: string) => {
+    setExpandedCapsules(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
+
+  // 🔔 時光膠囊解鎖通知
+  const [unlockedNotifications, setUnlockedNotifications] = useState<TimeCapsuleItem[]>([])
+  const [activeNotificationCapsule, setActiveNotificationCapsule] = useState<TimeCapsuleItem | null>(null)
+
+  // 🔄 網頁載入時自動讀取 localStorage 保持登入狀態
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('userEmail')
+    fetchUsersCache()
+    fetchCheers()
+    fetchSchedules()
+    fetchCountdownEvents()
+    if (savedEmail) {
+      fetchUserDiaries(savedEmail)
+      fetchTimeCapsules(savedEmail)
+    } else {
+      fetchPublicDiaries()
+    }
+
+    // ⏰ 同步更新倒數時間的計時器
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now())
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const fetchCheers = async () => {
+    try {
+      const snap = await getDocs(collection(db, 'cheers'))
+      const list: CheerItem[] = []
+      snap.forEach((d) => {
+        const data = d.data()
+        list.push({
+          id: d.id,
+          userEmail: data.userEmail || '',
+          author: data.author || '匿名粉絲',
+          content: data.content || '',
+          createdAt: data.createdAt || Date.now()
+        })
+      })
+      list.sort((a, b) => b.createdAt - a.createdAt)
+      setCheers(list.slice(0, 20))
+    } catch (e) {
+      console.error('Error fetching cheers:', e)
+    }
+  }
+
+  const fetchSchedules = async () => {
+    try {
+      const snap = await getDocs(collection(db, 'schedules'))
+      let list: ScheduleItem[] = []
+      snap.forEach((d) => {
+        const data = d.data()
+        // 自動清理舊的帶有動態時間戳記的預設行程，防止資料污染
+        if (d.id.startsWith('def_sc_') && d.id.length > 10) {
+          deleteDoc(doc(db, 'schedules', d.id)).catch(console.error);
+        } else {
+          list.push({
+            id: d.id,
+            userEmail: data.userEmail || '',
+            title: data.title || '',
+            date: data.date || '',
+            type: data.type || 'other',
+            createdAt: data.createdAt || Date.now()
+          })
+        }
+      })
+
+      // 如果資料庫為空，寫入真實的預設行程資料到 Firestore
+      if (list.length === 0) {
+        const defaultSchedulesList: Omit<ScheduleItem, 'id'>[] = [
+          { title: '📺 M Countdown 音樂打歌直播', date: new Date().toISOString().split('T')[0], type: 'show', userEmail: 'system', createdAt: Date.now() },
+          { title: '💿 (G)I-DLE 新專回歸發行', date: '2026-07-06', type: 'comeback', userEmail: 'system', createdAt: Date.now() },
+          { title: '🎂 IVE 張員瑛生日慶祝特別企劃', date: '2026-08-31', type: 'birthday', userEmail: 'system', createdAt: Date.now() },
+          { title: '🎤 ATEEZ 日本新單曲發行', date: '2026-07-29', type: 'concert', userEmail: 'system', createdAt: Date.now() }
+        ];
+
+        for (let i = 0; i < defaultSchedulesList.length; i++) {
+          const docId = `def_sc_${i}`;
+          await setDoc(doc(db, 'schedules', docId), defaultSchedulesList[i]);
+          if (!list.some(x => x.id === docId)) {
+            list.push({ id: docId, ...defaultSchedulesList[i] });
+          }
+        }
+      }
+
+      list.sort((a, b) => a.date.localeCompare(b.date))
+      setSchedules(list)
+    } catch (e) {
+      console.error('Error fetching schedules:', e)
+    }
+  }
+
+  const fetchCountdownEvents = async () => {
+    try {
+      const snap = await getDocs(collection(db, 'countdown_events'))
+      let list: CountdownEventItem[] = []
+      snap.forEach((d) => {
+        const data = d.data()
+        // 自動清理舊的帶有動態時間戳記的預設倒數活動
+        if (d.id.startsWith('def_cd_') && d.id.length > 10) {
+          deleteDoc(doc(db, 'countdown_events', d.id)).catch(console.error);
+        } else {
+          list.push({
+            id: d.id,
+            userEmail: data.userEmail || '',
+            title: data.title || '',
+            targetDate: data.targetDate || '',
+            createdAt: data.createdAt || Date.now()
+          })
+        }
+      })
+
+      // 如果資料庫為空，寫入真實的預設倒數活動到 Firestore
+      if (list.length === 0) {
+        const defaultCountdownList: Omit<CountdownEventItem, 'id'>[] = [
+          { title: '🪐 aespa 日本新單曲發布倒數', targetDate: '2026-07-24T12:00', userEmail: 'system', createdAt: Date.now() },
+          { title: '💿 (G)I-DLE 夏日專輯回歸倒數', targetDate: '2026-07-06T18:00', userEmail: 'system', createdAt: Date.now() }
+        ];
+
+        for (let i = 0; i < defaultCountdownList.length; i++) {
+          const docId = `def_cd_${i}`;
+          await setDoc(doc(db, 'countdown_events', docId), defaultCountdownList[i]);
+          if (!list.some(x => x.id === docId)) {
+            list.push({ id: docId, ...defaultCountdownList[i] });
+          }
+        }
+      }
+
+      list.sort((a, b) => a.targetDate.localeCompare(b.targetDate))
+      setCountdownEvents(list)
+    } catch (e) {
+      console.error('Error fetching countdown events:', e)
+    }
+  }
+
+  const handleUpdateUsername = async () => {
+    if (!newUsername.trim()) {
+      alert('請輸入姓名喔！')
+      return
+    }
+    if (!userEmail) return
+    const emailLower = userEmail.trim().toLowerCase()
+    try {
+      await updateDoc(doc(db, 'app_users', emailLower), {
+        name: newUsername.trim()
+      })
+      localStorage.setItem('loggedInUser', newUsername.trim())
+      setLoggedInUser(newUsername.trim())
+      setUsersCache(prev => ({ ...prev, [emailLower]: newUsername.trim() }))
+      await fetchUsersCache()
+      await fetchUserDiaries(emailLower)
+      setShowSettingsModal(false)
+      alert('姓名更新成功！')
+    } catch (e) {
+      console.error('Error updating username:', e)
+      alert('更新姓名失敗')
+    }
+  }
+
+  const handleAddCheer = async () => {
+    if (!newCheerContent.trim()) {
+      alert('應援內容不能為空喔！')
+      return
+    }
+    const emailLower = (userEmail || 'anonymous@memoir.com').trim().toLowerCase()
+    const authorName = loggedInUser || '匿名應援'
+    try {
+      const cheerId = `cheer_${Date.now()}`
+      await setDoc(doc(db, 'cheers', cheerId), {
+        userEmail: emailLower,
+        author: authorName,
+        content: newCheerContent.trim(),
+        createdAt: Date.now()
+      })
+      setNewCheerContent('')
+      setShowAddCheerModal(false)
+      await fetchCheers()
+    } catch (e) {
+      console.error('Error saving cheer:', e)
+      alert('應援留言儲存失敗')
+    }
+  }
+
+  const handleSaveCountdown = async () => {
+    if (!newCountdownTitle.trim() || !newCountdownDate) {
+      alert('請填寫完整資訊！')
+      return
+    }
+    const emailLower = (userEmail || 'anonymous@memoir.com').trim().toLowerCase()
+    try {
+      const countdownId = `countdown_${Date.now()}`
+      await setDoc(doc(db, 'countdown_events', countdownId), {
+        userEmail: emailLower,
+        title: newCountdownTitle.trim(),
+        targetDate: newCountdownDate,
+        createdAt: Date.now()
+      })
+      setNewCountdownTitle('')
+      setNewCountdownDate('')
+      setShowAddCountdownModal(false)
+      await fetchCountdownEvents()
+    } catch (e) {
+      console.error('Error saving countdown event:', e)
+      alert('新增倒數失敗')
+    }
+  }
+
+  const handleDeleteCountdown = async (id: string) => {
+    if (!confirm('確定要刪除此倒數計時嗎？')) return
+    try {
+      await deleteDoc(doc(db, 'countdown_events', id))
+      await fetchCountdownEvents()
+    } catch (e) {
+      console.error(e)
+      alert('刪除失敗')
+    }
+  }
+
+  const handleSaveSchedule = async () => {
+    if (!newScheduleTitle.trim() || !newScheduleDate) {
+      alert('請填寫完整資訊！')
+      return
+    }
+    const emailLower = (userEmail || 'anonymous@memoir.com').trim().toLowerCase()
+    try {
+      const scheduleId = `schedule_${Date.now()}`
+      await setDoc(doc(db, 'schedules', scheduleId), {
+        userEmail: emailLower,
+        title: newScheduleTitle.trim(),
+        date: newScheduleDate,
+        type: newScheduleType,
+        createdAt: Date.now()
+      })
+      setNewScheduleTitle('')
+      setNewScheduleDate('')
+      setNewScheduleType('comeback')
+      setShowAddScheduleModal(false)
+      await fetchSchedules()
+    } catch (e) {
+      console.error('Error saving schedule:', e)
+      alert('新增行程失敗')
+    }
+  }
+
+  const handleDeleteSchedule = async (id: string) => {
+    if (!confirm('確定要刪除此行程嗎？')) return
+    try {
+      await deleteDoc(doc(db, 'schedules', id))
+      await fetchSchedules()
+    } catch (e) {
+      console.error(e)
+      alert('刪除失敗')
+    }
+  }
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
@@ -88,6 +418,24 @@ function App() {
     const bodyStyle = document.body.style;
     if (theme === 'gd') {
       bodyStyle.backgroundImage = `linear-gradient(to bottom, rgba(15,15,15,0.95), rgba(18,14,11,0.92)), url(${gdragonBg})`;
+      bodyStyle.backgroundSize = 'cover';
+      bodyStyle.backgroundPosition = 'center center';
+      bodyStyle.backgroundRepeat = 'no-repeat';
+      bodyStyle.backgroundAttachment = 'fixed';
+    } else if (theme === 'bts') {
+      bodyStyle.backgroundImage = `linear-gradient(to bottom, rgba(10,5,20,0.95), rgba(20,5,30,0.92)), url(${btsBg})`;
+      bodyStyle.backgroundSize = 'cover';
+      bodyStyle.backgroundPosition = 'center center';
+      bodyStyle.backgroundRepeat = 'no-repeat';
+      bodyStyle.backgroundAttachment = 'fixed';
+    } else if (theme === 'seventeen') {
+      bodyStyle.backgroundImage = `linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(240,245,255,0.82)), url(${seventeenBg})`;
+      bodyStyle.backgroundSize = 'cover';
+      bodyStyle.backgroundPosition = 'center center';
+      bodyStyle.backgroundRepeat = 'no-repeat';
+      bodyStyle.backgroundAttachment = 'fixed';
+    } else if (theme === 'anime') {
+      bodyStyle.backgroundImage = `linear-gradient(to bottom, rgba(30,30,50,0.85), rgba(20,20,40,0.88)), url(${animeBg})`;
       bodyStyle.backgroundSize = 'cover';
       bodyStyle.backgroundPosition = 'center center';
       bodyStyle.backgroundRepeat = 'no-repeat';
@@ -103,7 +451,8 @@ function App() {
 
   const fetchUserDiaries = async (email: string) => {
     try {
-      const q = query(collection(db, 'diaries'), where('userEmail', '==', email))
+      const emailLower = email.trim().toLowerCase()
+      const q = query(collection(db, 'diaries'), where('userEmail', '==', emailLower))
       const snap = await getDocs(q)
       const diariesList: DiaryItem[] = []
       snap.forEach((d) => {
@@ -119,7 +468,9 @@ function App() {
           timestamp: data.timestamp || Date.now(),
           isSecret: data.isSecret || false,
           password: data.password || undefined,
-          isPublic: data.isPublic || false
+          isPublic: data.isPublic || false,
+          bgm: data.bgm || '',
+          photo: data.photo || ''
         })
       })
       diariesList.sort((b, a) => a.timestamp - b.timestamp)
@@ -149,7 +500,9 @@ function App() {
           timestamp: data.timestamp || Date.now(),
           isSecret: data.isSecret || false,
           password: data.password || undefined,
-          isPublic: true
+          isPublic: true,
+          bgm: data.bgm || '',
+          photo: data.photo || ''
         })
       })
       publicList.sort((b, a) => a.timestamp - b.timestamp)
@@ -158,6 +511,113 @@ function App() {
       console.error(error)
     }
   }
+
+  const fetchUsersCache = async () => {
+    try {
+      const snap = await getDocs(collection(db, 'app_users'))
+      const cache: { [email: string]: string } = {}
+      snap.forEach((d) => {
+        const data = d.data()
+        if (data.email && data.name) {
+          cache[data.email.trim().toLowerCase()] = data.name.trim()
+        }
+      })
+      setUsersCache(cache)
+    } catch (e) {
+      console.error('Error fetching users cache:', e)
+    }
+  }
+
+  const fetchTimeCapsules = async (email: string) => {
+    try {
+      const emailLower = email.trim().toLowerCase()
+      const q = query(collection(db, 'time_capsules'), where('userEmail', '==', emailLower))
+      const snap = await getDocs(q)
+      const list: TimeCapsuleItem[] = []
+      snap.forEach((d) => {
+        const data = d.data()
+        list.push({
+          id: d.id,
+          userEmail: data.userEmail,
+          content: data.content,
+          unlockDate: data.unlockDate,
+          createdAt: data.createdAt || Date.now(),
+          isOpened: !!data.isOpened
+        })
+      })
+      list.sort((b, a) => b.createdAt - a.createdAt)
+      setTimeCapsules(list)
+
+      // ⏰ 檢查今日解鎖通知
+      const today = new Date()
+      const year = today.getFullYear()
+      const month = String(today.getMonth() + 1).padStart(2, '0')
+      const day = String(today.getDate()).padStart(2, '0')
+      const todayStr = `${year}-${month}-${day}`
+
+      const unlocked = list.filter(capsule => capsule.unlockDate <= todayStr && !capsule.isOpened)
+      if (unlocked.length > 0) {
+        setUnlockedNotifications(unlocked)
+        setActiveNotificationCapsule(unlocked[0])
+      }
+    } catch (error) {
+      console.error('Error fetching time capsules:', error)
+    }
+  }
+
+  const handleOpenCapsuleNotification = async (capsule: TimeCapsuleItem) => {
+    try {
+      await updateDoc(doc(db, 'time_capsules', capsule.id), {
+        isOpened: true
+      })
+      setTimeCapsules(prev => prev.map(c => c.id === capsule.id ? { ...c, isOpened: true } : c))
+      const remaining = unlockedNotifications.filter(c => c.id !== capsule.id)
+      setUnlockedNotifications(remaining)
+      if (remaining.length > 0) {
+        setActiveNotificationCapsule(remaining[0])
+      } else {
+        setActiveNotificationCapsule(null)
+      }
+      alert('已解鎖信件！您可以隨時到「時光膠囊」頁面重複閱讀這封信。')
+    } catch (e) {
+      console.error('Error opening capsule:', e)
+      setActiveNotificationCapsule(null)
+    }
+  }
+
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxDim = 800;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.7);
+          resolve(compressed);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  };
 
   const handleSaveDiary = async () => {
     if (!diaryTitle.trim() || !diaryContent.trim()) {
@@ -169,9 +629,10 @@ function App() {
       setCurrentView('login')
       return
     }
+    const emailLower = userEmail.trim().toLowerCase()
     try {
       const now = Date.now()
-      const diaryId = editingId || `${userEmail}_${now}`
+      const diaryId = editingId || `${emailLower}_${now}`
       const today = new Date()
       const dateString = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`
 
@@ -180,7 +641,7 @@ function App() {
         return
       }
       const payload: any = {
-        userEmail,
+        userEmail: emailLower,
         author: loggedInUser,
         title: diaryTitle.trim(),
         content: diaryContent.trim(),
@@ -188,7 +649,9 @@ function App() {
         date: dateString,
         timestamp: now,
         isSecret: isSecret || false,
-        isPublic: isPublic || false
+        isPublic: isPublic || false,
+        bgm: diaryBgm.trim(),
+        photo: diaryPhoto.trim()
       }
       if (isSecret && diaryPassword.trim()) payload.password = diaryPassword.trim()
 
@@ -201,7 +664,8 @@ function App() {
       }
       setDiaryTitle(''); setDiaryContent('')
       setIsSecret(false); setDiaryPassword(''); setEditingId(null); setIsPublic(false)
-      await fetchUserDiaries(userEmail)
+      setDiaryBgm(''); setDiaryPhoto('')
+      await fetchUserDiaries(emailLower)
       setCurrentView('home')
     } catch (error) {
       alert('儲存失敗，請確認 Firebase 資料庫 Rules 權限。')
@@ -212,7 +676,7 @@ function App() {
     if (!confirm('確定要刪除這篇日記嗎？此動作無法回復。')) return
     try {
       await deleteDoc(doc(db, 'diaries', id))
-      if (userEmail) await fetchUserDiaries(userEmail)
+      if (userEmail) await fetchUserDiaries(userEmail.trim().toLowerCase())
     } catch (err) {
       console.error(err)
       alert('刪除失敗')
@@ -227,13 +691,15 @@ function App() {
     setIsSecret(!!d.isSecret)
     setDiaryPassword(d.password || '')
     setIsPublic(!!d.isPublic)
+    setDiaryBgm(d.bgm || '')
+    setDiaryPhoto(d.photo || '')
     setCurrentView('editor')
   }
 
   const handleTogglePublic = async (id: string, currentPublicStatus: boolean) => {
     try {
       await updateDoc(doc(db, 'diaries', id), { isPublic: !currentPublicStatus })
-      if (userEmail) await fetchUserDiaries(userEmail)
+      if (userEmail) await fetchUserDiaries(userEmail.trim().toLowerCase())
       alert(!currentPublicStatus ? '已設為公開日記，所有人都能看到！' : '已取消公開，恢復為私人日記。')
     } catch (err) {
       console.error(err)
@@ -243,10 +709,11 @@ function App() {
 
   const handleLike = async (diary: DiaryItem) => {
     if (!userEmail) { alert('請先登入才能按讚！'); return }
-    const alreadyLiked = (diary.likedBy || []).includes(userEmail)
+    const emailLower = userEmail.trim().toLowerCase()
+    const alreadyLiked = (diary.likedBy || []).includes(emailLower)
     const newLikedBy = alreadyLiked
-      ? (diary.likedBy || []).filter(e => e !== userEmail)
-      : [...(diary.likedBy || []), userEmail]
+      ? (diary.likedBy || []).filter(e => e !== emailLower)
+      : [...(diary.likedBy || []), emailLower]
     try {
       await updateDoc(doc(db, 'diaries', diary.id), {
         likes: newLikedBy.length,
@@ -275,32 +742,74 @@ function App() {
   }
 
   const handleViewDiary = (d: DiaryItem) => {
+    const showDiary = () => {
+      setDiaryTitle(d.title)
+      setDiaryContent(d.content)
+      setDiaryMood(d.mood)
+      setDiaryBgm(d.bgm || '')
+      setDiaryPhoto(d.photo || '')
+      setIsSecret(!!d.isSecret)
+      setDiaryPassword(d.password || '')
+      setIsPublic(!!d.isPublic)
+      setCurrentView('viewer')
+    }
+
     if (d.isSecret) {
       const pw = prompt('此為秘密日記，請輸入密碼以查看內容')
       if (!pw) return
       if (pw === d.password) {
-        alert(`標題: ${d.title}\n\n${d.content}`)
+        showDiary()
       } else {
         alert('密碼錯誤')
       }
     } else {
-      alert(`標題: ${d.title}\n\n${d.content}`)
+      showDiary()
     }
   }
 
-  const handleSaveCapsule = () => {
-    if (!futureLetter.trim()) return
-    alert(`封存成功！時光膠囊將在 ${unlockDate} 解鎖。`)
-    setFutureLetter('')
-    setCurrentView('home')
+  const handleSaveCapsule = async () => {
+    if (!futureLetter.trim()) {
+      alert('請寫下你想對未來自己說的話喔！')
+      return
+    }
+    if (!userEmail) {
+      alert('請先登入帳號喔！')
+      setCurrentView('login')
+      return
+    }
+    const emailLower = userEmail.trim().toLowerCase()
+    try {
+      const capsuleId = `${emailLower}_capsule_${Date.now()}`
+      await setDoc(doc(db, 'time_capsules', capsuleId), {
+        userEmail: emailLower,
+        content: futureLetter.trim(),
+        unlockDate: unlockDate, // YYYY-MM-DD
+        createdAt: Date.now(),
+        isOpened: false
+      })
+      alert(`封存成功！時光膠囊已安全埋下，將在 ${unlockDate} 解鎖呈現！`)
+      setFutureLetter('')
+      await fetchTimeCapsules(emailLower)
+      setCurrentView('home')
+    } catch (e) {
+      console.error(e)
+      alert('時光膠囊儲存失敗，請檢查權限。')
+    }
   }
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!registerEmail.trim() || !registerPassword.trim() || !registerName.trim()) return
+    const emailLower = registerEmail.trim().toLowerCase()
     try {
-      await setDoc(doc(db, 'app_users', registerEmail.trim()), {
-        email: registerEmail.trim(), password: registerPassword.trim(), name: registerName.trim()
+      // 檢查此 Email 是否已被註冊過
+      const userDoc = await getDoc(doc(db, 'app_users', emailLower))
+      if (userDoc.exists()) {
+        alert('此 Email 已經被註冊過囉！')
+        return
+      }
+      await setDoc(doc(db, 'app_users', emailLower), {
+        email: emailLower, password: registerPassword.trim(), name: registerName.trim()
       })
       alert('註冊成功！')
       setCurrentView('login')
@@ -311,13 +820,21 @@ function App() {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!loginEmail.trim() || !loginPassword.trim()) return
+    const emailLower = loginEmail.trim().toLowerCase()
     try {
-      const docSnap = await getDoc(doc(db, 'app_users', loginEmail.trim()))
+      const docSnap = await getDoc(doc(db, 'app_users', emailLower))
       if (docSnap.exists() && docSnap.data().password === loginPassword.trim()) {
+        const name = docSnap.data().name
         alert(`歡迎回來！`)
-        setLoggedInUser(docSnap.data().name)
-        setUserEmail(loginEmail.trim())
-        await fetchUserDiaries(loginEmail.trim())
+        localStorage.setItem('loggedInUser', name)
+        localStorage.setItem('userEmail', emailLower)
+        setLoggedInUser(name)
+        setUserEmail(emailLower)
+        await fetchUserDiaries(emailLower)
+        await fetchTimeCapsules(emailLower)
+        await fetchSchedules()
+        await fetchCountdownEvents()
         setCurrentView('home')
       } else {
         alert('密碼錯誤或帳號不存在')
@@ -338,151 +855,291 @@ function App() {
     return null; // 🔥 直接一刀切，不管什麼風格通通不顯示裝飾圖案
   }
 
+  const getCountdownString = (targetDateStr: string) => {
+    const targetTime = new Date(targetDateStr).getTime()
+    const diff = targetTime - currentTime
+    if (diff <= 0) {
+      return '🎉 活動已開始 / 已結束！'
+    }
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+    return `${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`
+  }
+
   const renderNavbar = () => {
     return (
-      <nav style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '12px 24px',
-        background: 'var(--bg-color)',
-        borderBottom: '1px solid var(--border)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        width: '100%',
-        boxSizing: 'border-box',
-        gap: '16px'
-      }}>
-        {/* 左側標題 */}
-        <a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('home'); }} style={{
-          textDecoration: 'none',
-          fontSize: '18px',
-          fontWeight: 'bold',
-          color: 'var(--text-main)',
-          whiteSpace: 'nowrap'
-        }}>
-          {theme === 'gd' ? '🌼 G-DRAGON // ONE OF A KIND' : theme === 'kpop' ? '🍭 TWICE // ONE IN A MILLION' : theme === 'ive' ? '💎 IVE ✨ SHOW WHAT I HAVE' : theme === 'babymonster' ? '👹 BABYMONSTER // BATTER UP' : theme === 'aespa' ? '🪐 æ-Memoir // LIVE MY LIFE' : theme === 'blackpink' ? '🖤 BLACKPINK IN YOUR AREA' : 'Memoir'}
-        </a>
-
-        {/* 右側選單與功能區 */}
-        <ul style={{
+      <>
+        <nav style={{
           display: 'flex',
-          listStyle: 'none',
-          gap: '16px',
-          margin: 0,
-          padding: 0,
+          justifyContent: 'space-between',
           alignItems: 'center',
-          flexShrink: 0
+          padding: '12px 24px',
+          background: 'var(--bg-color)',
+          borderBottom: '1px solid var(--border)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          width: '100%',
+          boxSizing: 'border-box',
+          gap: '16px'
         }}>
-          <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('home'); }} style={{ textDecoration: 'none', color: 'var(--text-main)', fontWeight: '500', fontSize: '14px' }}>首頁功能</a></li>
-          <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('publicWall'); }} style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px' }}>🌍 社區日記牆</a></li>
-          <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); if (!loggedInUser) { alert('請先登入！'); setCurrentView('login'); } else { setCurrentView('capsule'); } }} style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px' }}>📬 時光膠囊</a></li>
-          <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); if (!loggedInUser) { alert('請先登入！'); setCurrentView('login'); } else { setCurrentView('review'); } }} style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px' }}>📊 年度回顧</a></li>
+          {/* 左側標題 */}
+          <a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('home'); }} style={{
+            textDecoration: 'none',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: 'var(--text-main)',
+            whiteSpace: 'nowrap'
+          }}>
+            {theme === 'gd' ? '🌼 G-DRAGON // ONE OF A KIND' : theme === 'kpop' ? '🍭 TWICE // ONE IN A MILLION' : theme === 'ive' ? '💎 IVE ✨ SHOW WHAT I HAVE' : theme === 'babymonster' ? '👹 BABYMONSTER // BATTER UP' : theme === 'aespa' ? '🪐 æ-Memoir // LIVE MY LIFE' : theme === 'blackpink' ? '🖤 BLACKPINK IN YOUR AREA' : theme === 'bts' ? '💜 BTS // ARMY ' : theme === 'seventeen' ? '💎 SEVENTEEN // CARAT ' : theme === 'anime' ? '🌸 ANIME // 夢の始まり ' : 'Memoir'}
+          </a>
 
-          {/* 💻 開發者連結 */}
-          <li style={{ whiteSpace: 'nowrap' }}>
-            <a
-              href="https://5b2g0018.github.io/my/"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                textDecoration: 'none',
-                color: 'var(--accent)',
+          {/* 右側選單與功能區 */}
+          <ul style={{
+            display: 'flex',
+            listStyle: 'none',
+            gap: '16px',
+            margin: 0,
+            padding: 0,
+            alignItems: 'center',
+            flexShrink: 0
+          }}>
+            <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('home'); }} style={{ textDecoration: 'none', color: 'var(--text-main)', fontWeight: '500', fontSize: '14px' }}>首頁功能</a></li>
+            <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); setCurrentView('publicWall'); }} style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px' }}>🌍 社區日記牆</a></li>
+            <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); if (!loggedInUser) { alert('請先登入！'); setCurrentView('login'); } else { setCurrentView('capsule'); } }} style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px' }}>📬 時光膠囊</a></li>
+            <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); if (!loggedInUser) { alert('請先登入！'); setCurrentView('login'); } else { setCurrentView('review'); } }} style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px' }}>📊 年度回顧</a></li>
+
+            {/* 💻 開發者連結 */}
+            <li style={{ whiteSpace: 'nowrap' }}>
+              <a
+                href="https://5b2g0018.github.io/my/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  textDecoration: 'none',
+                  color: 'var(--accent)',
+                  fontWeight: 'bold',
+                  fontSize: '14px'
+                }}
+              >
+                💻 開發者
+              </a>
+            </li>
+
+            {/* 🎨 風格切換 */}
+            <li style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '4px', whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-sub)' }}></span>
+              <select value={theme} onChange={(e) => setTheme(e.target.value as any)} style={{ padding: '4px 8px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer', outline: 'none', fontSize: '13px' }}>
+                <option value="classic">🍂 經典暖米</option>
+                <option value="blackpink">🖤 霸氣黑粉</option>
+                <option value="aespa">🪐虛擬未來</option>
+                <option value="kpop">🍭全員應援</option>
+                <option value="gd">🌼潮流至上</option>
+                <option value="ive">💎千金視覺</option>
+                <option value="babymonster">😈怪物新人</option>
+                <option value="bts">💜紫色星河</option>
+                <option value="seventeen">💎寧靜粉藍</option>
+                <option value="anime">🌸櫻花天空</option>
+              </select>
+            </li>
+
+            {/* 🔐 修正後的登入狀態判斷區（直接渲染變數本身，完美解除紅線） */}
+            {loggedInUser ? (
+              <li style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: '8px', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '14px', color: 'var(--text-main)', fontWeight: '500' }}>
+                  👤 {loggedInUser}
+                </span>
+                <button
+                  onClick={() => {
+                    setNewUsername(loggedInUser);
+                    setShowSettingsModal(true);
+                  }}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '12px',
+                    border: '1px solid var(--border)',
+                    background: 'transparent',
+                    color: 'var(--text-sub)',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ⚙️ 設定
+                </button>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '12px',
+                    border: '1px solid var(--border)',
+                    background: 'transparent',
+                    color: 'var(--text-sub)',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  登出
+                </button>
+              </li>
+            ) : (
+              <li style={{ marginLeft: '8px', whiteSpace: 'nowrap' }}>
+                <button
+                  onClick={() => setCurrentView('login')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '16px',
+                    border: 'none',
+                    background: 'var(--accent)',
+                    /* 🎨 樣式防禦：如果是 gd 主題就壓成黑色，其餘主題維持純白 */
+                    color: theme === 'gd' ? '#000000 !important' : '#ffffff',
+                    fontSize: '13px',
+                    fontWeight: '900', // 爆粗體，讓字體在小尺寸下依然清晰爆表
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  /* 💡 雙重保險：直接跳過權重限制，由瀏覽器最底層強行渲染黑色字體 */
+                  ref={(el) => {
+                    if (el) el.style.setProperty('color', theme === 'gd' ? '#000000' : '#ffffff', 'important');
+                  }}
+                >
+                  登入 / 註冊
+                </button>
+              </li>
+            )}
+          </ul>
+        </nav>
+        {/* 📣 應援跑馬燈 */}
+        {(() => {
+          const defaultCheers = [
+            { id: 'd1', author: 'Memoir', content: '快來寫下今天的日記吧！❤️' },
+            { id: 'd2', author: 'BLINK', content: 'BLACKPINK FOREVER YOUNG! 🖤💗' },
+            { id: 'd3', author: 'CARAT', content: 'SEVENTEEN 走花路吧！💎' },
+            { id: 'd4', author: 'MY', content: 'aespa 永遠在曠野稱霸！🪐' },
+            { id: 'd5', author: 'ARMY', content: '防彈少年團，我們在紫色星海等你回來！💜' }
+          ];
+          const marqueeItems = [...cheers, ...defaultCheers];
+
+          return (
+            <div className="cheering-ticker-container">
+              {/* Left fixed badge */}
+              <div style={{
+                padding: '0 16px',
+                background: 'var(--bg-sec)',
+                zIndex: 10,
                 fontWeight: 'bold',
-                fontSize: '14px'
-              }}
-            >
-              💻 開發者
-            </a>
-          </li>
+                color: 'var(--accent)',
+                borderRight: '1px solid var(--border)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                height: '32px'
+              }}>
+                <span>📣</span>
+                <span style={{ fontSize: '13px', whiteSpace: 'nowrap' }}>應援牆</span>
+              </div>
 
-          {/* 🎨 風格切換 */}
-          <li style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '4px', whiteSpace: 'nowrap' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-sub)' }}></span>
-            <select value={theme} onChange={(e) => setTheme(e.target.value as any)} style={{ padding: '4px 8px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer', outline: 'none', fontSize: '13px' }}>
-              <option value="classic">🍂 經典暖米</option>
-              <option value="blackpink">🖤 霸氣黑粉</option>
-              <option value="aespa">🪐虛擬未來</option>
-              <option value="kpop">🍭全員應援</option>
-              <option value="gd">🌼潮流至上</option>
-              <option value="ive">💎千金視覺</option>
-              <option value="babymonster">😈怪物新人</option>
-            </select>
-          </li>
+              {/* Center scrolling ticker */}
+              <div style={{ flex: 1, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <div className="cheering-marquee-wrapper">
+                  {marqueeItems.map((c, idx) => (
+                    <span key={`cheer-1-${c.id}-${idx}`} className="cheering-text-item">
+                      <span style={{ color: 'var(--accent)', marginRight: '4px' }}>@{c.author}</span>: {c.content}
+                    </span>
+                  ))}
+                  {marqueeItems.map((c, idx) => (
+                    <span key={`cheer-2-${c.id}-${idx}`} className="cheering-text-item">
+                      <span style={{ color: 'var(--accent)', marginRight: '4px' }}>@{c.author}</span>: {c.content}
+                    </span>
+                  ))}
+                </div>
+              </div>
 
-          {/* 🔐 修正後的登入狀態判斷區（直接渲染變數本身，完美解除紅線） */}
-          {loggedInUser ? (
-            <li style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: '8px', whiteSpace: 'nowrap' }}>
-              <span style={{ fontSize: '14px', color: 'var(--text-main)', fontWeight: '500' }}>
-                👤 {loggedInUser}
-              </span>
-              <button
-                onClick={handleLogout}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: '12px',
-                  border: '1px solid var(--border)',
-                  background: 'transparent',
-                  color: 'var(--text-sub)',
-                  fontSize: '12px',
-                  cursor: 'pointer'
-                }}
-              >
-                登出
-              </button>
-            </li>
-          ) : (
-            <li style={{ marginLeft: '8px', whiteSpace: 'nowrap' }}>
-              <button
-                onClick={() => setCurrentView('login')}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '16px',
-                  border: 'none',
-                  background: 'var(--accent)',
-                  /* 🎨 樣式防禦：如果是 gd 主題就壓成黑色，其餘主題維持純白 */
-                  color: theme === 'gd' ? '#000000 !important' : '#ffffff',
-                  fontSize: '13px',
-                  fontWeight: '900', // 爆粗體，讓字體在小尺寸下依然清晰爆表
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                /* 💡 雙重保險：直接跳過權重限制，由瀏覽器最底層強行渲染黑色字體 */
-                ref={(el) => {
-                  if (el) el.style.setProperty('color', theme === 'gd' ? '#000000' : '#ffffff', 'important');
-                }}
-              >
-                登入 / 註冊
-              </button>
-            </li>
-          )}
-        </ul>
-      </nav>
+              {/* Right fixed action button */}
+              <div style={{
+                padding: '0 16px',
+                background: 'var(--bg-sec)',
+                zIndex: 10,
+                borderLeft: '1px solid var(--border)',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                <button
+                  onClick={() => {
+                    if (!loggedInUser) {
+                      alert('請先登入才能留下應援話語喔！');
+                      setCurrentView('login');
+                    } else {
+                      setNewCheerContent('');
+                      setShowAddCheerModal(true);
+                    }
+                  }}
+                  style={{
+                    background: 'var(--accent)',
+                    color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '4px 12px',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'transform 0.2s'
+                  }}
+                  ref={(el) => {
+                    if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
+                  }}
+                >
+                  ✨ 應援
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+      </>
     );
   };
 
   const handleLogout = () => {
-    setLoggedInUser(null); setUserEmail(null); setMyDiaries([]); setCurrentView('home')
+    localStorage.removeItem('loggedInUser')
+    localStorage.removeItem('userEmail')
+    setLoggedInUser(null)
+    setUserEmail(null)
+    setMyDiaries([])
+    setTimeCapsules([])
+    setUnlockedNotifications([])
+    setActiveNotificationCapsule(null)
+    setSchedules([])
+    setCountdownEvents([])
+    fetchSchedules()
+    fetchCountdownEvents()
+    setCurrentView('home')
   }
 
   if (currentView === 'editor') {
+    const isDarkTheme = (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd' || theme === 'bts');
+
     return (
       <>
         {renderNavbar()}
         <div style={{ maxWidth: '700px', margin: '40px auto', padding: '40px', background: 'var(--bg-color)', border: '1px solid var(--border)', borderRadius: '16px', position: 'relative' }}>
           {renderThemeDecorations()}
-          <button onClick={() => setCurrentView('home')} style={{ background: 'none', border: 'none', color: 'var(--text-sub)', cursor: 'pointer', marginBottom: '20px' }}>← 返回首頁</button>
+          <button onClick={() => { setCurrentView('home'); setEditingId(null); setIsSecret(false); setDiaryPassword(''); setIsPublic(false); setDiaryTitle(''); setDiaryContent(''); setDiaryBgm(''); setDiaryPhoto(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-sub)', cursor: 'pointer', marginBottom: '20px' }}>← 返回首頁</button>
 
           <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: isDarkTheme ? '#ffffff' : 'var(--text-main)' }}>
               {theme === 'gd' ? '🎵 注入權志龍音樂靈魂！挑選代表你今日特立獨行態度的 GD 神曲' :
                 theme === 'ive' ? '🎵 啟動耀眼高貴濾鏡！選擇契合今日大千金心情的 IVE 頂奢名曲' :
                   theme === 'babymonster' ? '🎵 猛獸出籠！選擇釋放你今日怪物實力的 BABYMONSTER 重磅黑馬歌' :
                     theme === 'blackpink' ? '🎵 生人勿近女王降臨！釋放你今日最颯、最霸氣的 BLACKPINK 狂放黑粉魂' :
                       theme === 'aespa' ? '🎵 虛擬現實同步解析！召喚你的 æ，開啟今日 aespa 曠野戰鬥模式' :
                         theme === 'kpop' ? '🎵 活力甜度大爆表！注入 TWICE 專屬滿滿多巴胺，點亮你的元氣少女心' :
-                          '🎵 今天的心情旋律 // 寫下你此時此刻的心靈協奏曲'}
+                          theme === 'bts' ? '🎵 注入紫色防彈靈魂！選擇燃起你今日熱血或治癒你心靈的 BTS 神曲' :
+                            theme === 'seventeen' ? '🎵 散發雙官色寧靜光芒！選擇最貼合你今日心情的 SEVENTEEN 元氣神曲' :
+                              theme === 'anime' ? '🎵 青空與櫻花飛舞！選擇最契合你今日二次元日常的動漫主題歌' :
+                                '🎵 今天的心情旋律 // 寫下你此時此刻的心靈協奏曲'}
             </label>
 
             <select value={diaryMood} onChange={(e) => setDiaryMood(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)' }}>
@@ -526,7 +1183,7 @@ function App() {
                   <option>🐍 Black Mamba (直面心魔！在迷惘與誘惑中保持清醒，擊碎幻象)</option>
                   <option>🌶️ Spicy (辛辣嗆爽！展現最自由不羈、熱辣肆意的夏日惡女風範)</option>
                 </>
-              ) : theme === 'kpop' ? ( /* 這裡代表 TWICE */
+              ) : theme === 'kpop' ? ( /* TWICE */
                 <>
                   <option>🍭 What is Love? (少女悸動！滿腦子粉紅泡泡，憧憬電影般的浪漫)</option>
                   <option>🏹 CHEER UP (害羞應援！元氣滿滿，大聲為自己和身邊的人加油打氣)</option>
@@ -534,7 +1191,31 @@ function App() {
                   <option>💃 Fancy (勇敢追愛！危險又迷人，不管了、就是要直接向你奔去)</option>
                   <option>🧪 SCIENTIST (戀愛科學！別再苦苦研究心算，跟著直覺愛就對了)</option>
                 </>
-              ) : ( /* 這裡代表 經典/Default 模式 */
+              ) : theme === 'bts' ? (
+                <>
+                  <option>💜 Dynamite (璀璨活力！像炸藥般點燃歡樂的一天)</option>
+                  <option>💜 Spring Day (溫暖思念，在寒冬過後迎來春暖花開)</option>
+                  <option>💜 Blood Sweat & Tears (血汗淚！極致誘惑與狂放張力)</option>
+                  <option>💜 Life Goes On (溫柔治癒，無論如何生活依舊繼續)</option>
+                  <option>💜 Butter (流暢融化！自信爆表、散發夏日融化魅力)</option>
+                </>
+              ) : theme === 'seventeen' ? (
+                <>
+                  <option>💎 Very Nice (Aju Nice! 活力四射，心跳加速的完美一天)</option>
+                  <option>💎 Don't Wanna Cry (不想哭，在脆弱與堅強之間的感性寫照)</option>
+                  <option>💎 Super (孫悟空！神仙打架，熱血沸騰、突破極限的霸氣)</option>
+                  <option>💎 Circles (溫暖治癒，畫一個圈，我們終會再次相遇)</option>
+                  <option>💎 Darling (甜蜜浪漫，給自己或珍貴之人的甜甜告白)</option>
+                </>
+              ) : theme === 'anime' ? (
+                <>
+                  <option>🌸 櫻花紛飛 (青春悸動，像置身動漫名場景般浪漫)</option>
+                  <option>⚡ 熱血燃燒 (打倒魔王！今天戰鬥力破表，絕對不輕言放棄)</option>
+                  <option>🌌 側耳傾聽 (微風吹拂，在安靜圖書館裡的一抹悠閒)</option>
+                  <option>🎐 夏日祭典 (花火大會，穿上浴衣與同伴寫下青春回憶)</option>
+                  <option>🍰 廢怯少女 (治癒日常，喝杯紅茶吃塊蛋糕的悠閒午後)</option>
+                </>
+              ) : ( /* 經典/Default */
                 <>
                   <option>☀️ 陽光普照 (心情晴空萬里，對生活充滿了前行的動力)</option>
                   <option>🌿 歲月靜好 (像喝了一杯熱茶，內心無比平靜而知足)</option>
@@ -546,20 +1227,54 @@ function App() {
             </select>
           </div>
 
+          {/* 今日 BGM 輸入框 */}
           <div style={{ marginBottom: '24px' }}>
-            {/* 🎯 1. 日記標題 Label 點亮 */}
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: isDarkTheme ? '#ffffff' : 'var(--text-main)' }}>
+              今日 BGM / 推薦歌曲
+            </label>
+            <input
+              type="text"
+              placeholder={
+                theme === 'gd' ? "推薦一首 GD 的歌，如 Crooked..." :
+                  theme === 'bts' ? "推薦一首 BTS 的歌，如 Dynamite..." :
+                    theme === 'seventeen' ? "推薦一首 SEVENTEEN 的歌，如 Very Nice..." :
+                      theme === 'anime' ? "推薦一首動漫歌，如 殘酷天使的行動綱領..." :
+                        "輸入今日背景音樂歌曲..."
+              }
+              value={diaryBgm}
+              onChange={(e) => setDiaryBgm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                background: isDarkTheme ? 'rgba(255,255,255,0.1)' : 'var(--bg-color)',
+                color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '24px' }}>
             <label style={{
               display: 'block',
               marginBottom: '8px',
               fontWeight: 'bold',
-              color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#ffffff' : 'var(--text-main)'
+              color: isDarkTheme ? '#ffffff' : 'var(--text-main)'
             }}>
               日記標題
             </label>
-            {/* 🎯 2. 標題輸入框：底色微調、輸入文字與 Placeholder 智慧上色 */}
             <input
               type="text"
-              placeholder={theme === 'gd' ? "輸入充滿潮流藝術感的靈魂標題..." : theme === 'ive' ? "輸入精緻高貴的大千金專屬標題..." : theme === 'babymonster' ? "輸入擊碎常規的怪物新人硬核標題..." : "給今天一個標題..."}
+              placeholder={
+                theme === 'gd' ? "輸入充滿潮流藝術感的靈魂標題..." :
+                  theme === 'ive' ? "輸入精緻高貴的大千金專屬標題..." :
+                    theme === 'babymonster' ? "輸入擊碎常規的怪物新人硬核標題..." :
+                      theme === 'bts' ? "輸入點燃星河的防彈天團標題..." :
+                        theme === 'seventeen' ? "輸入元氣滿分的克拉應援標題..." :
+                          theme === 'anime' ? "輸入青春中二的動漫主角標題..." :
+                            "給今天一個標題..."
+              }
               value={diaryTitle}
               onChange={(e) => setDiaryTitle(e.target.value)}
               style={{
@@ -567,27 +1282,33 @@ function App() {
                 padding: '14px',
                 borderRadius: '8px',
                 border: '1px solid var(--border)',
-                background: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? 'rgba(255,255,255,0.1)' : 'var(--bg-color)',
-                color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#ffffff' : 'var(--text-main)',
+                background: isDarkTheme ? 'rgba(255,255,255,0.1)' : 'var(--bg-color)',
+                color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
                 boxSizing: 'border-box'
               }}
             />
           </div>
 
           <div style={{ marginBottom: '32px' }}>
-            {/* 🎯 3. 日記內容 Label 點亮 */}
             <label style={{
               display: 'block',
               marginBottom: '8px',
               fontWeight: 'bold',
-              color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#ffffff' : 'var(--text-main)'
+              color: isDarkTheme ? '#ffffff' : 'var(--text-main)'
             }}>
               日記內容
             </label>
-            {/* 🎯 4. 內容輸入框：同步防禦 */}
             <textarea
               rows={10}
-              placeholder={theme === 'gd' ? "揮灑你的不羈與感性，像在牆上塗鴉一樣，寫下今天最不隨波逐流的真實故事吧！" : theme === 'ive' ? "讓字句閃爍鑽石般的光澤，紀錄今天那些優雅、精采且不負時光的璀璨生活碎片..." : theme === 'babymonster' ? "踏著最凶狠的重低音鼓點，寫下今天那些野蠻生長、充滿野心與驚艷全場的高能瞬間！" : "寫下今天發生的精彩故事吧..."}
+              placeholder={
+                theme === 'gd' ? "揮灑你的不羈與感性，像在牆上塗鴉一樣，寫下今天最不隨波逐流的真實故事吧！" :
+                  theme === 'ive' ? "讓字句閃爍鑽石般的光澤，紀錄今天那些優雅、精采且不負時光的璀璨生活碎片..." :
+                    theme === 'babymonster' ? "踏著最凶狠的重低音鼓點，寫下今天那些野蠻生長、充滿野心與驚艷全場的高能瞬間！" :
+                      theme === 'bts' ? "在紫色星海下，寫下你像 Dynamite 般耀眼、或如 Spring Day 般溫柔的日常足跡..." :
+                        theme === 'seventeen' ? "Say the name！記錄下今天像 Aju Nice 般元氣滿分、或充滿夢想與同伴相伴的暖心瞬間..." :
+                          theme === 'anime' ? "在青空與櫻花飛舞的二次元世界裡，寫下你今天熱血戰鬥、或者悠閒治癒的主角物語..." :
+                            "寫下今天發生的精彩故事吧..."
+              }
               value={diaryContent}
               onChange={(e) => setDiaryContent(e.target.value)}
               style={{
@@ -595,25 +1316,96 @@ function App() {
                 padding: '14px',
                 borderRadius: '8px',
                 border: '1px solid var(--border)',
-                background: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? 'rgba(255,255,255,0.1)' : 'var(--bg-color)',
-                color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#ffffff' : 'var(--text-main)',
+                background: isDarkTheme ? 'rgba(255,255,255,0.1)' : 'var(--bg-color)',
+                color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
                 boxSizing: 'border-box',
                 lineHeight: '1.6'
               }}
             />
           </div>
 
+          {/* 圖片上傳區 */}
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: isDarkTheme ? '#ffffff' : 'var(--text-main)' }}>
+              上傳/添加日記圖片
+            </label>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap' }}>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    try {
+                      const base64 = await compressImage(file);
+                      setDiaryPhoto(base64);
+                    } catch (err) {
+                      alert('圖片處理失敗');
+                    }
+                  }
+                }}
+                style={{
+                  padding: '6px',
+                  fontSize: '13px',
+                  color: isDarkTheme ? '#ffffff' : 'var(--text-main)'
+                }}
+              />
+              <span style={{ fontSize: '13px', color: 'var(--text-sub)' }}>或輸入圖片網址：</span>
+              <input
+                type="text"
+                placeholder="https://example.com/image.jpg"
+                value={diaryPhoto}
+                onChange={(e) => setDiaryPhoto(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: isDarkTheme ? 'rgba(255,255,255,0.1)' : 'var(--bg-color)',
+                  color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
+                  minWidth: '200px'
+                }}
+              />
+            </div>
+            {diaryPhoto && (
+              <div style={{ position: 'relative', display: 'inline-block', marginTop: '8px' }}>
+                <img src={diaryPhoto} alt="Preview" style={{ maxHeight: '180px', borderRadius: '8px', border: '1px solid var(--border)' }} />
+                <button
+                  type="button"
+                  onClick={() => setDiaryPhoto('')}
+                  style={{
+                    position: 'absolute',
+                    top: '-8px',
+                    right: '-8px',
+                    background: '#ff4d4d',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '24px',
+                    height: '24px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px'
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-
-              {/* 🎯 5. 設為秘密日記勾選文字點亮 */}
               <label style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
                 fontSize: '14px',
                 fontWeight: '600',
-                color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#ffffff' : 'var(--text-main)'
+                color: isDarkTheme ? '#ffffff' : 'var(--text-main)'
               }}>
                 <input type="checkbox" checked={isSecret} onChange={(e) => {
                   const checked = e.target.checked
@@ -624,7 +1416,6 @@ function App() {
                 }} /> 設為秘密日記
               </label>
 
-              {/* 🎯 6. 秘密日記密碼輸入框防禦 */}
               {isSecret && (
                 <input
                   type="password"
@@ -635,20 +1426,19 @@ function App() {
                     padding: '8px 12px',
                     borderRadius: '8px',
                     border: '1px solid var(--border)',
-                    background: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? 'rgba(255,255,255,0.15)' : 'var(--bg-color)',
-                    color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#ffffff' : 'var(--text-main)'
+                    background: isDarkTheme ? 'rgba(255,255,255,0.15)' : 'var(--bg-color)',
+                    color: isDarkTheme ? '#ffffff' : 'var(--text-main)'
                   }}
                 />
               )}
 
-              {/* 🎯 7. 設為公開日記勾選文字點亮 */}
               <label style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
                 fontSize: '14px',
                 fontWeight: '600',
-                color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#ffffff' : 'var(--text-main)'
+                color: isDarkTheme ? '#ffffff' : 'var(--text-main)'
               }}>
                 <input type="checkbox" checked={isPublic} onChange={(e) => {
                   const checked = e.target.checked
@@ -662,7 +1452,7 @@ function App() {
             </div>
 
             <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end' }}>
-              <button onClick={() => { setCurrentView('home'); setEditingId(null); setIsSecret(false); setDiaryPassword(''); setIsPublic(false); setDiaryTitle(''); setDiaryContent('') }} style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)' }}>取消</button>
+              <button onClick={() => { setCurrentView('home'); setEditingId(null); setIsSecret(false); setDiaryPassword(''); setIsPublic(false); setDiaryTitle(''); setDiaryContent(''); setDiaryBgm(''); setDiaryPhoto(''); }} style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)' }}>取消</button>
               <button onClick={handleSaveDiary} style={{ padding: '12px 32px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>{editingId ? '更新日記' : '儲存日記'}</button>
             </div>
           </div>
@@ -728,6 +1518,33 @@ function App() {
             color: '#1a1a1a'
           };
 
+        case 'bts':
+          return {
+            background: 'linear-gradient(135deg, #0f081d, #1c0e3a)',
+            backdropFilter: 'blur(16px) saturate(160%)',
+            border: '1px solid rgba(161, 125, 240, 0.8)',
+            boxShadow: '0 0 25px rgba(161, 125, 240, 0.7)',
+            color: '#ffffff'
+          };
+
+        case 'seventeen':
+          return {
+            background: 'linear-gradient(135deg, #fdf4f5, #f0f3f9)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(247, 202, 201, 0.7)',
+            boxShadow: '0 10px 30px rgba(146, 168, 209, 0.25)',
+            color: '#34384a'
+          };
+
+        case 'anime':
+          return {
+            background: 'linear-gradient(135deg, #eef7fc, #e0effa)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 127, 169, 0.5)',
+            boxShadow: '0 10px 30px rgba(56, 189, 248, 0.2)',
+            color: '#1e293b'
+          };
+
         default:
           return {
             background: 'linear-gradient(135deg, var(--bg-color), #f5f5f5)',
@@ -739,7 +1556,18 @@ function App() {
     };
 
     const cardStyle = getCardStyle();
-    const isDark = ['blackpink', 'aespa', 'gd', 'babymonster'].includes(theme);
+    const isDark = ['blackpink', 'aespa', 'gd', 'babymonster', 'bts'].includes(theme);
+
+    const todayStr = (() => {
+      const today = new Date()
+      const year = today.getFullYear()
+      const month = String(today.getMonth() + 1).padStart(2, '0')
+      const day = String(today.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    })()
+
+    const lockedCapsules = timeCapsules.filter(c => c.unlockDate > todayStr)
+    const unlockedCapsules = timeCapsules.filter(c => c.unlockDate <= todayStr)
 
     return (
       <>
@@ -753,7 +1581,10 @@ function App() {
                 theme === 'kpop' ? 'linear-gradient(135deg, #fff0f5 0%, #ffe4ec 100%)' :
                   theme === 'ive' ? 'linear-gradient(135deg, #f1f4fd 0%, #e5ecfb 100%)' :
                     theme === 'babymonster' ? 'linear-gradient(135deg, #0a0505 0%, #1a0808 100%)' :
-                      'var(--bg-color)',
+                      theme === 'bts' ? 'linear-gradient(135deg, #080410 0%, #150b26 100%)' :
+                        theme === 'seventeen' ? 'linear-gradient(135deg, #fdf4f5 0%, #eef3fc 100%)' :
+                          theme === 'anime' ? 'linear-gradient(135deg, #eef7fc 0%, #dbeafe 100%)' :
+                            'var(--bg-color)',
           boxSizing: 'border-box',
           transition: 'all 0.5s ease'
         }}>
@@ -849,6 +1680,140 @@ function App() {
             </button>
           </div>
 
+          {/* 📬 時光膠囊管理面板 */}
+          <div style={{
+            maxWidth: '600px',
+            margin: '40px auto 0 auto',
+            padding: '30px',
+            borderRadius: '24px',
+            background: isDark ? 'rgba(255,255,255,0.02)' : 'var(--bg-color)',
+            border: '1px solid var(--border)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
+            color: 'var(--text-main)',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
+              🕰️ 您的時光膠囊歷史
+            </h3>
+
+            {timeCapsules.length === 0 ? (
+              <p style={{ textAlign: 'center', color: 'var(--text-sub)', fontSize: '14px', margin: '20px 0' }}>
+                目前沒有封存的膠囊。寫封信寄給未來的自己吧！
+              </p>
+            ) : (
+              <div>
+                {/* 🔒 封存中（未解鎖）區塊 */}
+                <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent)', margin: '15px 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>🔒</span> 封存中（未解鎖）
+                </h4>
+                {lockedCapsules.length === 0 ? (
+                  <p style={{ fontSize: '13px', color: 'var(--text-sub)', margin: '0 0 20px 0', paddingLeft: '22px' }}>無</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+                    {lockedCapsules.map((capsule) => (
+                      <div key={capsule.id} style={{
+                        background: isDark ? 'rgba(255,255,255,0.04)' : 'var(--bg-sec)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        fontSize: '14px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>📅 預計解鎖：{capsule.unlockDate}</span>
+                          <span style={{ fontSize: '12px', color: 'var(--text-sub)' }}>封存於 {new Date(capsule.createdAt).toLocaleDateString('zh-TW')}</span>
+                        </div>
+                        <div style={{
+                          fontStyle: 'italic',
+                          color: 'var(--text-sub)',
+                          background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: '1px dashed var(--border)',
+                          letterSpacing: '2px',
+                          fontSize: '12px'
+                        }}>
+                          🔒 信件安全加密中，解鎖時間到達前無法讀取...
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 🔓 已解鎖區塊 */}
+                <h4 style={{ fontSize: '14px', fontWeight: '700', color: '#10b981', margin: '15px 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>🔓</span> 已解鎖的信件
+                </h4>
+                {unlockedCapsules.length === 0 ? (
+                  <p style={{ fontSize: '13px', color: 'var(--text-sub)', margin: '0', paddingLeft: '22px' }}>無</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {unlockedCapsules.map((capsule) => {
+                      const isExpanded = expandedCapsules.includes(capsule.id);
+                      return (
+                        <div key={capsule.id} style={{
+                          background: isDark ? 'rgba(255,255,255,0.04)' : 'var(--bg-sec)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '12px',
+                          padding: '16px',
+                          fontSize: '14px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '8px',
+                          transition: 'all 0.3s'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                            <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>🔓 解鎖時間：{capsule.unlockDate}</span>
+                            <span style={{ fontSize: '12px', color: 'var(--text-sub)' }}>封存於 {new Date(capsule.createdAt).toLocaleDateString('zh-TW')}</span>
+                          </div>
+
+                          {isExpanded ? (
+                            <div style={{
+                              background: isDark ? 'rgba(0,0,0,0.2)' : 'var(--bg-color)',
+                              border: '1px solid var(--border)',
+                              borderRadius: '8px',
+                              padding: '12px',
+                              lineHeight: '1.6',
+                              whiteSpace: 'pre-wrap',
+                              animation: 'fadeIn 0.2s ease',
+                              color: 'var(--text-main)'
+                            }}>
+                              {capsule.content}
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: '13px', color: 'var(--text-sub)' }}>
+                              信件已解鎖，點選下方按鈕開啟閱讀 💌
+                            </div>
+                          )}
+
+                          <button
+                            onClick={() => toggleExpandCapsule(capsule.id)}
+                            style={{
+                              alignSelf: 'flex-end',
+                              padding: '6px 14px',
+                              borderRadius: '8px',
+                              border: '1px solid var(--accent)',
+                              background: 'transparent',
+                              color: 'var(--accent)',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            {isExpanded ? '收起信件 ✕' : '開啟信件 📖'}
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
         </div>
       </>
     )
@@ -910,6 +1875,31 @@ function App() {
             color: 'var(--text-main)',
             subCardBg: 'var(--bg-sec)'
           };
+        case 'bts':
+          return {
+            background: 'rgba(15, 8, 29, 0.85)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(161, 125, 240, 0.5)',
+            boxShadow: '0 8px 32px rgba(161, 125, 240, 0.2)',
+            color: '#ffffff',
+            subCardBg: 'rgba(255, 255, 255, 0.05)'
+          };
+        case 'seventeen':
+          return {
+            background: '#ffffff',
+            border: '1px solid #f7cac9',
+            boxShadow: '0 10px 30px rgba(146, 168, 209, 0.15)',
+            color: '#2b3044',
+            subCardBg: '#f0f3f9'
+          };
+        case 'anime':
+          return {
+            background: '#ffffff',
+            border: '1px solid #ff7fa9',
+            boxShadow: '0 10px 30px rgba(56, 189, 248, 0.15)',
+            color: '#1e293b',
+            subCardBg: '#e0effa'
+          };
         default: // 經典暖米
           return {
             background: 'var(--bg-color)',
@@ -922,7 +1912,7 @@ function App() {
     };
 
     const cardStyle = getCardStyle();
-    const isDark = ['blackpink', 'aespa', 'gd', 'babymonster'].includes(theme);
+    const isDark = ['blackpink', 'aespa', 'gd', 'babymonster', 'bts'].includes(theme);
 
     return (
       <>
@@ -937,7 +1927,10 @@ function App() {
                 theme === 'kpop' ? 'linear-gradient(135deg, #fff0f5 0%, #ffe4ec 100%)' :
                   theme === 'ive' ? 'linear-gradient(135deg, #f1f4fd 0%, #e5ecfb 100%)' :
                     theme === 'babymonster' ? 'linear-gradient(135deg, #0a0505 0%, #1a0808 100%)' :
-                      'var(--bg-color)',
+                      theme === 'bts' ? 'linear-gradient(135deg, #080410 0%, #150b26 100%)' :
+                        theme === 'seventeen' ? 'linear-gradient(135deg, #fdf4f5 0%, #eef3fc 100%)' :
+                          theme === 'anime' ? 'linear-gradient(135deg, #eef7fc 0%, #dbeafe 100%)' :
+                            'var(--bg-color)',
           boxSizing: 'border-box',
           transition: 'all 0.5s ease'
         }}>
@@ -968,7 +1961,10 @@ function App() {
                       theme === 'aespa' ? '🪐 aespa LIVE TOUR // 曠野星際編年史' :
                         theme === 'blackpink' ? '🖤💗 BLACKPINK WORLD TOUR // 女王傳奇終章回顧' :
                           theme === 'kpop' ? '🍭 TWICE WORLD TOUR //青春璀璨回憶錄' :
-                            '您的年度心靈回顧報告'
+                            theme === 'bts' ? '💜 BTS WORLD TOUR // 紫色星河音樂回顧' :
+                              theme === 'seventeen' ? '💎 SEVENTEEN WORLD TOUR // Say the Name 克拉回憶錄' :
+                                theme === 'anime' ? '🌸 ANIME RETROSPECTIVE // 櫻花飛舞的二次元編年史' :
+                                  '您的年度心靈回顧報告'
               }
             </h2>
 
@@ -1030,6 +2026,97 @@ function App() {
               </div>
 
             </div>
+
+            {/* 📊 追星日記熱度貢獻圖 (Heatmap) */}
+            {(() => {
+              const days = [];
+              const today = new Date();
+              for (let i = 364; i >= 0; i--) {
+                const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+                days.push(d);
+              }
+
+              const formattedDateCounts: { [key: string]: number } = {};
+              myDiaries.forEach((diary) => {
+                if (diary.date) {
+                  formattedDateCounts[diary.date] = (formattedDateCounts[diary.date] || 0) + 1;
+                }
+              });
+
+              const getCellLevel = (d: Date) => {
+                const formatted = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+                const count = formattedDateCounts[formatted] || 0;
+                return {
+                  count,
+                  style: count === 0
+                    ? { background: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)' }
+                    : count === 1
+                      ? { background: 'var(--accent)', opacity: 0.35 }
+                      : count === 2
+                        ? { background: 'var(--accent)', opacity: 0.7 }
+                        : { background: 'var(--accent)', opacity: 1.0 }
+                };
+              };
+
+              const formatDateStr = (d: Date) => {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const date = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${date}`;
+              };
+
+              return (
+                <div className="heatmap-container">
+                  <h3 style={{
+                    fontSize: '16px',
+                    fontWeight: '800',
+                    marginBottom: '16px',
+                    textAlign: 'center',
+                    color: 'var(--accent)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}>
+                    <span>🔥</span> 追星日記熱度貢獻圖 (Heatmap)
+                  </h3>
+                  <div className="heatmap-grid-scroll">
+                    <div className="heatmap-grid">
+                      {days.map((day, idx) => {
+                        const { count, style } = getCellLevel(day);
+                        return (
+                          <div
+                            key={`heatmap-cell-${idx}`}
+                            className="heatmap-cell"
+                            style={style}
+                          >
+                            <span className="heatmap-tooltip">
+                              {formatDateStr(day)} : {count} 篇日記
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '11px',
+                    color: 'var(--text-sub)',
+                    marginTop: '12px'
+                  }}>
+                    <span>Less</span>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)' }}></div>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: 'var(--accent)', opacity: 0.35 }}></div>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: 'var(--accent)', opacity: 0.7 }}></div>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: 'var(--accent)', opacity: 1.0 }}></div>
+                    <span>More</span>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
         </div>
@@ -1038,6 +2125,8 @@ function App() {
   }
 
   if (currentView === 'publicWall') {
+    const isDarkTheme = (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd' || theme === 'bts');
+
     return (
       <>
         {renderNavbar()}
@@ -1058,7 +2147,13 @@ function App() {
                     ? `linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0.25)), url(${blackpinkBg})`
                     : theme === 'kpop'
                       ? `linear-gradient(to bottom, rgba(20,10,20,0.4), rgba(20,10,20,0.1)), url(${twiceAllMembersBg})`
-                      : 'var(--bg-pattern)',
+                      : theme === 'bts'
+                        ? `linear-gradient(to bottom, rgba(15,8,29,0.55), rgba(15,8,29,0.28)), url(${btsBg})`
+                        : theme === 'seventeen'
+                          ? `linear-gradient(to bottom, rgba(253,244,245,0.4), rgba(253,244,245,0.15)), url(${seventeenBg})`
+                          : theme === 'anime'
+                            ? `linear-gradient(to bottom, rgba(238,247,252,0.4), rgba(238,247,252,0.15)), url(${animeBg})`
+                            : 'var(--bg-pattern)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -1078,7 +2173,7 @@ function App() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
               {publicDiaries.map((diary) => (
                 <div key={diary.id} style={{
-                  background: theme === 'blackpink' ? 'rgba(0,0,0,0.55)' : theme === 'aespa' ? 'rgba(8,8,20,0.68)' : theme === 'gd' ? 'rgba(8,8,8,0.7)' : theme === 'ive' ? 'rgba(255,250,255,0.82)' : theme === 'babymonster' ? 'rgba(10,10,10,0.72)' : theme === 'kpop' ? 'rgba(255,245,250,0.92)' : 'var(--bg-sec)',
+                  background: theme === 'blackpink' ? 'rgba(0,0,0,0.55)' : theme === 'aespa' ? 'rgba(8,8,20,0.68)' : theme === 'gd' ? 'rgba(8,8,8,0.7)' : theme === 'bts' ? 'rgba(15,8,29,0.7)' : theme === 'ive' ? 'rgba(255,250,255,0.82)' : theme === 'babymonster' ? 'rgba(10,10,10,0.72)' : theme === 'kpop' ? 'rgba(255,245,250,0.92)' : theme === 'seventeen' ? 'rgba(255,255,255,0.85)' : theme === 'anime' ? 'rgba(255,255,255,0.85)' : 'var(--bg-sec)',
                   padding: '24px',
                   borderRadius: '16px',
                   border: '1px solid var(--border)',
@@ -1089,38 +2184,59 @@ function App() {
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '12px', color: 'var(--text-sub)', marginBottom: '8px' }}>✍️ {diary.author || '匿名使用者'}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-sub)', marginBottom: '8px' }}>
+                        ✍️ {(diary.userEmail && usersCache[diary.userEmail.trim().toLowerCase()])
+                          ? usersCache[diary.userEmail.trim().toLowerCase()]
+                          : (diary.author && diary.author !== '匿名使用者')
+                            ? diary.author
+                            : (diary.userEmail ? diary.userEmail.split('@')[0] : '匿名使用者')}
+                      </div>
 
-                      {/* 🎯 1. 標題智慧色彩防禦：四大暗色主題強行亮白字！ */}
                       <h3 style={{
                         fontSize: '18px',
                         margin: '0 0 8px 0',
                         fontWeight: '700',
-                        /* 🎨 核心修正：如果是 dark 底主題（含 GD），字體變純白；其餘淺色主題用預設深色字 */
-                        color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd')
-                          ? '#ffffff'
-                          : 'var(--text-main)',
-                        textShadow: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd')
-                          ? '0 1px 4px rgba(0,0,0,0.5)'
-                          : 'none',
+                        color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
+                        textShadow: isDarkTheme ? '0 1px 4px rgba(0,0,0,0.5)' : 'none',
                         transition: 'color 0.3s ease'
                       }}>{diary.title}</h3>
 
                       <div style={{ fontSize: '12px', color: 'var(--text-sub)', marginBottom: '12px' }}>📅 {diary.date}</div>
+                      {diary.bgm && (
+                        <div style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          background: isDarkTheme ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+                          border: '1px solid var(--border)',
+                          padding: '4px 10px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          color: 'var(--accent)',
+                          fontWeight: 'bold',
+                          marginTop: '4px',
+                          marginBottom: '8px'
+                        }}>
+                          🎵 {diary.bgm}
+                        </div>
+                      )}
                     </div>
                     <span style={{
-                      background: theme === 'gd' || theme === 'ive' || theme === 'babymonster' ? '#000' : 'var(--bg-color)',
-                      color: theme === 'gd' ? '#ffeb3b' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--accent)',
+                      background: ['gd', 'ive', 'babymonster', 'bts'].includes(theme) ? '#000' : 'var(--bg-color)',
+                      color: theme === 'gd' ? '#ffeb3b' : theme === 'bts' ? '#a17df0' : theme === 'seventeen' ? '#f59a98' : theme === 'anime' ? '#ff7fa9' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--accent)',
                       padding: '4px 12px', borderRadius: '20px', fontSize: '12px',
-                      border: theme === 'gd' ? '1px solid #ffeb3b' : theme === 'ive' ? '1px solid #ff4081' : theme === 'babymonster' ? '1px solid #ff1744' : 'none',
+                      border: theme === 'gd' ? '1px solid #ffeb3b' : theme === 'bts' ? '1px solid #a17df0' : theme === 'seventeen' ? '1px solid #f59a98' : theme === 'anime' ? '1px solid #ff7fa9' : theme === 'ive' ? '1px solid #ff4081' : theme === 'babymonster' ? '1px solid #ff1744' : '1px solid var(--border)',
                       fontWeight: 'bold',
                       whiteSpace: 'nowrap'
                     }}>{diary.mood}</span>
                   </div>
                   <p style={{ fontSize: '14px', color: 'var(--text-main)', margin: 0, lineHeight: '1.6', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>{diary.content}</p>
 
+                  {diary.photo && (
+                    <img src={diary.photo} alt="Diary" className="diary-photo" />
+                  )}
+
                   <div style={{ marginTop: '12px' }}>
-                    {/* 🎯 2. 「閱讀完整日記」按鈕防禦：在 GD 主題下強制變黑字！ */}
                     <button
                       onClick={() => handleViewDiary(diary)}
                       style={{
@@ -1128,16 +2244,14 @@ function App() {
                         borderRadius: '8px',
                         border: 'none',
                         background: 'var(--accent)',
-                        /* 🎨 雙重防禦：gd 變黑字，其餘主題維持白字 */
-                        color: theme === 'gd' ? '#000000 !important' : '#ffffff',
+                        color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000 !important' : '#ffffff',
                         cursor: 'pointer',
-                        fontWeight: '900', // 加粗增加可讀性
+                        fontWeight: '900',
                         fontSize: '13px',
                         transition: 'all 0.2s ease'
                       }}
-                      /* 💡 注入底層保險，確保 GD 黃色按鈕的文字絕對是黑色的 */
                       ref={(el) => {
-                        if (el) el.style.setProperty('color', theme === 'gd' ? '#000000' : '#ffffff', 'important');
+                        if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
                       }}
                     >
                       閱讀完整日記
@@ -1189,12 +2303,18 @@ function App() {
             : theme === 'aespa'
               ? '#050714'
               : theme === 'gd'
-                ? '#f4f1ea'
-                : theme === 'ive'
-                  ? '#f0f4f8'
-                  : theme === 'kpop'
-                    ? '#f9f6f0'
-                    : 'var(--global-bg)',
+                ? '#0d0b0a'
+                : theme === 'bts'
+                  ? '#080410'
+                  : theme === 'seventeen'
+                    ? '#fdf4f5'
+                    : theme === 'anime'
+                      ? '#eef7fc'
+                      : theme === 'ive'
+                        ? '#fcf8ff'
+                        : theme === 'kpop'
+                          ? '#f9f6f0'
+                          : 'var(--global-bg)',
         transition: 'background 0.3s ease'
       }}>
 
@@ -1211,7 +2331,16 @@ function App() {
             maxWidth: '400px',
             margin: '0 auto', // 卡片水平置中
             padding: '40px',
-            background: theme === 'kpop' ? 'linear-gradient(180deg, rgba(255, 246, 250, 0.98), rgba(255, 224, 236, 0.98))' : theme === 'blackpink' ? 'rgba(12, 5, 15, 0.96)' : theme === 'aespa' ? 'rgba(8, 14, 32, 0.96)' : theme === 'gd' ? 'rgba(16, 14, 12, 0.96)' : theme === 'ive' ? 'rgba(247, 249, 255, 0.98)' : theme === 'babymonster' ? 'rgba(18, 7, 12, 0.96)' : 'var(--bg-color)',
+            background: theme === 'kpop' ? 'linear-gradient(180deg, rgba(255, 246, 250, 0.98), rgba(255, 224, 236, 0.98))'
+              : theme === 'blackpink' ? 'rgba(12, 5, 15, 0.96)'
+                : theme === 'aespa' ? 'rgba(8, 14, 32, 0.96)'
+                  : theme === 'gd' ? 'rgba(16, 14, 12, 0.96)'
+                    : theme === 'ive' ? 'rgba(247, 249, 255, 0.98)'
+                      : theme === 'babymonster' ? 'rgba(18, 7, 12, 0.96)'
+                        : theme === 'bts' ? 'rgba(14, 8, 24, 0.96)'
+                          : theme === 'seventeen' ? 'rgba(253, 244, 245, 0.98)'
+                            : theme === 'anime' ? 'rgba(238, 247, 252, 0.98)'
+                              : 'var(--bg-color)',
             border: theme === 'kpop' ? '1px solid rgba(255, 64, 129, 0.2)' : '1px solid var(--border)',
             borderRadius: '16px',
             boxShadow: theme === 'kpop' ? '0 24px 80px rgba(255, 64, 129, 0.12)' : '0 24px 60px rgba(0,0,0,0.06)'
@@ -1219,17 +2348,17 @@ function App() {
             {currentView === 'register' ? (
               <form onSubmit={handleRegisterSubmit}>
                 <h2 style={{ color: 'var(--text-main)', marginBottom: '24px' }}>建立您的帳號</h2>
-                <input type="text" placeholder="使用者姓名" value={registerName} onChange={(e) => setRegisterName(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
-                <input type="email" placeholder="Email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
-                <input type="password" placeholder="設定密碼" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
+                <input type="text" placeholder="使用者姓名" value={registerName} onChange={(e) => setRegisterName(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
+                <input type="email" placeholder="Email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
+                <input type="password" placeholder="設定密碼" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
                 <button type="submit" style={{ width: '100%', padding: '14px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold' }}>註冊帳號</button>
                 <p onClick={() => setCurrentView('login')} style={{ color: 'var(--accent)', textAlign: 'center', cursor: 'pointer', marginTop: '16px' }}>已有帳號？前往登入</p>
               </form>
             ) : (
               <form onSubmit={handleLoginSubmit}>
                 <h2 style={{ color: 'var(--text-main)', marginBottom: '24px' }}>歡迎回來</h2>
-                <input type="email" placeholder="您的 Email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
-                <input type="password" placeholder="輸入密碼" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
+                <input type="email" placeholder="您的 Email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
+                <input type="password" placeholder="輸入密碼" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
 
                 <button type="submit" style={{
                   width: '100%',
@@ -1265,6 +2394,146 @@ function App() {
       </div> /* 👈 整個頁面的大盒子完美閉合 */
     )
   }
+  if (currentView === 'viewer') {
+    const isDarkTheme = (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd' || theme === 'bts');
+    return (
+      <>
+        {renderNavbar()}
+        <div style={{ maxWidth: '700px', margin: '40px auto', padding: '40px', background: 'var(--bg-color)', border: '1px solid var(--border)', borderRadius: '16px', position: 'relative' }}>
+          {renderThemeDecorations()}
+          <button onClick={() => { setCurrentView('home'); setEditingId(null); setIsSecret(false); setDiaryPassword(''); setIsPublic(false); setDiaryTitle(''); setDiaryContent(''); setDiaryBgm(''); setDiaryPhoto(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-sub)', cursor: 'pointer', marginBottom: '20px' }}>← 返回首頁</button>
+
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: isDarkTheme ? '#ffffff' : 'var(--text-main)' }}>
+              今日心情與歌曲
+            </label>
+            <select disabled value={diaryMood} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)', opacity: 0.8 }}>
+              <option>{diaryMood}</option>
+            </select>
+          </div>
+
+          {diaryBgm && (
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: isDarkTheme ? '#ffffff' : 'var(--text-main)' }}>
+                今日 BGM / 推薦歌曲
+              </label>
+              <input
+                disabled
+                type="text"
+                value={diaryBgm}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: isDarkTheme ? 'rgba(255,255,255,0.05)' : 'var(--bg-sec)',
+                  color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
+                  boxSizing: 'border-box',
+                  opacity: 0.8
+                }}
+              />
+            </div>
+          )}
+
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: 'bold',
+              color: isDarkTheme ? '#ffffff' : 'var(--text-main)'
+            }}>
+              日記標題
+            </label>
+            <input
+              disabled
+              type="text"
+              value={diaryTitle}
+              style={{
+                width: '100%',
+                padding: '14px',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                background: isDarkTheme ? 'rgba(255,255,255,0.05)' : 'var(--bg-sec)',
+                color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
+                boxSizing: 'border-box',
+                opacity: 0.8
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '32px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: 'bold',
+              color: isDarkTheme ? '#ffffff' : 'var(--text-main)'
+            }}>
+              日記內容
+            </label>
+            <textarea
+              disabled
+              rows={10}
+              value={diaryContent}
+              style={{
+                width: '100%',
+                padding: '14px',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                background: isDarkTheme ? 'rgba(255,255,255,0.05)' : 'var(--bg-sec)',
+                color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
+                boxSizing: 'border-box',
+                lineHeight: '1.6',
+                opacity: 0.8
+              }}
+            />
+          </div>
+
+          {diaryPhoto && (
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: isDarkTheme ? '#ffffff' : 'var(--text-main)' }}>
+                日記圖片
+              </label>
+              <img src={diaryPhoto} alt="Diary content" style={{ maxWidth: '100%', maxHeight: '350px', borderRadius: '8px', border: '1px solid var(--border)' }} />
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
+                opacity: 0.8
+              }}>
+                <input disabled type="checkbox" checked={isSecret} /> 設為秘密日記
+              </label>
+
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
+                opacity: 0.8
+              }}>
+                <input disabled type="checkbox" checked={isPublic} /> 設為公開日記
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end' }}>
+              <button onClick={() => { setCurrentView('home'); setEditingId(null); setIsSecret(false); setDiaryPassword(''); setIsPublic(false); setDiaryTitle(''); setDiaryContent(''); setDiaryBgm(''); setDiaryPhoto(''); }} style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)', cursor: 'pointer' }}>返回首頁</button>
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  const isDarkTheme = (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd' || theme === 'bts');
 
   return (
     <>
@@ -1275,7 +2544,6 @@ function App() {
         className="hero"
         style={{
           position: 'relative',
-          // 🛠️ 判斷多主題：增加 GD、IVE、BABYMONSTER 的專屬背景渲染
           backgroundImage: theme === 'gd'
             ? `linear-gradient(to bottom, rgba(15,15,15,0.65), rgba(25,20,10,0.9)), url(${gdragonBg})`
             : theme === 'ive'
@@ -1288,12 +2556,18 @@ function App() {
                     ? `linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(20,20,20,0.85)), url(${blackpinkBg})`
                     : theme === 'kpop'
                       ? `linear-gradient(180deg, rgba(255, 247, 251, 0.92) 0%, rgba(255, 233, 242, 0.92) 50%, rgba(255, 213, 232, 0.96) 100%), url(${twiceAllMembersBg})`
-                      : 'var(--bg-pattern)',
+                      : theme === 'bts'
+                        ? `linear-gradient(to bottom, rgba(15,8,29,0.65), rgba(25,12,45,0.9)), url(${btsBg})`
+                        : theme === 'seventeen'
+                          ? `linear-gradient(to bottom, rgba(253,244,245,0.55), rgba(240,243,249,0.78)), url(${seventeenBg})`
+                          : theme === 'anime'
+                            ? `linear-gradient(to bottom, rgba(238,247,252,0.55), rgba(224,239,250,0.78)), url(${animeBg})`
+                            : 'var(--bg-pattern)',
           backgroundSize: 'cover',
           backgroundPosition: 'center center',
           backgroundRepeat: 'no-repeat',
-          minHeight: theme === 'gd' ? '100vh' : '75vh',
-          backgroundAttachment: theme === 'gd' ? 'fixed' : 'scroll',
+          minHeight: theme === 'gd' || theme === 'bts' ? '100vh' : '75vh',
+          backgroundAttachment: theme === 'gd' || theme === 'bts' ? 'fixed' : 'scroll',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -1305,8 +2579,8 @@ function App() {
         {renderThemeDecorations()}
 
         <div className="eyebrow" style={{
-          background: theme === 'gd' ? '#ffeb3b' : theme === 'ive' ? 'linear-gradient(90deg, #ff80ab, #00e5ff)' : theme === 'babymonster' ? '#ff1744' : theme === 'aespa' ? 'linear-gradient(90deg, #a855f7, #06b6d4)' : theme === 'blackpink' ? '#ff007f' : 'rgba(0,0,0,0.05)',
-          color: theme === 'gd' ? '#000' : theme === 'ive' || theme === 'babymonster' || theme === 'aespa' || theme === 'blackpink' ? '#fff' : 'var(--text-main)',
+          background: theme === 'gd' ? '#ffeb3b' : theme === 'bts' ? '#a17df0' : theme === 'seventeen' ? 'linear-gradient(90deg, #f7cac9, #92a8d1)' : theme === 'anime' ? 'linear-gradient(90deg, #ff7fa9, #38bdf8)' : theme === 'ive' ? 'linear-gradient(90deg, #ff80ab, #00e5ff)' : theme === 'babymonster' ? '#ff1744' : theme === 'aespa' ? 'linear-gradient(90deg, #a855f7, #06b6d4)' : theme === 'blackpink' ? '#ff007f' : 'rgba(0,0,0,0.05)',
+          color: theme === 'gd' ? '#000' : (theme === 'ive' || theme === 'babymonster' || theme === 'aespa' || theme === 'blackpink' || theme === 'bts') ? '#fff' : 'var(--text-main)',
           fontWeight: 'bold'
         }}>
           <div className="eyebrow-dot" style={{ backgroundColor: theme === 'gd' ? '#000' : '#fff' }}></div>
@@ -1321,19 +2595,21 @@ function App() {
           ) : theme === 'blackpink' ? (
             "🖤 BLACKPINK IN YOUR AREA！BLINK 烈焰重低音模組已啟動"
           ) : theme === 'kpop' ? (
-            /* 🍭 這裡專門分給 TWICE 專用，再也不會跟經典風搶位置了！ */
             "🍭 ONE IN A MILLION！TWICE 9人全員應援板已聯動"
+          ) : theme === 'bts' ? (
+            "💜 BORN TO BE DYNAMITE！BTS 應援星光舞台已點亮"
+          ) : theme === 'seventeen' ? (
+            "💎 SAY THE NAME！SEVENTEEN 雙官色克拉矩陣已聯動"
+          ) : theme === 'anime' ? (
+            "🌸 櫻花飛舞的青空之下！日本動漫日常物語溫馨加載中"
           ) : (
-            /* 🍂 這是專屬於你「經典暖米」背景的文青台詞 */
             "📜 MEMOIR SYSTEM ｜ 經典暖米時光溫柔載入中，靜候你的日常篇章"
           )}
         </div>
 
         <h1 className="fade-up visible" style={{
           textAlign: 'center',
-          /* 🔥 確保所有風格都能在深色/漸層背景下亮起純白字 */
-          color: theme === 'classic' ? 'inherit' : '#fff',
-          /* ✨ 全局中文字體優化 */
+          color: (theme === 'classic' || theme === 'seventeen' || theme === 'anime') ? 'var(--text-main)' : '#fff',
           fontFamily: '"PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif',
           letterSpacing: '1px'
         }}>
@@ -1343,8 +2619,25 @@ function App() {
               <br />
               <em style={{ fontSize: '1.3rem', color: '#ffeb3b', fontStyle: 'italic', letterSpacing: '2px', textShadow: '0 0 20px rgba(255,235,59,0.5)' }}>🌼 寫下不隨波逐流的權志龍狂放詩篇</em>
             </>
+          ) : theme === 'bts' ? (
+            <>
+              <span style={{ fontFamily: '"Montserrat", sans-serif', fontWeight: '900', textShadow: '0 2px 10px rgba(0, 0, 0, 0.6)' }}>Love Yourself！</span>
+              <br />
+              <em style={{ fontSize: '1.3rem', color: '#a17df0', fontStyle: 'italic', letterSpacing: '2px', textShadow: '0 0 20px rgba(161,125,240,0.6)' }}>💜 在紫色星海中留下你 Dynamite 般的燦爛印記</em>
+            </>
+          ) : theme === 'seventeen' ? (
+            <>
+              <span style={{ fontFamily: '"Montserrat", sans-serif', fontWeight: '900', textShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}>Aju Nice！</span>
+              <br />
+              <em style={{ fontSize: '1.3rem', color: '#f27270ff', fontStyle: 'italic', fontWeight: 'bold', letterSpacing: '2px', textShadow: '0 0 10px rgba(255, 255, 255, 0.9)' }}>💎 Say the Name！與十七位少年寫下克拉的溫暖閃耀瞬間</em>
+            </>
+          ) : theme === 'anime' ? (
+            <>
+              <span style={{ fontFamily: '"Noto Sans TC", sans-serif', fontWeight: '900' }}>青空之下，櫻花飄落</span>
+              <br />
+              <em style={{ fontSize: '1.3rem', color: '#ef2166ff', fontStyle: 'italic', letterSpacing: '2px', textShadow: '0 0 15px rgba(255,127,169,0.6)' }}>🌸 寫下專屬於你的青春主角日常物語</em>
+            </>
           ) : theme === 'kpop' ? (
-            /* 🍭 TWICE */
             <>
               <span style={{ fontFamily: '"Montserrat", sans-serif', fontWeight: '900', textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 0, 0, 0.3)' }}>ONE IN A MILLION！</span>
               <br />
@@ -1353,7 +2646,6 @@ function App() {
               </em>
             </>
           ) : theme === 'ive' ? (
-            /* 💎 IVE */
             <>
               <span style={{ fontFamily: '"Playfair Display", serif', fontStyle: 'italic', fontWeight: '700', textShadow: '0 2px 8px rgba(0, 0, 0, 0.4), 0 0 12px rgba(0, 50, 150, 0.3)' }}>That's My Style！</span>
               <br />
@@ -1374,7 +2666,6 @@ function App() {
               <em style={{ fontSize: '1.3rem', color: '#00ffff', fontStyle: 'italic', letterSpacing: '2px', textShadow: '0 0 25px rgba(0,255,255,0.8)' }}>🪐 跨越次元編譯你的超現實回憶</em>
             </>
           ) : theme === 'blackpink' ? (
-            /* 🔥 BLACKPINK：大字級 4.2rem 藝術英文字 + 1.3rem 質感斜體中文字 */
             <>
               <span style={{
                 fontFamily: '"Playfair Display", serif',
@@ -1399,7 +2690,6 @@ function App() {
               </em>
             </>
           ) : (
-            /* ✨ 預設 Classic 主題 */
             <>
               寫下你每日的心得吧!
               <br />
@@ -1407,16 +2697,15 @@ function App() {
             </>
           )}
         </h1>
-        {/* 🚀 尋找程式碼中的這一段並替換 style */}
+
         <p className="hero-sub fade-up visible" style={{
           textAlign: 'center',
           maxWidth: '650px',
           lineHeight: '1.8',
-          fontSize: '17px', // 微調放大字體
-          /* 🔥 核心關鍵：根據不同風格給予最明顯的顏色、加粗與文字陰影 */
+          fontSize: '17px',
           fontWeight: '600',
-          color: theme === 'classic' ? 'var(--text-main)' : '#ffffff',
-          textShadow: theme === 'classic'
+          color: (theme === 'classic' || theme === 'seventeen' || theme === 'anime') ? 'var(--text-main)' : '#ffffff',
+          textShadow: (theme === 'classic' || theme === 'seventeen' || theme === 'anime')
             ? 'none'
             : theme === 'gd'
               ? '0 2px 10px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.9)'
@@ -1426,11 +2715,17 @@ function App() {
                   ? '0 2px 10px rgba(0,0,0,0.95), 0 1px 4px rgba(0,0,0,0.9)'
                   : theme === 'aespa'
                     ? '0 2px 12px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.9)'
-                    : '0 2px 8px rgba(0,0,0,0.8)' // blackpink & kpop 預設深色陰影
+                    : '0 2px 8px rgba(0,0,0,0.8)'
         }}
         >
           {theme === 'gd' ? (
             "「八九不離十，我是唯一的潮流」— 踏入 GD 的黑金高街實驗室，像揮灑噴漆一般，留住你最特立獨行、不可一世的靈魂印記。"
+          ) : theme === 'bts' ? (
+            "「在紫色星河的擁抱下，我們與你同在」— 點亮阿米棒的紫色星海，在這裡記錄你每一天像 Dynamite 般璀璨或如 Spring Day 般溫馨的閃耀回憶。"
+          ) : theme === 'seventeen' ? (
+            "「Say the Name！用溫暖的粉藍色，編織專屬克拉與少年的回憶」— 感受 SEVENTEEN 溫暖元氣，在這裡寫下生活中的每一分美好與小確幸。"
+          ) : theme === 'anime' ? (
+            "「櫻花瓣落下的速度是秒速五厘米」— 走進夢幻二次元青空，在這裡記錄下你作為青春日常番或熱血冒險番主角的暖心日常物語。"
           ) : theme === 'ive' ? (
             "「我就像鑽石，無懈可擊」— 啟動張員瑛式的美學視角，讓你的日常日記充斥精緻蝴蝶結與奢華光芒，你就是生活的 C 位大千金。"
           ) : theme === 'babymonster' ? (
@@ -1440,26 +2735,26 @@ function App() {
           ) : theme === 'blackpink' ? (
             "「頂峰相見，無人能擋」— 帶上你的粉紅應援氣球槌，在這裡刻下最具野心、最不服輸且充滿光芒的震撼瞬間。"
           ) : theme === 'kpop' ? (
-            /* 🍭 這是 TWICE 風格下的副標題文字 */
-            "「只要我們在一起，就是 ONE IN A MILLION」— 點亮甜蜜的 Candy Bong 應援光芒，在這裡用滿滿的愛與元氣，記錄下九位女孩與你最珍貴的閃耀瞬間。"
+            "「只要我們在一起，就是 ONE IN A MILLION」— 點亮甜蜜的 Candy Bong 應援光芒，在這裡用滿滿電能，記錄下九位女孩與你最珍貴的閃耀瞬間。"
           ) : (
-            /* 🍂 這是最重要補上的「經典暖米」預設文字，完美避開 TWICE 跑棚！ */
-            "「留住歲月裡的溫柔」— 靜下心來，把平凡的日常慢慢鋪陳，在這裡將每一段恬靜的時光寫成最精緻、最值得細細品味的溫暖詩篇。"
+            "「留住歲月裡的溫柔」— 靜下心來，把平凡的日常慢慢鋪陳，在這裡將每一段恬靜的時光寫成最精緻、最溫暖的詩篇。"
           )}
         </p>
 
         <div className="hero-actions">
-          {/* 主要按鈕：開始寫日記 */}
           <a href="#" className="btn-hero btn-hero-primary"
             style={{
               background:
                 theme === 'gd' ? '#ffeb3b' :
-                  theme === 'ive' ? '#ff4081' :
-                    theme === 'babymonster' ? '#ff1744' :
-                      theme === 'aespa' ? 'linear-gradient(135deg, #a855f7, #06b6d4)' :
-                        theme === 'blackpink' ? '#ff007f' :
-                          'var(--accent)',
-              color: theme === 'gd' ? '#000' : '#fff',
+                  theme === 'bts' ? '#a17df0' :
+                    theme === 'seventeen' ? '#f59a98' :
+                      theme === 'anime' ? '#ff7fa9' :
+                        theme === 'ive' ? '#ff4081' :
+                          theme === 'babymonster' ? '#ff1744' :
+                            theme === 'aespa' ? 'linear-gradient(135deg, #a855f7, #06b6d4)' :
+                              theme === 'blackpink' ? '#ff007f' :
+                                'var(--accent)',
+              color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000' : '#fff',
               border: 'none'
             }}
             onClick={(e) => {
@@ -1473,35 +2768,43 @@ function App() {
             }}
           >
             {theme === 'gd' ? '🎨 狂傲揮灑 藝術寫日記' :
-              theme === 'ive' ? '👑 優雅登台 千金寫日記' :
-                theme === 'babymonster' ? '🩸 猛獸暴走 怪物寫日記' :
-                  theme === 'aespa' ? '🚀 穿越 KWANGYA 未來寫日記' :
-                    theme === 'blackpink' ? '🖤💗 女王降臨 Born Pink寫日記' :
-                      theme === 'kpop' ? '🍭 心動滿分 青春寫日記' :
-                        '開始寫日記'}
+              theme === 'bts' ? '💜 紫色星夜 防彈寫日記' :
+                theme === 'seventeen' ? '💎 閃耀克拉 元氣寫日記' :
+                  theme === 'anime' ? '🌸 櫻花飄落 青春寫日記' :
+                    theme === 'ive' ? '👑 優雅登台 千金寫日記' :
+                      theme === 'babymonster' ? '🩸 猛獸暴走 怪物寫日記' :
+                        theme === 'aespa' ? '🚀 穿越 KWANGYA 未來寫日記' :
+                          theme === 'blackpink' ? '🖤💗 女王降臨 Born Pink寫日記' :
+                            theme === 'kpop' ? '🍭 心動滿分 青春寫日記' :
+                              '開始寫日記'}
           </a>
 
-          {/* 次要按鈕：看年度回顧 */}
           <a href="#" className="btn-hero btn-hero-secondary"
             style={{
               background:
-                theme === 'gd' || theme === 'ive' || theme === 'babymonster' || theme === 'aespa' || theme === 'blackpink'
+                (theme === 'gd' || theme === 'ive' || theme === 'babymonster' || theme === 'aespa' || theme === 'blackpink' || theme === 'bts')
                   ? '#000'
                   : 'var(--bg-sec)',
               color:
                 theme === 'gd' ? '#ffeb3b' :
-                  theme === 'ive' ? '#ff4081' :
-                    theme === 'babymonster' ? '#ff1744' :
-                      theme === 'aespa' ? '#00ffff' :
-                        theme === 'blackpink' ? '#ff007f' :
-                          'var(--text-main)',
+                  theme === 'bts' ? '#a17df0' :
+                    theme === 'seventeen' ? '#f59a98' :
+                      theme === 'anime' ? '#ff7fa9' :
+                        theme === 'ive' ? '#ff4081' :
+                          theme === 'babymonster' ? '#ff1744' :
+                            theme === 'aespa' ? '#00ffff' :
+                              theme === 'blackpink' ? '#ff007f' :
+                                'var(--text-main)',
               border:
                 theme === 'gd' ? '1px solid #ffeb3b' :
-                  theme === 'ive' ? '1px solid #ff4081' :
-                    theme === 'babymonster' ? '1px solid #ff1744' :
-                      theme === 'aespa' ? '1px solid #00ffff' :
-                        theme === 'blackpink' ? '1px solid #ff007f' :
-                          '1px solid var(--border)'
+                  theme === 'bts' ? '1px solid #a17df0' :
+                    theme === 'seventeen' ? '1px solid #f59a98' :
+                      theme === 'anime' ? '1px solid #ff7fa9' :
+                        theme === 'ive' ? '1px solid #ff4081' :
+                          theme === 'babymonster' ? '1px solid #ff1744' :
+                            theme === 'aespa' ? '1px solid #00ffff' :
+                              theme === 'blackpink' ? '1px solid #ff007f' :
+                                '1px solid var(--border)'
             }}
             onClick={(e) => {
               e.preventDefault();
@@ -1514,14 +2817,276 @@ function App() {
             }}
           >
             {theme === 'gd' ? '⚡ 讀取 無題 潮流舞台編年史' :
-              theme === 'ive' ? '🎀 開啟 I AM 耀眼璀璨回顧' :
-                theme === 'babymonster' ? '📢 觀看 SHEESH 怪物進化軌跡' :
-                  theme === 'aespa' ? '🌌 解鎖 Supernova 星際成長紀錄' :
-                    theme === 'blackpink' ? '✨ 翻閱 Born Pink 女王傳奇篇章' :
-                      theme === 'kpop' ? '💝 收藏 ONE SPARK 青春回憶錄' :
-
-                        '看年度回顧'}
+              theme === 'bts' ? '✨ 收藏 Dynamite 璀璨舞台回顧' :
+                theme === 'seventeen' ? '💎 開啟 Aju Nice 克拉熱血舞台回顧' :
+                  theme === 'anime' ? '🌸 走進 櫻花飛舞 青春二次元回顧' :
+                    theme === 'ive' ? '🎀 開啟 I AM 耀眼璀璨回顧' :
+                      theme === 'babymonster' ? '📢 觀看 SHEESH 怪物進化軌跡' :
+                        theme === 'aespa' ? '🌌 解鎖 Supernova 星際成長紀錄' :
+                          theme === 'blackpink' ? '✨ 翻閱 Born Pink 女王傳奇篇章' :
+                            theme === 'kpop' ? '💝 收藏 ONE SPARK 青春回憶錄' :
+                              '看年度回顧'}
           </a>
+        </div>
+      </section>
+
+      {/* 📅 K-Pop 追星中控台 (K-Pop Schedule & Countdown Dashboard) */}
+      <section style={{
+        maxWidth: '900px',
+        margin: '40px auto 0 auto',
+        padding: '0 20px',
+        boxSizing: 'border-box'
+      }}>
+        <div style={{
+          background: isDarkTheme ? 'rgba(255, 255, 255, 0.03)' : 'var(--bg-sec)',
+          border: '1px solid var(--border)',
+          borderRadius: '24px',
+          padding: '32px',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.04)'
+        }}>
+
+          <h2 style={{
+            fontSize: '22px',
+            fontWeight: '800',
+            marginBottom: '24px',
+            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            color: 'var(--accent)'
+          }}>
+            <span>📅</span> K-Pop 追星應援中控台 (Dashboard)
+          </h2>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gap: '24px'
+          }}>
+
+            {/* Left side: Countdown Timer */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-main)' }}>
+                  <span>⏳</span> 活動與回歸倒數
+                </h3>
+                {loggedInUser && (
+                  <button
+                    onClick={() => {
+                      setNewCountdownTitle('');
+                      setNewCountdownDate('');
+                      setShowAddCountdownModal(true);
+                    }}
+                    style={{
+                      background: 'var(--accent)',
+                      color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '4px 10px',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
+                    }}
+                    ref={(el) => {
+                      if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
+                    }}
+                  >
+                    ➕ 新增倒數
+                  </button>
+                )}
+              </div>
+
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                maxHeight: '320px',
+                overflowY: 'auto',
+                paddingRight: '6px'
+              }}>
+                {countdownEvents
+                  .filter((event) => event.userEmail === 'system' || (userEmail && event.userEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()))
+                  .map((event) => {
+                    const remaining = getCountdownString(event.targetDate);
+                    const isSystem = event.userEmail === 'system';
+                    return (
+                      <div
+                        key={event.id}
+                      style={{
+                        background: isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'var(--bg-color)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '16px',
+                        padding: '16px',
+                        position: 'relative',
+                        transition: 'transform 0.2s',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                        <div style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-main)' }}>{event.title}</div>
+                        {loggedInUser && (event.userEmail === userEmail || isSystem) && (
+                          <button
+                            onClick={() => handleDeleteCountdown(event.id)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#ff4d4d',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              padding: '2px 6px'
+                            }}
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                      <div style={{
+                        fontSize: '15px',
+                        fontWeight: '800',
+                        color: 'var(--accent)',
+                        fontFamily: 'monospace',
+                        letterSpacing: '0.5px'
+                      }}>
+                        {remaining}
+                      </div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-sub)', marginTop: '4px' }}>
+                        目標時間: {new Date(event.targetDate).toLocaleString('zh-TW')}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right side: Schedules */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-main)' }}>
+                  <span>📋</span> 打歌與行程表
+                </h3>
+                {loggedInUser && (
+                  <button
+                    onClick={() => {
+                      setNewScheduleTitle('');
+                      setNewScheduleDate('');
+                      setNewScheduleType('show');
+                      setShowAddScheduleModal(true);
+                    }}
+                    style={{
+                      background: 'var(--accent)',
+                      color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '4px 10px',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
+                    }}
+                    ref={(el) => {
+                      if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
+                    }}
+                  >
+                    ➕ 新增行程
+                  </button>
+                )}
+              </div>
+
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                maxHeight: '320px',
+                overflowY: 'auto',
+                paddingRight: '6px'
+              }}>
+                {schedules
+                  .filter((sch) => sch.userEmail === 'system' || (userEmail && sch.userEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()))
+                  .map((sch) => {
+                    const isSystem = sch.userEmail === 'system';
+                    const getBadgeDetails = (type: string) => {
+                    switch (type) {
+                      case 'comeback': return { text: '💿 回歸', color: 'var(--accent)', bg: 'rgba(255, 64, 129, 0.15)' };
+                      case 'concert': return { text: '🎤 演唱會', color: '#ff1744', bg: 'rgba(255, 23, 68, 0.15)' };
+                      case 'birthday': return { text: '🎂 生日', color: '#ff80ab', bg: 'rgba(255, 128, 171, 0.15)' };
+                      case 'show': return { text: '📺 節目', color: '#00e5ff', bg: 'rgba(0, 229, 255, 0.15)' };
+                      default: return { text: '⭐ 其他', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.15)' };
+                    }
+                  };
+                  const badge = getBadgeDetails(sch.type);
+                  return (
+                    <div
+                      key={sch.id}
+                      style={{
+                        background: isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'var(--bg-color)',
+                        border: '1px solid var(--border)',
+                        borderLeft: `4px solid ${badge.color}`,
+                        borderRadius: '12px',
+                        padding: '12px 14px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.01)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{
+                            background: badge.bg,
+                            color: badge.color,
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            padding: '2px 8px',
+                            borderRadius: '20px',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {badge.text}
+                          </span>
+                          <span style={{ fontSize: '11px', color: 'var(--text-sub)', fontWeight: 'bold' }}>{sch.date}</span>
+                        </div>
+                        <div style={{
+                          fontSize: '13px',
+                          fontWeight: '700',
+                          color: 'var(--text-main)',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }} title={sch.title}>
+                          {sch.title}
+                        </div>
+                      </div>
+                      {loggedInUser && (sch.userEmail === userEmail || isSystem) && (
+                        <button
+                          onClick={() => handleDeleteSchedule(sch.id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#ff4d4d',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            padding: '4px 6px',
+                            marginLeft: '8px'
+                          }}
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
 
@@ -1529,63 +3094,61 @@ function App() {
       <section style={{ padding: '80px 20px' }}>
         <div style={{ maxWidth: '750px', margin: '0 auto', position: 'relative' }}>
 
-          {/* ✨ 1. 大標題優化：GD、TWICE、IVE 等淺色底一律用質感深藍灰字 #2c3e50 */}
           <h2 style={{
             fontSize: '26px',
             marginBottom: '8px',
             textAlign: 'center',
             fontWeight: '700',
-            /* 🎨 核心修正：加入 'gd'，讓四大深色背景主題一律強行亮白字！ */
-            color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd') ? '#fff' : '#2c3e50',
-            /* ✨ 專屬光暈防禦：如果是 gd 主題，就綻放強烈叛逆的黃色霓虹光暈！其餘深色用白光 */
-            textShadow: theme === 'gd'
-              ? '0 2px 15px rgba(255, 235, 59, 0.6), 0 1px 4px rgba(255, 235, 59, 0.4)'
-              : (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa')
-                ? '0 2px 12px rgba(255,255,255,0.3)'
-                : '0 1px 2px rgba(0,0,0,0.05)',
+            color: isDarkTheme ? '#fff' : '#2c3e50',
+            textShadow: theme === 'bts'
+              ? '0 2px 15px rgba(161, 125, 240, 0.6), 0 1px 4px rgba(161, 125, 240, 0.4)'
+              : theme === 'gd'
+                ? '0 2px 15px rgba(255, 235, 59, 0.6), 0 1px 4px rgba(255, 235, 59, 0.4)'
+                : (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa')
+                  ? '0 2px 12px rgba(255,255,255,0.3)'
+                  : '0 1px 2px rgba(0,0,0,0.05)',
             transition: 'all 0.3s ease'
           }}>
             {theme === 'gd' ? '⚡ GD 獨家不羈文字唱片軌跡'
-              : theme === 'ive' ? '🎀 IVE 頂級鑽石大千金生活圖鑑'
-                : theme === 'babymonster' ? '🩸 BABYMONSTER 狂暴爪痕文字熔爐'
-                  : theme === 'kpop' ? '🍭 TWICE 萬千星芒璀璨時光編織紀錄'
-                    : theme === 'blackpink' ? '🔥 BLACKPINK 統治全域女王編年史'
-                      : theme === 'aespa' ? '🪐 aespa 曠野次元超現實記憶載體'
-                        : '📜 您的歷史日記列表'}
+              : theme === 'bts' ? '💜 BTS 紫色星河時光留聲機'
+                : theme === 'seventeen' ? '💎 SEVENTEEN 克拉家族元氣生活圖鑑'
+                  : theme === 'anime' ? '🌸 日本動漫 青空與櫻花主角物語日記'
+                    : theme === 'ive' ? '🎀 IVE 頂級鑽石大千金生活圖鑑'
+                      : theme === 'babymonster' ? '🩸 BABYMONSTER 狂暴爪痕文字熔爐'
+                        : theme === 'kpop' ? '🍭 TWICE 萬千星芒璀璨時光編織紀錄'
+                          : theme === 'blackpink' ? '🔥 BLACKPINK 統治全域女王編年史'
+                            : theme === 'aespa' ? '🪐 aespa 曠野次元超現實記憶載體'
+                              : '📜 您的歷史日記列表'}
           </h2>
 
-          {/* ✨ 2. 副標題優化：GD 也維持清晰的深灰色字 */}
           <p style={{
-            color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa') ? 'rgba(255, 255, 255, 0.8)' : '#666',
+            color: isDarkTheme ? 'rgba(255, 255, 255, 0.8)' : '#666',
             textAlign: 'center',
             fontSize: '14px',
             marginBottom: '35px',
             transition: 'all 0.3s ease'
           }}>
             {theme === 'gd' ? '打破常規的雲端美學矩陣已載入'
-              : theme === 'ive' ? '高奢端莊的雲端紀錄系統，時刻閃耀著鑽石般的璀璨色澤'
-                : theme === 'babymonster' ? '怪物新人的狂暴能量已注入，正在同步遠端靈魂數據'
-                  : theme === 'kpop' ? '點亮專屬的 Candy Bong，將我們共同的 Shining Moment 永久封存'
-                    : theme === 'blackpink' ? 'In Your Area！以粉黑之名，高調宣示妳的專屬統治紀錄'
-                      : theme === 'aespa' ? 'Su-Su-Supernova！跨越平行的 Real World，解碼來自 SYNK 的記憶碎片'
-                        : '從雲端資料庫即時拉取的個人紀錄'}
+              : theme === 'bts' ? '在紫色星海的擁抱下，珍藏防彈與你走過的每一段 Dynamite 青春足跡'
+                : theme === 'seventeen' ? 'Say the Name！用清爽的寧靜粉藍，編織克拉與少年們的溫馨日常'
+                  : theme === 'anime' ? '在櫻花瓣飄落的青空之下，翻開你作為二次元主角的溫暖冒險繪卷'
+                    : theme === 'ive' ? '高奢端莊的雲端紀錄系統，時刻閃耀著鑽石般的璀璨色澤'
+                      : theme === 'babymonster' ? '怪物新人的狂暴能量已注入，正在同步遠端靈魂數據'
+                        : theme === 'kpop' ? '點亮專屬的 Candy Bong，將我們共同的 Shining Moment 永久封存'
+                          : theme === 'blackpink' ? 'In Your Area！以粉黑之名，高調宣示妳的專屬統治紀錄'
+                            : theme === 'aespa' ? 'Su-Su-Supernova！跨越平行的 Real World，解碼來自 SYNK 的記憶碎片'
+                              : '從雲端資料庫即時拉取的個人紀錄'}
           </p>
 
           {!loggedInUser ? (
-            /* 🔒 3. 訪客提示卡片 */
+            /* 🔒 訪客提示卡片 */
             <div style={{
               textAlign: 'center',
               padding: '50px 30px',
-              background: (theme === 'blackpink' || theme === 'aespa' || theme === 'babymonster')
-                ? 'rgba(0, 0, 0, 0.4)'
-                : 'rgba(255, 255, 255, 0.6)',
+              background: isDarkTheme ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.6)',
               borderRadius: '16px',
-              border: (theme === 'blackpink' || theme === 'aespa' || theme === 'babymonster')
-                ? '2px dashed rgba(255,255,255,0.2)'
-                : '2px dashed rgba(0,0,0,0.1)',
-              color: (theme === 'blackpink' || theme === 'aespa' || theme === 'babymonster')
-                ? '#ffffff'
-                : '#334155',
+              border: isDarkTheme ? '2px dashed rgba(255,255,255,0.2)' : '2px dashed rgba(0,0,0,0.1)',
+              color: isDarkTheme ? '#ffffff' : '#334155',
               backdropFilter: 'blur(8px)',
               transition: 'all 0.3s ease'
             }}>
@@ -1593,30 +3156,25 @@ function App() {
                 fontSize: '16px',
                 marginBottom: '16px',
                 fontWeight: '600',
-                textShadow: (theme === 'blackpink' || theme === 'aespa' || theme === 'babymonster')
-                  ? '0 2px 8px rgba(255,255,255,0.2)'
-                  : 'none'
+                textShadow: isDarkTheme ? '0 2px 8px rgba(255,255,255,0.2)' : 'none'
               }}>
                 目前處於訪客狀態，請先登入帳號來解鎖與查看您的歷史雲端日記！
               </p>
 
-              {/* 🎯 強制權重防禦：硬把字體壓成黑色！ */}
               <button onClick={() => setCurrentView('login')} style={{
-                padding: '12px 28px', // 稍微加大一點更好點擊
+                padding: '12px 28px',
                 background: 'var(--accent)',
-                /* 🎨 使用 css 終極遮罩技巧，如果 theme === 'gd'，強制給予 !important 黑色 */
-                color: theme === 'gd' ? '#000000 !important' : '#ffffff',
+                color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000 !important' : '#ffffff',
                 border: 'none',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                fontSize: '16px', // 字體放大到 16px
-                fontWeight: '900', // 爆粗體
+                fontSize: '16px',
+                fontWeight: '900',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                 transition: 'all 0.3s ease'
               }}
-                /* 💡 雙重保險：萬一行內 style 的 !important 沒反應，我們用 JS 直接在元素渲染時硬塞顏色 */
                 ref={(el) => {
-                  if (el) el.style.setProperty('color', theme === 'gd' ? '#000000' : '#ffffff', 'important');
+                  if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
                 }}>
                 立刻前往登入
               </button>
@@ -1632,67 +3190,83 @@ function App() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px', alignItems: 'center' }}>
                     <span style={{ fontSize: '14px', color: 'var(--text-sub)' }}>📅 {diary.date}</span>
                     <span style={{
-                      background: theme === 'gd' || theme === 'ive' || theme === 'babymonster' ? '#000' : 'var(--bg-sec)',
-                      color: theme === 'gd' ? '#ffeb3b' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--text-main)',
+                      background: (theme === 'gd' || theme === 'ive' || theme === 'babymonster' || theme === 'bts') ? '#000' : 'var(--bg-sec)',
+                      color: theme === 'gd' ? '#ffeb3b' : theme === 'bts' ? '#a17df0' : theme === 'seventeen' ? '#f59a98' : theme === 'anime' ? '#ff7fa9' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--text-main)',
                       padding: '4px 12px', borderRadius: '20px', fontSize: '13px',
-                      border: theme === 'gd' ? '1px solid #ffeb3b' : theme === 'ive' ? '1px solid #ff4081' : theme === 'babymonster' ? '1px solid #ff1744' : '1px solid var(--border)',
+                      border: theme === 'gd' ? '1px solid #ffeb3b' : theme === 'bts' ? '1px solid #a17df0' : theme === 'seventeen' ? '1px solid #f59a98' : theme === 'anime' ? '1px solid #ff7fa9' : theme === 'ive' ? '1px solid #ff4081' : theme === 'babymonster' ? '1px solid #ff1744' : '1px solid var(--border)',
                       fontWeight: 'bold'
                     }}>{diary.mood}</span>
                   </div>
-                  {/* 🎯 1. 日記標題色彩防禦：點亮 twice 🔒 和 煩 的地方！ */}
+
                   <h3 style={{
                     fontSize: '20px',
                     margin: '0 0 12px 0',
                     fontWeight: '700',
-                    /* 🎨 四大深色主題強制變白字，其餘主題維持原色 */
-                    color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd')
-                      ? '#ffffff'
-                      : 'var(--text-main)',
+                    color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
                     transition: 'all 0.3s ease'
                   }}>
                     {diary.title} {diary.isSecret ? <span style={{ marginLeft: '8px', fontSize: '14px' }}>🔒</span> : null}
                   </h3>
 
+                  {diary.bgm && (
+                    <div style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: isDarkTheme ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+                      border: '1px solid var(--border)',
+                      padding: '4px 10px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      color: 'var(--accent)',
+                      fontWeight: 'bold',
+                      marginTop: '4px',
+                      marginBottom: '8px'
+                    }}>
+                      🎵 {diary.bgm}
+                    </div>
+                  )}
+
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                     <div style={{ flex: 1 }}>
                       {diary.isSecret ? (
-                        /* 🎯 2. 秘密日記提示文字防禦：黑底時變成清晰的淡灰色，淺底維持原樣 */
                         <p style={{
                           fontSize: '16px',
                           margin: 0,
-                          color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd')
-                            ? 'rgba(255, 255, 255, 0.7)'
-                            : 'var(--text-sub)',
+                          color: isDarkTheme ? 'rgba(255, 255, 255, 0.7)' : 'var(--text-sub)',
                           transition: 'all 0.3s ease'
                         }}>
                           🔒 這是一篇秘密日記，請按「查看」並輸入密碼以檢視內容。
                         </p>
                       ) : (
-                        /* 🎯 3. 一般日記內文防禦：黑底時文字也要變亮白，不然內文會看不清！ */
                         <p style={{
                           fontSize: '16px',
                           margin: 0,
                           whiteSpace: 'pre-wrap',
                           lineHeight: '1.7',
-                          color: (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd')
-                            ? '#e2e8f0' // 高級的暖白灰色 
-                            : 'var(--text-sub)',
+                          color: isDarkTheme ? '#e2e8f0' : 'var(--text-sub)',
                           transition: 'all 0.3s ease'
                         }}>{diary.content}</p>
                       )}
                     </div>
 
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <button onClick={() => handleViewDiary(diary)} style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer' }}>查看</button>
+                      <button onClick={() => handleViewDiary(diary)} style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-main)', cursor: 'pointer' }}>查看</button>
                       {diary.userEmail === userEmail && (
                         <>
-                          <button onClick={() => handleEditDiary(diary)} style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--bg-sec)', cursor: 'pointer' }}>編輯</button>
+                          <button onClick={() => handleEditDiary(diary)} style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)', cursor: 'pointer' }}>編輯</button>
                           <button onClick={() => handleDeleteDiary(diary.id)} style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #ff6b6b', background: 'transparent', color: '#ff6b6b', cursor: 'pointer' }}>刪除</button>
-                          <button onClick={() => handleTogglePublic(diary.id, !!diary.isPublic)} style={{ padding: '8px 12px', borderRadius: '10px', border: diary.isPublic ? '1px solid #00d084' : '1px solid var(--border)', background: 'transparent', color: diary.isPublic ? '#00d084' : 'var(--text-main)', cursor: 'pointer' }}>{diary.isPublic ? '🌍 已公開' : '🔒 設為公開'}</button>
+                          {!diary.isSecret && (
+                            <button onClick={() => handleTogglePublic(diary.id, !!diary.isPublic)} style={{ padding: '8px 12px', borderRadius: '10px', border: diary.isPublic ? '1px solid #00d084' : '1px solid var(--border)', background: 'transparent', color: diary.isPublic ? '#00d084' : 'var(--text-main)', cursor: 'pointer' }}>{diary.isPublic ? '🌍 已公開' : '🔒 設為公開'}</button>
+                          )}
                         </>
                       )}
                     </div>
                   </div>
+
+                  {diary.photo && !diary.isSecret && (
+                    <img src={diary.photo} alt="Diary Photo" className="diary-photo" />
+                  )}
                 </div>
               ))}
             </div>
@@ -1720,14 +3294,376 @@ function App() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '13px', color: 'var(--text-sub)', flexWrap: 'wrap', gap: '10px' }}>
             <span>© 2026 Memoir. All rights reserved.</span>
-            <span style={{ fontWeight: '600', color: theme === 'gd' ? '#ffeb3b' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--accent)' }}>
-              {theme === 'gd' ? '🌼 G-DRAGON 潮流先鋒終端控制塔頂峰對接' : theme === 'ive' ? '🎀 IVE 大千金精緻鑽石矩陣完美連線' : theme === 'babymonster' ? '😈 BABYMONSTER 怪物新人黑馬引擎全開' : '🎵 K-POP 跨世代超級控制台已解鎖'}
+            <span style={{ fontWeight: '600', color: theme === 'gd' ? '#ffeb3b' : theme === 'bts' ? '#a17df0' : theme === 'seventeen' ? '#f59a98' : theme === 'anime' ? '#ff7fa9' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--accent)' }}>
+              {theme === 'gd' ? '🌼 G-DRAGON 潮流先鋒終端控制塔頂峰對接' :
+                theme === 'bts' ? '💜 BTS 紫色星河天團時光控制塔已啟動' :
+                  theme === 'seventeen' ? '💎 SEVENTEEN 克拉應援能量矩陣連線中' :
+                    theme === 'anime' ? '🌸 ANIME 櫻花日常二次元終端模組加載完成' :
+                      theme === 'ive' ? '🎀 IVE 大千金精緻鑽石矩陣完美連線' :
+                        theme === 'babymonster' ? '😈 BABYMONSTER 怪物新人黑馬引擎全開' :
+                          '🎵 K-POP 跨世代超級控制台已解鎖'}
             </span>
           </div>
         </div>
       </footer>
+
+      {/* 🔔 時光膠囊解鎖彈出通知 Modal */}
+      {activeNotificationCapsule && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            maxWidth: '500px',
+            width: '100%',
+            background: 'var(--bg-color)',
+            border: '2px solid var(--accent)',
+            borderRadius: '24px',
+            padding: '40px',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+            position: 'relative',
+            color: 'var(--text-main)',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>📬</div>
+            <h3 style={{ fontSize: '22px', fontWeight: '800', margin: '0 0 12px 0', color: 'var(--accent)' }}>
+              您有一封來自過去的信已解鎖！
+            </h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-sub)', marginBottom: '24px' }}>
+              這是在 {new Date(activeNotificationCapsule.createdAt).toLocaleDateString('zh-TW')} 寫給今天解鎖的時光信件
+            </p>
+            <div style={{
+              background: 'var(--bg-sec)',
+              border: '1px solid var(--border)',
+              borderRadius: '16px',
+              padding: '24px',
+              textAlign: 'left',
+              fontSize: '15px',
+              lineHeight: '1.7',
+              maxHeight: '200px',
+              overflowY: 'auto',
+              whiteSpace: 'pre-wrap',
+              marginBottom: '30px',
+              color: 'var(--text-main)'
+            }}>
+              {activeNotificationCapsule.content}
+            </div>
+            <button
+              onClick={() => handleOpenCapsuleNotification(activeNotificationCapsule)}
+              style={{
+                width: '100%',
+                padding: '14px',
+                background: 'var(--accent)',
+                color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff',
+                border: 'none',
+                borderRadius: '12px',
+                fontWeight: '800',
+                fontSize: '16px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                transition: 'all 0.2s'
+              }}
+              ref={(el) => {
+                if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
+              }}
+            >
+              🔓 讀取並收入膠囊箱
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ⚙️ 設定 Modal */}
+      {showSettingsModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '800', color: 'var(--accent)' }}>⚙️ 個人設定</h3>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>修改顯示名稱</label>
+              <input
+                type="text"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-sec)',
+                  color: 'var(--text-main)',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '10px' }}>
+              <button
+                onClick={() => setShowSettingsModal(false)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  color: 'var(--text-main)'
+                }}
+              >
+                取消
+              </button>
+              <button
+                onClick={handleUpdateUsername}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                儲存
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 📣 應援留言 Modal */}
+      {showAddCheerModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '800', color: 'var(--accent)' }}>📣 留下你的應援語</h3>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>應援訊息 (限 30 字)</label>
+              <input
+                type="text"
+                maxLength={30}
+                value={newCheerContent}
+                onChange={(e) => setNewCheerContent(e.target.value)}
+                placeholder="例如: aespa 永遠走花路吧！❤️"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-sec)',
+                  color: 'var(--text-main)',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '10px' }}>
+              <button
+                onClick={() => setShowAddCheerModal(false)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  color: 'var(--text-main)'
+                }}
+              >
+                取消
+              </button>
+              <button
+                onClick={handleAddCheer}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                應援送出
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ➕ 新增倒數 Modal */}
+      {showAddCountdownModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '800', color: 'var(--accent)' }}>➕ 新增活動倒數</h3>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>活動/回歸標題</label>
+              <input
+                type="text"
+                value={newCountdownTitle}
+                onChange={(e) => setNewCountdownTitle(e.target.value)}
+                placeholder="例如: AESPA 新專輯發行"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-sec)',
+                  color: 'var(--text-main)',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>目標日期與時間</label>
+              <input
+                type="datetime-local"
+                value={newCountdownDate}
+                onChange={(e) => setNewCountdownDate(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-sec)',
+                  color: 'var(--text-main)',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '10px' }}>
+              <button
+                onClick={() => setShowAddCountdownModal(false)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  color: 'var(--text-main)'
+                }}
+              >
+                取消
+              </button>
+              <button
+                onClick={handleSaveCountdown}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                新增倒數
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ➕ 新增行程 Modal */}
+      {showAddScheduleModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '800', color: 'var(--accent)' }}>➕ 新增追星行程</h3>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>行程名稱/標題</label>
+              <input
+                type="text"
+                value={newScheduleTitle}
+                onChange={(e) => setNewScheduleTitle(e.target.value)}
+                placeholder="例如: M Countdown 打歌節目"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-sec)',
+                  color: 'var(--text-main)',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>行程日期</label>
+              <input
+                type="date"
+                value={newScheduleDate}
+                onChange={(e) => setNewScheduleDate(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-sec)',
+                  color: 'var(--text-main)',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>行程類型</label>
+              <select
+                value={newScheduleType}
+                onChange={(e) => setNewScheduleType(e.target.value as any)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-sec)',
+                  color: 'var(--text-main)',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <option value="comeback">💿 回歸/新歌發行</option>
+                <option value="concert">🎤 演唱會/見面會</option>
+                <option value="birthday">🎂 偶像生日</option>
+                <option value="show">📺 綜藝/打歌節目</option>
+                <option value="other">⭐ 其他活動</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '10px' }}>
+              <button
+                onClick={() => setShowAddScheduleModal(false)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  color: 'var(--text-main)'
+                }}
+              >
+                取消
+              </button>
+              <button
+                onClick={handleSaveSchedule}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                新增行程
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
 
-export default App
+export default App;
