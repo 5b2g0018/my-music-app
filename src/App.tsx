@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import './App.css'
 
 // 💡 引入音樂 App Firebase 設定
@@ -2918,49 +2918,49 @@ function App() {
                     return (
                       <div
                         key={event.id}
-                      style={{
-                        background: isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'var(--bg-color)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '16px',
-                        padding: '16px',
-                        position: 'relative',
-                        transition: 'transform 0.2s',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <div style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-main)' }}>{event.title}</div>
-                        {loggedInUser && (event.userEmail === userEmail || isSystem) && (
-                          <button
-                            onClick={() => handleDeleteCountdown(event.id)}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: '#ff4d4d',
-                              fontSize: '12px',
-                              cursor: 'pointer',
-                              padding: '2px 6px'
-                            }}
-                          >
-                            ✕
-                          </button>
-                        )}
+                        style={{
+                          background: isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'var(--bg-color)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '16px',
+                          padding: '16px',
+                          position: 'relative',
+                          transition: 'transform 0.2s',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                          <div style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-main)' }}>{event.title}</div>
+                          {loggedInUser && (event.userEmail === userEmail || isSystem) && (
+                            <button
+                              onClick={() => handleDeleteCountdown(event.id)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#ff4d4d',
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                                padding: '2px 6px'
+                              }}
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                        <div style={{
+                          fontSize: '15px',
+                          fontWeight: '800',
+                          color: 'var(--accent)',
+                          fontFamily: 'monospace',
+                          letterSpacing: '0.5px'
+                        }}>
+                          {remaining}
+                        </div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-sub)', marginTop: '4px' }}>
+                          目標時間: {new Date(event.targetDate).toLocaleString('zh-TW')}
+                        </div>
                       </div>
-                      <div style={{
-                        fontSize: '15px',
-                        fontWeight: '800',
-                        color: 'var(--accent)',
-                        fontFamily: 'monospace',
-                        letterSpacing: '0.5px'
-                      }}>
-                        {remaining}
-                      </div>
-                      <div style={{ fontSize: '10px', color: 'var(--text-sub)', marginTop: '4px' }}>
-                        目標時間: {new Date(event.targetDate).toLocaleString('zh-TW')}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
             </div>
 
@@ -3014,75 +3014,75 @@ function App() {
                   .map((sch) => {
                     const isSystem = sch.userEmail === 'system';
                     const getBadgeDetails = (type: string) => {
-                    switch (type) {
-                      case 'comeback': return { text: '💿 回歸', color: 'var(--accent)', bg: 'rgba(255, 64, 129, 0.15)' };
-                      case 'concert': return { text: '🎤 演唱會', color: '#ff1744', bg: 'rgba(255, 23, 68, 0.15)' };
-                      case 'birthday': return { text: '🎂 生日', color: '#ff80ab', bg: 'rgba(255, 128, 171, 0.15)' };
-                      case 'show': return { text: '📺 節目', color: '#00e5ff', bg: 'rgba(0, 229, 255, 0.15)' };
-                      default: return { text: '⭐ 其他', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.15)' };
-                    }
-                  };
-                  const badge = getBadgeDetails(sch.type);
-                  return (
-                    <div
-                      key={sch.id}
-                      style={{
-                        background: isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'var(--bg-color)',
-                        border: '1px solid var(--border)',
-                        borderLeft: `4px solid ${badge.color}`,
-                        borderRadius: '12px',
-                        padding: '12px 14px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.01)'
-                      }}
-                    >
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          <span style={{
-                            background: badge.bg,
-                            color: badge.color,
-                            fontSize: '10px',
-                            fontWeight: 'bold',
-                            padding: '2px 8px',
-                            borderRadius: '20px',
+                      switch (type) {
+                        case 'comeback': return { text: '💿 回歸', color: 'var(--accent)', bg: 'rgba(255, 64, 129, 0.15)' };
+                        case 'concert': return { text: '🎤 演唱會', color: '#ff1744', bg: 'rgba(255, 23, 68, 0.15)' };
+                        case 'birthday': return { text: '🎂 生日', color: '#ff80ab', bg: 'rgba(255, 128, 171, 0.15)' };
+                        case 'show': return { text: '📺 節目', color: '#00e5ff', bg: 'rgba(0, 229, 255, 0.15)' };
+                        default: return { text: '⭐ 其他', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.15)' };
+                      }
+                    };
+                    const badge = getBadgeDetails(sch.type);
+                    return (
+                      <div
+                        key={sch.id}
+                        style={{
+                          background: isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'var(--bg-color)',
+                          border: '1px solid var(--border)',
+                          borderLeft: `4px solid ${badge.color}`,
+                          borderRadius: '12px',
+                          padding: '12px 14px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.01)'
+                        }}
+                      >
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{
+                              background: badge.bg,
+                              color: badge.color,
+                              fontSize: '10px',
+                              fontWeight: 'bold',
+                              padding: '2px 8px',
+                              borderRadius: '20px',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              {badge.text}
+                            </span>
+                            <span style={{ fontSize: '11px', color: 'var(--text-sub)', fontWeight: 'bold' }}>{sch.date}</span>
+                          </div>
+                          <div style={{
+                            fontSize: '13px',
+                            fontWeight: '700',
+                            color: 'var(--text-main)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap'
-                          }}>
-                            {badge.text}
-                          </span>
-                          <span style={{ fontSize: '11px', color: 'var(--text-sub)', fontWeight: 'bold' }}>{sch.date}</span>
+                          }} title={sch.title}>
+                            {sch.title}
+                          </div>
                         </div>
-                        <div style={{
-                          fontSize: '13px',
-                          fontWeight: '700',
-                          color: 'var(--text-main)',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
-                        }} title={sch.title}>
-                          {sch.title}
-                        </div>
+                        {loggedInUser && (sch.userEmail === userEmail || isSystem) && (
+                          <button
+                            onClick={() => handleDeleteSchedule(sch.id)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#ff4d4d',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              padding: '4px 6px',
+                              marginLeft: '8px'
+                            }}
+                          >
+                            ✕
+                          </button>
+                        )}
                       </div>
-                      {loggedInUser && (sch.userEmail === userEmail || isSystem) && (
-                        <button
-                          onClick={() => handleDeleteSchedule(sch.id)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#ff4d4d',
-                            fontSize: '12px',
-                            cursor: 'pointer',
-                            padding: '4px 6px',
-                            marginLeft: '8px'
-                          }}
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
             </div>
 
@@ -3136,7 +3136,7 @@ function App() {
                       : theme === 'babymonster' ? '怪物新人的狂暴能量已注入，正在同步遠端靈魂數據'
                         : theme === 'kpop' ? '點亮專屬的 Candy Bong，將我們共同的 Shining Moment 永久封存'
                           : theme === 'blackpink' ? 'In Your Area！以粉黑之名，高調宣示妳的專屬統治紀錄'
-                            : theme === 'aespa' ? 'Su-Su-Supernova！跨越平行的 Real World，解碼來自 SYNK 的記憶碎片'
+                            : theme === 'aespa' ? 'Su-Su-Su-Supernova！跨越平行的 Real World，解碼來自 SYNK 的記憶碎片'
                               : '從雲端資料庫即時拉取的個人紀錄'}
           </p>
 
