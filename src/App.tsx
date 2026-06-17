@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
 // 💡 引入音樂 App Firebase 設定
@@ -105,12 +105,6 @@ function App() {
   const [diaryPassword, setDiaryPassword] = useState('')
   const [diaryPhoto, setDiaryPhoto] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [bias, setBias] = useState<string>('')
-  const [showBiasModal, setShowBiasModal] = useState(false)
-  const [commentTexts, setCommentTexts] = useState<{ [id: string]: string }>({})
-  const [openCommentIds, setOpenCommentIds] = useState<string[]>([])
-  const [calendarDate, setCalendarDate] = useState(new Date())
-  const [showCalendar, setShowCalendar] = useState(false)
 
   const [futureLetter, setFutureLetter] = useState('')
   const [unlockDate, setUnlockDate] = useState('2027-01-01')
@@ -144,7 +138,7 @@ function App() {
   // 📅 K-Pop 追星中控台 & 行事曆 & 倒數
   const [schedules, setSchedules] = useState<ScheduleItem[]>([])
   const [countdownEvents, setCountdownEvents] = useState<CountdownEventItem[]>([])
-  const [currentTime, setCurrentTime] = useState<number>(Date.now())
+  const [currentTime, setCurrentTime] = useState<number>(() => Date.now())
   const [showAddCountdownModal, setShowAddCountdownModal] = useState(false)
   const [newCountdownTitle, setNewCountdownTitle] = useState('')
   const [newCountdownDate, setNewCountdownDate] = useState('')
@@ -160,27 +154,6 @@ function App() {
   // 🔔 時光膠囊解鎖通知
   const [unlockedNotifications, setUnlockedNotifications] = useState<TimeCapsuleItem[]>([])
   const [activeNotificationCapsule, setActiveNotificationCapsule] = useState<TimeCapsuleItem | null>(null)
-
-  // 🔄 網頁載入時自動讀取 localStorage 保持登入狀態
-  useEffect(() => {
-    const savedEmail = localStorage.getItem('userEmail')
-    fetchUsersCache()
-    fetchCheers()
-    fetchSchedules()
-    fetchCountdownEvents()
-    if (savedEmail) {
-      fetchUserDiaries(savedEmail)
-      fetchTimeCapsules(savedEmail)
-    } else {
-      fetchPublicDiaries()
-    }
-
-    // ⏰ 同步更新倒數時間的計時器
-    const interval = setInterval(() => {
-      setCurrentTime(Date.now())
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [])
 
   const fetchCheers = async () => {
     try {
@@ -206,7 +179,7 @@ function App() {
   const fetchSchedules = async () => {
     try {
       const snap = await getDocs(collection(db, 'schedules'))
-      let list: ScheduleItem[] = []
+      const list: ScheduleItem[] = []
       snap.forEach((d) => {
         const data = d.data()
         // 自動清理舊的帶有動態時間戳記的預設行程，防止資料污染
@@ -252,7 +225,7 @@ function App() {
   const fetchCountdownEvents = async () => {
     try {
       const snap = await getDocs(collection(db, 'countdown_events'))
-      let list: CountdownEventItem[] = []
+      const list: CountdownEventItem[] = []
       snap.forEach((d) => {
         const data = d.data()
         // 自動清理舊的帶有動態時間戳記的預設倒數活動
@@ -640,7 +613,7 @@ function App() {
         alert('日記不能同時設定為秘密和公開，請選擇一種模式。')
         return
       }
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         userEmail: emailLower,
         author: loggedInUser,
         title: diaryTitle.trim(),
@@ -667,7 +640,7 @@ function App() {
       setDiaryBgm(''); setDiaryPhoto('')
       await fetchUserDiaries(emailLower)
       setCurrentView('home')
-    } catch (error) {
+    } catch {
       alert('儲存失敗，請確認 Firebase 資料庫 Rules 權限。')
     }
   }
@@ -707,39 +680,6 @@ function App() {
     }
   }
 
-  const handleLike = async (diary: DiaryItem) => {
-    if (!userEmail) { alert('請先登入才能按讚！'); return }
-    const emailLower = userEmail.trim().toLowerCase()
-    const alreadyLiked = (diary.likedBy || []).includes(emailLower)
-    const newLikedBy = alreadyLiked
-      ? (diary.likedBy || []).filter(e => e !== emailLower)
-      : [...(diary.likedBy || []), emailLower]
-    try {
-      await updateDoc(doc(db, 'diaries', diary.id), {
-        likes: newLikedBy.length,
-        likedBy: newLikedBy
-      })
-      await fetchPublicDiaries()
-    } catch (e) { console.error(e) }
-  }
-
-  const handleAddComment = async (diary: DiaryItem) => {
-    if (!userEmail || !loggedInUser) { alert('請先登入才能留言！'); return }
-    const text = (commentTexts[diary.id] || '').trim()
-    if (!text) return
-    const newComment: Comment = {
-      author: loggedInUser,
-      text,
-      date: new Date().toLocaleDateString('zh-TW'),
-      timestamp: Date.now()
-    }
-    const updatedComments = [...(diary.comments || []), newComment]
-    try {
-      await updateDoc(doc(db, 'diaries', diary.id), { comments: updatedComments })
-      setCommentTexts(prev => ({ ...prev, [diary.id]: '' }))
-      await fetchPublicDiaries()
-    } catch (e) { console.error(e) }
-  }
 
   const handleViewDiary = (d: DiaryItem) => {
     const showDiary = () => {
@@ -813,7 +753,7 @@ function App() {
       })
       alert('註冊成功！')
       setCurrentView('login')
-    } catch (error) {
+    } catch {
       alert('註冊失敗')
     }
   }
@@ -839,7 +779,7 @@ function App() {
       } else {
         alert('密碼錯誤或帳號不存在')
       }
-    } catch (error) {
+    } catch {
       alert('登入失敗')
     }
   }
@@ -867,6 +807,28 @@ function App() {
     const seconds = Math.floor((diff % (1000 * 60)) / 1000)
     return `${days}天 ${hours}小時 ${minutes}分 ${seconds}秒`
   }
+
+  // 🔄 網頁載入時自動讀取 localStorage 保持登入狀態
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('userEmail')
+    fetchUsersCache()
+    fetchCheers()
+    fetchSchedules()
+    fetchCountdownEvents()
+    if (savedEmail) {
+      fetchUserDiaries(savedEmail)
+      fetchTimeCapsules(savedEmail)
+    } else {
+      fetchPublicDiaries()
+    }
+
+    // ⏰ 同步更新倒數時間的計時器
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now())
+    }, 1000)
+    return () => clearInterval(interval)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const renderNavbar = () => {
     return (
@@ -931,7 +893,7 @@ function App() {
             {/* 🎨 風格切換 */}
             <li style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '4px', whiteSpace: 'nowrap' }}>
               <span style={{ fontSize: '12px', color: 'var(--text-sub)' }}></span>
-              <select value={theme} onChange={(e) => setTheme(e.target.value as any)} style={{ padding: '4px 8px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer', outline: 'none', fontSize: '13px' }}>
+              <select value={theme} onChange={(e) => setTheme(e.target.value as typeof theme)} style={{ padding: '4px 8px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)', fontWeight: 'bold', cursor: 'pointer', outline: 'none', fontSize: '13px' }}>
                 <option value="classic">🍂 經典暖米</option>
                 <option value="blackpink">🖤 霸氣黑粉</option>
                 <option value="aespa">🪐虛擬未來</option>
@@ -1220,7 +1182,7 @@ function App() {
                   <option>☀️ 陽光普照 (心情晴空萬里，對生活充滿了前行的動力)</option>
                   <option>🌿 歲月靜好 (像喝了一杯熱茶，內心無比平靜而知足)</option>
                   <option>🌧️ 孤獨雨季 (情緒有點低落，只想靜靜地跟自己相處一陣子)</option>
-                  <option>🚀 滿血復活 (戰鬥力滿點！準備好去征服所有大大小小的挑戰)</option>
+                  <option>🚀 滿血復活 (戰鬥力滿點！準備好去征服所有挑戰)</option>
                   <option>🌌 靈感星空 (思緒飛揚，腦海裡全是奇思妙想與未來的憧憬)</option>
                 </>
               )}
@@ -1339,7 +1301,7 @@ function App() {
                     try {
                       const base64 = await compressImage(file);
                       setDiaryPhoto(base64);
-                    } catch (err) {
+                    } catch {
                       alert('圖片處理失敗');
                     }
                   }
@@ -3612,7 +3574,7 @@ function App() {
               <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>行程類型</label>
               <select
                 value={newScheduleType}
-                onChange={(e) => setNewScheduleType(e.target.value as any)}
+                onChange={(e) => setNewScheduleType(e.target.value as typeof newScheduleType)}
                 style={{
                   width: '100%',
                   padding: '12px',
