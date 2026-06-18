@@ -827,7 +827,7 @@ function App() {
       setCurrentTime(Date.now())
     }, 1000)
     return () => clearInterval(interval)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const renderNavbar = () => {
@@ -1079,6 +1079,200 @@ function App() {
     fetchCountdownEvents()
     setCurrentView('home')
   }
+
+  const renderGlobalModals = () => {
+    return (
+      <>
+        {/* 🔔 時光膠囊解鎖彈出通知 Modal */}
+        {activeNotificationCapsule && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}>
+            <div style={{
+              maxWidth: '500px',
+              width: '100%',
+              background: 'var(--bg-color)',
+              border: '2px solid var(--accent)',
+              borderRadius: '24px',
+              padding: '40px',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+              position: 'relative',
+              color: 'var(--text-main)',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '20px' }}>📬</div>
+              <h3 style={{ fontSize: '22px', fontWeight: '800', margin: '0 0 12px 0', color: 'var(--accent)' }}>
+                您有一封來自過去的信已解鎖！
+              </h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-sub)', marginBottom: '24px' }}>
+                這是在 {new Date(activeNotificationCapsule.createdAt).toLocaleDateString('zh-TW')} 寫給今天解鎖的時光信件
+              </p>
+              <div style={{
+                background: 'var(--bg-sec)',
+                border: '1px solid var(--border)',
+                borderRadius: '16px',
+                padding: '24px',
+                textAlign: 'left',
+                fontSize: '15px',
+                lineHeight: '1.7',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                whiteSpace: 'pre-wrap',
+                marginBottom: '30px',
+                color: 'var(--text-main)'
+              }}>
+                {activeNotificationCapsule.content}
+              </div>
+              <button
+                onClick={() => handleOpenCapsuleNotification(activeNotificationCapsule)}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  background: 'var(--accent)',
+                  color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontWeight: '800',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                  transition: 'all 0.2s'
+                }}
+                ref={(el) => {
+                  if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
+                }}
+              >
+                🔓 讀取並收入膠囊箱
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ⚙️ 設定 Modal */}
+        {showSettingsModal && (
+          <div className="modal-overlay">
+            <div className="modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '800', color: 'var(--accent)' }}>⚙️ 個人設定</h3>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>修改顯示名稱</label>
+                <input
+                  type="text"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border)',
+                    background: 'var(--bg-sec)',
+                    color: 'var(--text-main)',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                <button
+                  onClick={() => setShowSettingsModal(false)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border)',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    color: 'var(--text-main)'
+                  }}
+                >
+                  取消
+                </button>
+                <button
+                  onClick={handleUpdateUsername}
+                  style={{
+                    padding: '8px 20px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'var(--accent)',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                >
+                  儲存
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 📣 應援留言 Modal */}
+        {showAddCheerModal && (
+          <div className="modal-overlay">
+            <div className="modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '800', color: 'var(--accent)' }}>📣 留下你的應援語</h3>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>應援訊息 (限 30 字)</label>
+                <input
+                  type="text"
+                  maxLength={30}
+                  value={newCheerContent}
+                  onChange={(e) => setNewCheerContent(e.target.value)}
+                  placeholder="例如: aespa 永遠走花路吧！❤️"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border)',
+                    background: 'var(--bg-sec)',
+                    color: 'var(--text-main)',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                <button
+                  onClick={() => setShowAddCheerModal(false)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border)',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    color: 'var(--text-main)'
+                  }}
+                >
+                  取消
+                </button>
+                <button
+                  onClick={handleAddCheer}
+                  style={{
+                    padding: '8px 20px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'var(--accent)',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                >
+                  應援送出
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
 
   if (currentView === 'editor') {
     const isDarkTheme = (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd' || theme === 'bts');
@@ -1419,6 +1613,7 @@ function App() {
             </div>
           </div>
         </div>
+        {renderGlobalModals()}
       </>
     )
   }
@@ -1777,6 +1972,7 @@ function App() {
           </div>
 
         </div>
+        {renderGlobalModals()}
       </>
     )
   }
@@ -2082,6 +2278,7 @@ function App() {
           </div>
 
         </div>
+        {renderGlobalModals()}
       </>
     );
   }
@@ -2244,116 +2441,129 @@ function App() {
             </div>
           </div>
         </footer>
+        {renderGlobalModals()}
       </>
     );
   }
 
   if (currentView === 'register' || currentView === 'login') {
     return (
-      /* 🎯 終極全螢幕背景外盒：直接當作最外層，把所有人包進去！徹底吞噬 BABYMONSTER 下方的白底！ */
-      <div style={{
-        minHeight: '100vh',
-        width: '100%',
-        margin: 0,
-        padding: 0,
-        boxSizing: 'border-box',
-        /* 🎨 動態同步大背景底色：深色主題一路黑到底，讓下方白條無所遁形 */
-        background: theme === 'blackpink'
-          ? '#050207'
-          : theme === 'babymonster'
-            ? '#0a0508' // 完美貼合 BABYMONSTER 應援背景色！
-            : theme === 'aespa'
-              ? '#050714'
-              : theme === 'gd'
-                ? '#0d0b0a'
-                : theme === 'bts'
-                  ? '#080410'
-                  : theme === 'seventeen'
-                    ? '#fdf4f5'
-                    : theme === 'anime'
-                      ? '#eef7fc'
-                      : theme === 'ive'
-                        ? '#fcf8ff'
-                        : theme === 'kpop'
-                          ? '#f9f6f0'
-                          : 'var(--global-bg)',
-        transition: 'background 0.3s ease'
-      }}>
+      <>
+        {/* 🎯 終極全螢幕背景外盒：直接當作最外層，把所有人包進去！徹底吞噬 BABYMONSTER 下方的白底！ */}
+        <div style={{
+          minHeight: '100vh',
+          width: '100vw',
+          margin: 0,
+          padding: 0,
+          boxSizing: 'border-box',
+          /* 🎨 動態同步大背景底色：深色主題一路黑到底，讓下方白條無所遁形 */
+          background: theme === 'blackpink'
+            ? '#050207'
+            : theme === 'babymonster'
+              ? '#0a0508' // 完美貼合 BABYMONSTER 應援背景色！
+              : theme === 'aespa'
+                ? '#050714'
+                : theme === 'gd'
+                  ? '#0d0b0a'
+                  : theme === 'bts'
+                    ? '#080410'
+                    : theme === 'seventeen'
+                      ? '#fdf4f5'
+                      : theme === 'anime'
+                        ? '#eef7fc'
+                        : theme === 'ive'
+                          ? '#fcf8ff'
+                          : theme === 'kpop'
+                            ? '#f9f6f0'
+                            : 'var(--global-bg)',
+          transition: 'background 0.3s ease',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
 
-        {/* 💡 在這裡悄悄綁定 handleLogout，隱藏起來不影響視覺 */}
-        <div style={{ display: 'none' }}>
-          <button onClick={handleLogout}>隱藏的登出觸發器</button>
-        </div>
-
-        {renderNavbar()}
-
-        {/* 📦 登入/註冊卡片置中容器（加上 padding 讓卡片上下有舒適的懸浮留白） */}
-        <div style={{ padding: '80px 20px' }}>
-          <div style={{
-            maxWidth: '400px',
-            margin: '0 auto', // 卡片水平置中
-            padding: '40px',
-            background: theme === 'kpop' ? 'linear-gradient(180deg, rgba(255, 246, 250, 0.98), rgba(255, 224, 236, 0.98))'
-              : theme === 'blackpink' ? 'rgba(12, 5, 15, 0.96)'
-                : theme === 'aespa' ? 'rgba(8, 14, 32, 0.96)'
-                  : theme === 'gd' ? 'rgba(16, 14, 12, 0.96)'
-                    : theme === 'ive' ? 'rgba(247, 249, 255, 0.98)'
-                      : theme === 'babymonster' ? 'rgba(18, 7, 12, 0.96)'
-                        : theme === 'bts' ? 'rgba(14, 8, 24, 0.96)'
-                          : theme === 'seventeen' ? 'rgba(253, 244, 245, 0.98)'
-                            : theme === 'anime' ? 'rgba(238, 247, 252, 0.98)'
-                              : 'var(--bg-color)',
-            border: theme === 'kpop' ? '1px solid rgba(255, 64, 129, 0.2)' : '1px solid var(--border)',
-            borderRadius: '16px',
-            boxShadow: theme === 'kpop' ? '0 24px 80px rgba(255, 64, 129, 0.12)' : '0 24px 60px rgba(0,0,0,0.06)'
-          }}>
-            {currentView === 'register' ? (
-              <form onSubmit={handleRegisterSubmit}>
-                <h2 style={{ color: 'var(--text-main)', marginBottom: '24px' }}>建立您的帳號</h2>
-                <input type="text" placeholder="使用者姓名" value={registerName} onChange={(e) => setRegisterName(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
-                <input type="email" placeholder="Email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
-                <input type="password" placeholder="設定密碼" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
-                <button type="submit" style={{ width: '100%', padding: '14px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold' }}>註冊帳號</button>
-                <p onClick={() => setCurrentView('login')} style={{ color: 'var(--accent)', textAlign: 'center', cursor: 'pointer', marginTop: '16px' }}>已有帳號？前往登入</p>
-              </form>
-            ) : (
-              <form onSubmit={handleLoginSubmit}>
-                <h2 style={{ color: 'var(--text-main)', marginBottom: '24px' }}>歡迎回來</h2>
-                <input type="email" placeholder="您的 Email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
-                <input type="password" placeholder="輸入密碼" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
-
-                <button type="submit" style={{
-                  width: '100%',
-                  padding: '14px',
-                  background: 'var(--accent)',
-                  color: theme === 'gd' ? '#000000 !important' : '#ffffff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  fontWeight: '900'
-                }}
-                  ref={(el) => {
-                    if (el) el.style.setProperty('color', theme === 'gd' ? '#000000' : '#ffffff', 'important');
-                  }}>
-                  登入系統
-                </button>
-
-                <p onClick={() => setCurrentView('register')} style={{
-                  color: 'var(--accent)',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  marginTop: '16px',
-                  fontWeight: theme === 'gd' ? '700' : 'normal',
-                  letterSpacing: '0.5px'
-                }}>
-                  還沒有帳號？現在註冊
-                </p>
-              </form>
-            )}
+          {/* 💡 在這裡悄悄綁定 handleLogout，隱藏起來不影響視覺 */}
+          <div style={{ display: 'none' }}>
+            <button onClick={handleLogout}>隱藏的登出觸發器</button>
           </div>
-        </div>
 
-      </div> /* 👈 整個頁面的大盒子完美閉合 */
+          {renderNavbar()}
+
+          {/* 📦 登入/註冊卡片置中容器（採用 flex 讓卡片在畫面上舒適地居中，圓角呈現自然） */}
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '40px 20px',
+            boxSizing: 'border-box'
+          }}>
+            <div style={{
+              maxWidth: '400px',
+              margin: '0 auto', // 卡片水平置中
+              padding: '40px',
+              background: theme === 'kpop' ? 'linear-gradient(180deg, rgba(255, 246, 250, 0.98), rgba(255, 224, 236, 0.98))'
+                : theme === 'blackpink' ? 'rgba(12, 5, 15, 0.96)'
+                  : theme === 'aespa' ? 'rgba(8, 14, 32, 0.96)'
+                    : theme === 'gd' ? 'rgba(16, 14, 12, 0.96)'
+                      : theme === 'ive' ? 'rgba(247, 249, 255, 0.98)'
+                        : theme === 'babymonster' ? 'rgba(18, 7, 12, 0.96)'
+                          : theme === 'bts' ? 'rgba(14, 8, 24, 0.96)'
+                            : theme === 'seventeen' ? 'rgba(253, 244, 245, 0.98)'
+                              : theme === 'anime' ? 'rgba(238, 247, 252, 0.98)'
+                                : 'var(--bg-color)',
+              border: theme === 'kpop' ? '1px solid rgba(255, 64, 129, 0.2)' : '1px solid var(--border)',
+              borderRadius: '16px',
+              boxShadow: theme === 'kpop' ? '0 24px 80px rgba(255, 64, 129, 0.12)' : '0 24px 60px rgba(0,0,0,0.06)'
+            }}>
+              {currentView === 'register' ? (
+                <form onSubmit={handleRegisterSubmit}>
+                  <h2 style={{ color: 'var(--text-main)', marginBottom: '24px' }}>建立您的帳號</h2>
+                  <input type="text" placeholder="使用者姓名" value={registerName} onChange={(e) => setRegisterName(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
+                  <input type="email" placeholder="Email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
+                  <input type="password" placeholder="設定密碼" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
+                  <button type="submit" style={{ width: '100%', padding: '14px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold' }}>註冊帳號</button>
+                  <p onClick={() => setCurrentView('login')} style={{ color: 'var(--accent)', textAlign: 'center', cursor: 'pointer', marginTop: '16px' }}>已有帳號？前往登入</p>
+                </form>
+              ) : (
+                <form onSubmit={handleLoginSubmit}>
+                  <h2 style={{ color: 'var(--text-main)', marginBottom: '24px' }}>歡迎回來</h2>
+                  <input type="email" placeholder="您的 Email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
+                  <input type="password" placeholder="輸入密碼" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
+
+                  <button type="submit" style={{
+                    width: '100%',
+                    padding: '14px',
+                    background: 'var(--accent)',
+                    color: theme === 'gd' ? '#000000 !important' : '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: '900'
+                  }}
+                    ref={(el) => {
+                      if (el) el.style.setProperty('color', theme === 'gd' ? '#000000' : '#ffffff', 'important');
+                    }}>
+                    登入系統
+                  </button>
+
+                  <p onClick={() => setCurrentView('register')} style={{
+                    color: 'var(--accent)',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    marginTop: '16px',
+                    fontWeight: theme === 'gd' ? '700' : 'normal',
+                    letterSpacing: '0.5px'
+                  }}>
+                    還沒有帳號？現在註冊
+                  </p>
+                </form>
+              )}
+            </div>
+          </div>
+
+        </div> /* 👈 整個頁面的大盒子完美閉合 */
+        {renderGlobalModals()}
+      </>
     )
   }
   if (currentView === 'viewer') {
@@ -2491,6 +2701,7 @@ function App() {
             </div>
           </div>
         </div>
+        {renderGlobalModals()}
       </>
     )
   }
@@ -2794,49 +3005,58 @@ function App() {
 
       {/* 📅 K-Pop 追星中控台 (K-Pop Schedule & Countdown Dashboard) */}
       <section style={{
-        maxWidth: '900px',
+        maxWidth: '960px',
         margin: '40px auto 0 auto',
-        padding: '0 20px',
-        boxSizing: 'border-box'
+        padding: '0 24px',
+        boxSizing: 'border-box',
+        background: 'transparent'
       }}>
-        <div style={{
-          background: isDarkTheme ? 'rgba(255, 255, 255, 0.03)' : 'var(--bg-sec)',
-          border: '1px solid var(--border)',
-          borderRadius: '24px',
-          padding: '32px',
-          backdropFilter: 'blur(10px)',
-          boxShadow: '0 10px 40px rgba(0,0,0,0.04)'
-        }}>
+        <div
+          className="kpop-dashboard-container"
+          style={{
+            background: isDarkTheme ? 'rgba(20, 15, 30, 0.55)' : 'rgba(255, 255, 255, 0.8)',
+            border: `1px solid ${isDarkTheme ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.6)'}`,
+            borderRadius: '28px',
+            padding: '36px',
+            backdropFilter: 'blur(20px)',
+            boxShadow: isDarkTheme
+              ? '0 30px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)'
+              : '0 30px 70px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)'
+          }}
+        >
 
           <h2 style={{
             fontSize: '22px',
-            fontWeight: '800',
-            marginBottom: '24px',
+            fontWeight: '900',
+            marginBottom: '32px',
             textAlign: 'center',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            color: 'var(--accent)'
+            color: 'var(--accent)',
+            letterSpacing: '0.5px'
           }}>
-            <span>📅</span> K-Pop 追星應援中控台 (Dashboard)
+            📅 K-Pop 追星應援中控台 (Dashboard)
           </h2>
 
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: '24px'
+            gap: '32px'
           }}>
 
             {/* Left side: Countdown Timer */}
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '16px'
+              gap: '20px'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-main)' }}>
-                  <span>⏳</span> 活動與回歸倒數
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderBottom: `2px solid ${isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'}`,
+                paddingBottom: '12px'
+              }}>
+                <h3 style={{ fontSize: '17px', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)' }}>
+                  <span style={{ fontSize: '18px' }}>⏳</span> 活動與回歸倒數
                 </h3>
                 {loggedInUser && (
                   <button
@@ -2845,79 +3065,131 @@ function App() {
                       setNewCountdownDate('');
                       setShowAddCountdownModal(true);
                     }}
+                    className="kpop-btn-add"
                     style={{
-                      background: 'var(--accent)',
-                      color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '4px 10px',
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                    ref={(el) => {
-                      if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
+                      background: theme === 'gd'
+                        ? '#ffeb3b'
+                        : theme === 'seventeen'
+                          ? 'linear-gradient(135deg, #f7cac9, #92a8d1)'
+                          : theme === 'anime'
+                            ? '#ff7fa9'
+                            : 'linear-gradient(135deg, var(--accent), #ff4081)',
+                      color: (theme === 'gd' || theme === 'seventeen') ? '#000000' : '#ffffff',
+                      boxShadow: theme === 'gd'
+                        ? '0 4px 15px rgba(255, 235, 59, 0.2)'
+                        : theme === 'seventeen'
+                          ? '0 4px 15px rgba(247, 202, 201, 0.3)'
+                          : '0 4px 15px rgba(255, 64, 129, 0.25)'
                     }}
                   >
-                    ➕ 新增倒數
+                    <span>➕</span> 新增倒數
                   </button>
                 )}
               </div>
 
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                maxHeight: '320px',
-                overflowY: 'auto',
-                paddingRight: '6px'
-              }}>
+              <div className="kpop-dashboard-list">
                 {countdownEvents
                   .filter((event) => event.userEmail === 'system' || (userEmail && event.userEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()))
                   .map((event) => {
                     const remaining = getCountdownString(event.targetDate);
                     const isSystem = event.userEmail === 'system';
+
+                    const renderCountdownText = () => {
+                      if (remaining.startsWith('🎉')) {
+                        return (
+                          <div style={{
+                            fontSize: '13px',
+                            fontWeight: 'bold',
+                            color: 'var(--accent)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            background: isDarkTheme ? 'rgba(255, 255, 255, 0.04)' : 'var(--bg-sec)',
+                            padding: '6px 12px',
+                            borderRadius: '10px',
+                            width: 'fit-content',
+                            border: '1px solid var(--border)'
+                          }}>
+                            {remaining}
+                          </div>
+                        );
+                      }
+
+                      const regex = /(\d+)(天|小時|分|秒)/g;
+                      const matches = [...remaining.matchAll(regex)];
+                      if (matches.length === 0) {
+                        return (
+                          <div style={{
+                            fontSize: '15px',
+                            fontWeight: '800',
+                            color: 'var(--accent)',
+                            fontFamily: 'monospace'
+                          }}>
+                            {remaining}
+                          </div>
+                        );
+                      }
+                      return (
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '8px' }}>
+                          {matches.map((match, idx) => {
+                            const val = match[1];
+                            const unit = match[2];
+                            const displayVal = (val.length === 1 && unit !== '天') ? `0${val}` : val;
+                            return (
+                              <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+                                <span style={{
+                                  background: isDarkTheme ? 'rgba(255,255,255,0.06)' : '#ffffff',
+                                  border: '1px solid var(--border)',
+                                  borderRadius: '8px',
+                                  padding: '5px 8px',
+                                  fontSize: '18px',
+                                  fontWeight: '850',
+                                  fontFamily: 'monospace, sans-serif',
+                                  color: 'var(--accent)',
+                                  boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+                                  display: 'inline-block',
+                                  minWidth: '28px',
+                                  textAlign: 'center',
+                                  lineHeight: '1.2'
+                                }}>
+                                  {displayVal}
+                                </span>
+                                <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--text-sub)' }}>{unit}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    };
+
                     return (
                       <div
                         key={event.id}
+                        className="kpop-dashboard-card"
                         style={{
-                          background: isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'var(--bg-color)',
-                          border: '1px solid var(--border)',
-                          borderRadius: '16px',
-                          padding: '16px',
+                          background: isDarkTheme ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.45)',
+                          border: `1px solid ${isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.5)'}`,
+                          borderRadius: '18px',
+                          padding: '18px',
                           position: 'relative',
-                          transition: 'transform 0.2s',
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.02)'
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                          <div style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-main)' }}>{event.title}</div>
+                          <div style={{ fontWeight: '800', fontSize: '14.5px', color: 'var(--text-main)' }}>
+                            {event.title}
+                          </div>
                           {loggedInUser && (event.userEmail === userEmail || isSystem) && (
                             <button
                               onClick={() => handleDeleteCountdown(event.id)}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                color: '#ff4d4d',
-                                fontSize: '12px',
-                                cursor: 'pointer',
-                                padding: '2px 6px'
-                              }}
+                              className="delete-btn"
                             >
                               ✕
                             </button>
                           )}
                         </div>
-                        <div style={{
-                          fontSize: '15px',
-                          fontWeight: '800',
-                          color: 'var(--accent)',
-                          fontFamily: 'monospace',
-                          letterSpacing: '0.5px'
-                        }}>
-                          {remaining}
-                        </div>
-                        <div style={{ fontSize: '10px', color: 'var(--text-sub)', marginTop: '4px' }}>
+                        {renderCountdownText()}
+                        <div style={{ fontSize: '10.5px', color: 'var(--text-sub)', marginTop: '8px', opacity: 0.8 }}>
                           目標時間: {new Date(event.targetDate).toLocaleString('zh-TW')}
                         </div>
                       </div>
@@ -2930,11 +3202,17 @@ function App() {
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '16px'
+              gap: '20px'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-main)' }}>
-                  <span>📋</span> 打歌與行程表
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderBottom: `2px solid ${isDarkTheme ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'}`,
+                paddingBottom: '12px'
+              }}>
+                <h3 style={{ fontSize: '17px', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)' }}>
+                  <span style={{ fontSize: '18px' }}>📋</span> 打歌與行程表
                 </h3>
                 {loggedInUser && (
                   <button
@@ -2944,84 +3222,83 @@ function App() {
                       setNewScheduleType('show');
                       setShowAddScheduleModal(true);
                     }}
+                    className="kpop-btn-add"
                     style={{
-                      background: 'var(--accent)',
-                      color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '4px 10px',
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                    ref={(el) => {
-                      if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
+                      background: theme === 'gd'
+                        ? '#ffeb3b'
+                        : theme === 'seventeen'
+                          ? 'linear-gradient(135deg, #f7cac9, #92a8d1)'
+                          : theme === 'anime'
+                            ? '#ff7fa9'
+                            : 'linear-gradient(135deg, var(--accent), #ff4081)',
+                      color: (theme === 'gd' || theme === 'seventeen') ? '#000000' : '#ffffff',
+                      boxShadow: theme === 'gd'
+                        ? '0 4px 15px rgba(255, 235, 59, 0.2)'
+                        : theme === 'seventeen'
+                          ? '0 4px 15px rgba(247, 202, 201, 0.3)'
+                          : '0 4px 15px rgba(255, 64, 129, 0.25)'
                     }}
                   >
-                    ➕ 新增行程
+                    <span>➕</span> 新增行程
                   </button>
                 )}
               </div>
 
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                maxHeight: '320px',
-                overflowY: 'auto',
-                paddingRight: '6px'
-              }}>
+              <div className="kpop-dashboard-list">
                 {schedules
                   .filter((sch) => sch.userEmail === 'system' || (userEmail && sch.userEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()))
                   .map((sch) => {
                     const isSystem = sch.userEmail === 'system';
                     const getBadgeDetails = (type: string) => {
                       switch (type) {
-                        case 'comeback': return { text: '💿 回歸', color: 'var(--accent)', bg: 'rgba(255, 64, 129, 0.15)' };
-                        case 'concert': return { text: '🎤 演唱會', color: '#ff1744', bg: 'rgba(255, 23, 68, 0.15)' };
-                        case 'birthday': return { text: '🎂 生日', color: '#ff80ab', bg: 'rgba(255, 128, 171, 0.15)' };
-                        case 'show': return { text: '📺 節目', color: '#00e5ff', bg: 'rgba(0, 229, 255, 0.15)' };
-                        default: return { text: '⭐ 其他', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.15)' };
+                        case 'comeback': return { text: '💿 回歸', color: 'var(--accent)', bg: 'rgba(255, 64, 129, 0.12)' };
+                        case 'concert': return { text: '🎤 演唱會', color: '#ff1744', bg: 'rgba(255, 23, 68, 0.12)' };
+                        case 'birthday': return { text: '🎂 生日', color: '#ff80ab', bg: 'rgba(255, 128, 171, 0.12)' };
+                        case 'show': return { text: '📺 節目', color: '#00e5ff', bg: 'rgba(0, 229, 255, 0.12)' };
+                        default: return { text: '⭐ 其他', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.12)' };
                       }
                     };
                     const badge = getBadgeDetails(sch.type);
                     return (
                       <div
                         key={sch.id}
+                        className="kpop-dashboard-card"
                         style={{
-                          background: isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'var(--bg-color)',
-                          border: '1px solid var(--border)',
-                          borderLeft: `4px solid ${badge.color}`,
-                          borderRadius: '12px',
-                          padding: '12px 14px',
+                          background: isDarkTheme ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.45)',
+                          border: `1px solid ${isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.5)'}`,
+                          borderLeft: `5px solid ${badge.color}`,
+                          borderRadius: '16px',
+                          padding: '14px 18px',
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.01)'
+                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.02)'
                         }}
                       >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <span style={{
                               background: badge.bg,
                               color: badge.color,
-                              fontSize: '10px',
-                              fontWeight: 'bold',
-                              padding: '2px 8px',
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              padding: '3px 10px',
                               borderRadius: '20px',
-                              whiteSpace: 'nowrap'
+                              whiteSpace: 'nowrap',
+                              border: `1px solid color-mix(in srgb, ${badge.color} 20%, transparent)`
                             }}>
                               {badge.text}
                             </span>
                             <span style={{ fontSize: '11px', color: 'var(--text-sub)', fontWeight: 'bold' }}>{sch.date}</span>
                           </div>
                           <div style={{
-                            fontSize: '13px',
-                            fontWeight: '700',
+                            fontSize: '13.5px',
+                            fontWeight: '800',
                             color: 'var(--text-main)',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
+                            whiteSpace: 'nowrap',
+                            letterSpacing: '0.2px'
                           }} title={sch.title}>
                             {sch.title}
                           </div>
@@ -3029,15 +3306,7 @@ function App() {
                         {loggedInUser && (sch.userEmail === userEmail || isSystem) && (
                           <button
                             onClick={() => handleDeleteSchedule(sch.id)}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: '#ff4d4d',
-                              fontSize: '12px',
-                              cursor: 'pointer',
-                              padding: '4px 6px',
-                              marginLeft: '8px'
-                            }}
+                            className="delete-btn"
                           >
                             ✕
                           </button>
@@ -3053,7 +3322,7 @@ function App() {
       </section>
 
       {/* 📜 雲端歷史日記列表區 */}
-      <section style={{ padding: '80px 20px' }}>
+      <section style={{ padding: '80px 20px', background: 'transparent' }}>
         <div style={{ maxWidth: '750px', margin: '0 auto', position: 'relative' }}>
 
           <h2 style={{
@@ -3061,7 +3330,7 @@ function App() {
             marginBottom: '8px',
             textAlign: 'center',
             fontWeight: '700',
-            color: isDarkTheme ? '#fff' : '#2c3e50',
+            color: (isDarkTheme || theme === 'anime') ? '#fff' : '#2c3e50',
             textShadow: theme === 'bts'
               ? '0 2px 15px rgba(161, 125, 240, 0.6), 0 1px 4px rgba(161, 125, 240, 0.4)'
               : theme === 'gd'
@@ -3084,7 +3353,7 @@ function App() {
           </h2>
 
           <p style={{
-            color: isDarkTheme ? 'rgba(255, 255, 255, 0.8)' : '#666',
+            color: (isDarkTheme || theme === 'anime') ? 'rgba(255, 255, 255, 0.8)' : '#666',
             textAlign: 'center',
             fontSize: '14px',
             marginBottom: '35px',
@@ -3269,193 +3538,7 @@ function App() {
         </div>
       </footer>
 
-      {/* 🔔 時光膠囊解鎖彈出通知 Modal */}
-      {activeNotificationCapsule && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.6)',
-          backdropFilter: 'blur(10px)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000,
-          padding: '20px'
-        }}>
-          <div style={{
-            maxWidth: '500px',
-            width: '100%',
-            background: 'var(--bg-color)',
-            border: '2px solid var(--accent)',
-            borderRadius: '24px',
-            padding: '40px',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
-            position: 'relative',
-            color: 'var(--text-main)',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '48px', marginBottom: '20px' }}>📬</div>
-            <h3 style={{ fontSize: '22px', fontWeight: '800', margin: '0 0 12px 0', color: 'var(--accent)' }}>
-              您有一封來自過去的信已解鎖！
-            </h3>
-            <p style={{ fontSize: '13px', color: 'var(--text-sub)', marginBottom: '24px' }}>
-              這是在 {new Date(activeNotificationCapsule.createdAt).toLocaleDateString('zh-TW')} 寫給今天解鎖的時光信件
-            </p>
-            <div style={{
-              background: 'var(--bg-sec)',
-              border: '1px solid var(--border)',
-              borderRadius: '16px',
-              padding: '24px',
-              textAlign: 'left',
-              fontSize: '15px',
-              lineHeight: '1.7',
-              maxHeight: '200px',
-              overflowY: 'auto',
-              whiteSpace: 'pre-wrap',
-              marginBottom: '30px',
-              color: 'var(--text-main)'
-            }}>
-              {activeNotificationCapsule.content}
-            </div>
-            <button
-              onClick={() => handleOpenCapsuleNotification(activeNotificationCapsule)}
-              style={{
-                width: '100%',
-                padding: '14px',
-                background: 'var(--accent)',
-                color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff',
-                border: 'none',
-                borderRadius: '12px',
-                fontWeight: '800',
-                fontSize: '16px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-                transition: 'all 0.2s'
-              }}
-              ref={(el) => {
-                if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
-              }}
-            >
-              🔓 讀取並收入膠囊箱
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ⚙️ 設定 Modal */}
-      {showSettingsModal && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '800', color: 'var(--accent)' }}>⚙️ 個人設定</h3>
-            <div>
-              <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>修改顯示名稱</label>
-              <input
-                type="text"
-                value={newUsername}
-                onChange={(e) => setNewUsername(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border)',
-                  background: 'var(--bg-sec)',
-                  color: 'var(--text-main)',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </div>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '10px' }}>
-              <button
-                onClick={() => setShowSettingsModal(false)}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border)',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  color: 'var(--text-main)'
-                }}
-              >
-                取消
-              </button>
-              <button
-                onClick={handleUpdateUsername}
-                style={{
-                  padding: '8px 20px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: 'var(--accent)',
-                  color: '#fff',
-                  fontWeight: 'bold',
-                  cursor: 'pointer'
-                }}
-              >
-                儲存
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 📣 應援留言 Modal */}
-      {showAddCheerModal && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '800', color: 'var(--accent)' }}>📣 留下你的應援語</h3>
-            <div>
-              <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>應援訊息 (限 30 字)</label>
-              <input
-                type="text"
-                maxLength={30}
-                value={newCheerContent}
-                onChange={(e) => setNewCheerContent(e.target.value)}
-                placeholder="例如: aespa 永遠走花路吧！❤️"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border)',
-                  background: 'var(--bg-sec)',
-                  color: 'var(--text-main)',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </div>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '10px' }}>
-              <button
-                onClick={() => setShowAddCheerModal(false)}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border)',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  color: 'var(--text-main)'
-                }}
-              >
-                取消
-              </button>
-              <button
-                onClick={handleAddCheer}
-                style={{
-                  padding: '8px 20px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: 'var(--accent)',
-                  color: '#fff',
-                  fontWeight: 'bold',
-                  cursor: 'pointer'
-                }}
-              >
-                應援送出
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {renderGlobalModals()}
 
       {/* ➕ 新增倒數 Modal */}
       {showAddCountdownModal && (
