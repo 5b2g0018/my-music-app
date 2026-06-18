@@ -119,6 +119,8 @@ function App() {
   const [userEmail, setUserEmail] = useState<string | null>(() => localStorage.getItem('userEmail'))
   const [publicDiaries, setPublicDiaries] = useState<DiaryItem[]>([])
   const [isPublic, setIsPublic] = useState(false)
+  const [activeDiary, setActiveDiary] = useState<DiaryItem | null>(null)
+  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({})
 
   // 👥 使用者名稱快取
   const [usersCache, setUsersCache] = useState<{ [email: string]: string }>({})
@@ -443,7 +445,10 @@ function App() {
           password: data.password || undefined,
           isPublic: data.isPublic || false,
           bgm: data.bgm || '',
-          photo: data.photo || ''
+          photo: data.photo || '',
+          likedBy: data.likedBy || [],
+          likes: data.likes || 0,
+          comments: data.comments || []
         })
       })
       diariesList.sort((b, a) => a.timestamp - b.timestamp)
@@ -475,7 +480,10 @@ function App() {
           password: data.password || undefined,
           isPublic: true,
           bgm: data.bgm || '',
-          photo: data.photo || ''
+          photo: data.photo || '',
+          likedBy: data.likedBy || [],
+          likes: data.likes || 0,
+          comments: data.comments || []
         })
       })
       publicList.sort((b, a) => a.timestamp - b.timestamp)
@@ -498,6 +506,95 @@ function App() {
       setUsersCache(cache)
     } catch (e) {
       console.error('Error fetching users cache:', e)
+    }
+  }
+
+  const handleLikeDiary = async (diaryId: string, currentLikedBy: string[] = []) => {
+    if (!loggedInUser || !userEmail) {
+      alert('請先登入後再進行按讚喔！')
+      setCurrentView('login')
+      return
+    }
+
+    const emailLower = userEmail.trim().toLowerCase()
+    const hasLiked = currentLikedBy.includes(emailLower)
+    const newLikedBy = hasLiked
+      ? currentLikedBy.filter(email => email !== emailLower)
+      : [...currentLikedBy, emailLower]
+
+    try {
+      const diaryRef = doc(db, 'diaries', diaryId)
+      await updateDoc(diaryRef, {
+        likedBy: newLikedBy,
+        likes: newLikedBy.length
+      })
+
+      // Update local states
+      const updateState = (prevList: DiaryItem[]) =>
+        prevList.map(diary =>
+          diary.id === diaryId
+            ? { ...diary, likedBy: newLikedBy, likes: newLikedBy.length }
+            : diary
+        )
+
+      setPublicDiaries(prev => updateState(prev))
+      setMyDiaries(prev => updateState(prev))
+      
+      // Also update activeDiary if it matches
+      setActiveDiary(prev => (prev && prev.id === diaryId) ? { ...prev, likedBy: newLikedBy, likes: newLikedBy.length } : prev)
+    } catch (e) {
+      console.error('Error updating likes:', e)
+      alert('按讚失敗，請稍後再試。')
+    }
+  }
+
+  const handleCommentDiary = async (diaryId: string, currentComments: Comment[] = []) => {
+    if (!loggedInUser || !userEmail) {
+      alert('請先登入後再進行留言喔！')
+      setCurrentView('login')
+      return
+    }
+
+    const text = commentInputs[diaryId] || ''
+    if (!text.trim()) {
+      alert('請輸入留言內容！')
+      return
+    }
+
+    const newComment: Comment = {
+      author: loggedInUser,
+      text: text.trim(),
+      date: new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+      timestamp: Date.now()
+    }
+
+    const newComments = [...currentComments, newComment]
+
+    try {
+      const diaryRef = doc(db, 'diaries', diaryId)
+      await updateDoc(diaryRef, {
+        comments: newComments
+      })
+
+      // Update local states
+      const updateState = (prevList: DiaryItem[]) =>
+        prevList.map(diary =>
+          diary.id === diaryId
+            ? { ...diary, comments: newComments }
+            : diary
+        )
+
+      setPublicDiaries(prev => updateState(prev))
+      setMyDiaries(prev => updateState(prev))
+      
+      // Also update activeDiary if it matches
+      setActiveDiary(prev => (prev && prev.id === diaryId) ? { ...prev, comments: newComments } : prev)
+      
+      // Clear input
+      setCommentInputs(prev => ({ ...prev, [diaryId]: '' }))
+    } catch (e) {
+      console.error('Error adding comment:', e)
+      alert('留言失敗，請稍後再試。')
     }
   }
 
@@ -682,6 +779,7 @@ function App() {
 
 
   const handleViewDiary = (d: DiaryItem) => {
+    setActiveDiary(d)
     const showDiary = () => {
       setDiaryTitle(d.title)
       setDiaryContent(d.content)
@@ -2395,6 +2493,65 @@ function App() {
                     <img src={diary.photo} alt="Diary" className="diary-photo" />
                   )}
 
+                  {/* Likes and Comments Bar */}
+                  <div className="like-comment-bar">
+                    <button
+                      onClick={() => handleLikeDiary(diary.id, diary.likedBy)}
+                      className={`interaction-btn ${userEmail && diary.likedBy?.includes(userEmail.trim().toLowerCase()) ? 'liked' : ''}`}
+                    >
+                      ❤️ {diary.likes || 0}
+                    </button>
+                    <span style={{ fontSize: '13px', color: 'var(--text-sub)', fontWeight: '600' }}>
+                      💬 {diary.comments?.length || 0} 留言
+                    </span>
+                  </div>
+
+                  {/* Comments Panel */}
+                  <div className="comments-panel">
+                    {/* Comment List */}
+                    {diary.comments && diary.comments.length > 0 && (
+                      <div className="comment-list">
+                        {diary.comments.map((comment, index) => (
+                          <div key={index} className="comment-item">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                              <span className="comment-author">{comment.author}</span>
+                              <span className="comment-date">{comment.date}</span>
+                            </div>
+                            <div style={{ color: 'var(--text-main)', fontSize: '13px', wordBreak: 'break-all' }}>{comment.text}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Comment Input */}
+                    <div className="comment-input-container">
+                      <input
+                        type="text"
+                        placeholder="寫下你的溫暖留言..."
+                        className="comment-input"
+                        value={commentInputs[diary.id] || ''}
+                        onChange={(e) => setCommentInputs(prev => ({ ...prev, [diary.id]: e.target.value }))}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleCommentDiary(diary.id, diary.comments);
+                          }
+                        }}
+                      />
+                      <button
+                        onClick={() => handleCommentDiary(diary.id, diary.comments)}
+                        className="comment-submit-btn"
+                        style={{
+                          color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000 !important' : '#ffffff'
+                        }}
+                        ref={(el) => {
+                          if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
+                        }}
+                      >
+                        傳送
+                      </button>
+                    </div>
+                  </div>
+
                   <div style={{ marginTop: '12px' }}>
                     <button
                       onClick={() => handleViewDiary(diary)}
@@ -2407,7 +2564,9 @@ function App() {
                         cursor: 'pointer',
                         fontWeight: '900',
                         fontSize: '13px',
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.2s ease',
+                        width: '100%',
+                        textAlign: 'center'
                       }}
                       ref={(el) => {
                         if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
@@ -2669,6 +2828,70 @@ function App() {
             </div>
           )}
 
+          {/* Likes & Comments inside the Viewer (if it is a public diary) */}
+          {activeDiary && isPublic && (
+            <div style={{ marginBottom: '24px' }}>
+              {/* Likes and Comments Bar */}
+              <div className="like-comment-bar" style={{ marginTop: 0, paddingTop: 0, borderTop: 'none' }}>
+                <button
+                  onClick={() => handleLikeDiary(activeDiary.id, activeDiary.likedBy)}
+                  className={`interaction-btn ${userEmail && activeDiary.likedBy?.includes(userEmail.trim().toLowerCase()) ? 'liked' : ''}`}
+                >
+                  ❤️ {activeDiary.likes || 0}
+                </button>
+                <span style={{ fontSize: '13px', color: 'var(--text-sub)', fontWeight: '600' }}>
+                  💬 {activeDiary.comments?.length || 0} 留言
+                </span>
+              </div>
+
+              {/* Comments Panel */}
+              <div className="comments-panel" style={{ marginTop: '12px' }}>
+                {/* Comment List */}
+                {activeDiary.comments && activeDiary.comments.length > 0 && (
+                  <div className="comment-list" style={{ maxHeight: '240px' }}>
+                    {activeDiary.comments.map((comment, index) => (
+                      <div key={index} className="comment-item">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                          <span className="comment-author">{comment.author}</span>
+                          <span className="comment-date">{comment.date}</span>
+                        </div>
+                        <div style={{ color: 'var(--text-main)', fontSize: '13px', wordBreak: 'break-all' }}>{comment.text}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Comment Input */}
+                <div className="comment-input-container">
+                  <input
+                    type="text"
+                    placeholder="寫下你的溫暖留言..."
+                    className="comment-input"
+                    value={commentInputs[activeDiary.id] || ''}
+                    onChange={(e) => setCommentInputs(prev => ({ ...prev, [activeDiary.id]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleCommentDiary(activeDiary.id, activeDiary.comments);
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={() => handleCommentDiary(activeDiary.id, activeDiary.comments)}
+                    className="comment-submit-btn"
+                    style={{
+                      color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000 !important' : '#ffffff'
+                    }}
+                    ref={(el) => {
+                      if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
+                    }}
+                  >
+                    傳送
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
               <label style={{
@@ -2697,7 +2920,7 @@ function App() {
             </div>
 
             <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end' }}>
-              <button onClick={() => { setCurrentView('home'); setEditingId(null); setIsSecret(false); setDiaryPassword(''); setIsPublic(false); setDiaryTitle(''); setDiaryContent(''); setDiaryBgm(''); setDiaryPhoto(''); }} style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)', cursor: 'pointer' }}>返回首頁</button>
+              <button onClick={() => { setCurrentView('home'); setEditingId(null); setIsSecret(false); setDiaryPassword(''); setIsPublic(false); setDiaryTitle(''); setDiaryContent(''); setDiaryBgm(''); setDiaryPhoto(''); setActiveDiary(null); }} style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)', cursor: 'pointer' }}>返回首頁</button>
             </div>
           </div>
         </div>
