@@ -3697,11 +3697,30 @@ function App() {
             max-width: 760px;
             margin: 0 auto;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            overflow-x: auto;
             gap: 16px;
+            padding: 8px 4px 20px;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: thin;
+            scroll-behavior: smooth;
+          }
+
+          .diary-entries-list::-webkit-scrollbar {
+            height: 6px;
+          }
+          .diary-entries-list::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .diary-entries-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
           }
 
           .diary-entry-card {
+            flex-shrink: 0;
+            width: 320px;
+            scroll-snap-align: start;
             border-radius: 12px;
             border-left: 4px solid var(--accent);
             display: flex;
