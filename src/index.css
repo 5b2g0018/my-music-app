@@ -174,9 +174,13 @@ body {
 select,
 select option,
 input,
-textarea,
-button {
+textarea {
   color: var(--text-main) !important;
+  background: var(--bg-sec);
+}
+
+button {
+  color: var(--text-main);
   background: var(--bg-sec);
 }
 

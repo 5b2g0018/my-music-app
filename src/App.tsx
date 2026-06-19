@@ -4746,12 +4746,15 @@ function App() {
                           : theme === 'anime'
                             ? '#ff7fa9'
                             : 'linear-gradient(135deg, var(--accent), #ff4081)',
-                      color: (theme === 'gd' || theme === 'seventeen') ? '#000000' : '#ffffff',
+                      color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
                       boxShadow: theme === 'gd'
                         ? '0 4px 15px rgba(255, 235, 59, 0.2)'
                         : theme === 'seventeen'
                           ? '0 4px 15px rgba(247, 202, 201, 0.3)'
                           : '0 4px 15px rgba(255, 64, 129, 0.25)'
+                    }}
+                    ref={(el) => {
+                      if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                     }}
                   >
                     <span>➕</span> 新增倒數
@@ -4903,12 +4906,15 @@ function App() {
                           : theme === 'anime'
                             ? '#ff7fa9'
                             : 'linear-gradient(135deg, var(--accent), #ff4081)',
-                      color: (theme === 'gd' || theme === 'seventeen') ? '#000000' : '#ffffff',
+                      color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
                       boxShadow: theme === 'gd'
                         ? '0 4px 15px rgba(255, 235, 59, 0.2)'
                         : theme === 'seventeen'
                           ? '0 4px 15px rgba(247, 202, 201, 0.3)'
                           : '0 4px 15px rgba(255, 64, 129, 0.25)'
+                    }}
+                    ref={(el) => {
+                      if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                     }}
                   >
                     <span>➕</span> 新增行程
