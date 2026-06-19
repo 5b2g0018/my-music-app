@@ -2784,7 +2784,19 @@ function App() {
                               }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: '4px' }}>
                                   <span>{diary.title}</span>
-                                  <span style={{ color: 'var(--accent)', fontSize: '11px' }}>{diary.mood}</span>
+                                  <span
+                                    title={diary.mood}
+                                    style={{
+                                      color: 'var(--accent)',
+                                      fontSize: '11px',
+                                      display: 'inline-block',
+                                      maxWidth: '120px',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                      verticalAlign: 'middle'
+                                    }}
+                                  >{diary.mood}</span>
                                 </div>
                                 <div style={{
                                   color: 'var(--text-sub)',
@@ -3063,14 +3075,22 @@ function App() {
                         </div>
                       )}
                     </div>
-                    <span style={{
-                      background: ['gd', 'ive', 'babymonster', 'bts'].includes(theme) ? '#000' : 'var(--bg-color)',
-                      color: theme === 'gd' ? '#ffeb3b' : theme === 'bts' ? '#a17df0' : theme === 'seventeen' ? '#f59a98' : theme === 'anime' ? '#ff7fa9' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--accent)',
-                      padding: '4px 12px', borderRadius: '20px', fontSize: '12px',
-                      border: theme === 'gd' ? '1px solid #ffeb3b' : theme === 'bts' ? '1px solid #a17df0' : theme === 'seventeen' ? '1px solid #f59a98' : theme === 'anime' ? '1px solid #ff7fa9' : theme === 'ive' ? '1px solid #ff4081' : theme === 'babymonster' ? '1px solid #ff1744' : '1px solid var(--border)',
-                      fontWeight: 'bold',
-                      whiteSpace: 'nowrap'
-                    }}>{diary.mood}</span>
+                    <span
+                      title={diary.mood}
+                      style={{
+                        background: ['gd', 'ive', 'babymonster', 'bts'].includes(theme) ? '#000' : 'var(--bg-color)',
+                        color: theme === 'gd' ? '#ffeb3b' : theme === 'bts' ? '#a17df0' : theme === 'seventeen' ? '#f59a98' : theme === 'anime' ? '#ff7fa9' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--accent)',
+                        padding: '4px 12px', borderRadius: '20px', fontSize: '12px',
+                        border: theme === 'gd' ? '1px solid #ffeb3b' : theme === 'bts' ? '1px solid #a17df0' : theme === 'seventeen' ? '1px solid #f59a98' : theme === 'anime' ? '1px solid #ff7fa9' : theme === 'ive' ? '1px solid #ff4081' : theme === 'babymonster' ? '1px solid #ff1744' : '1px solid var(--border)',
+                        fontWeight: 'bold',
+                        display: 'inline-block',
+                        maxWidth: '180px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'middle'
+                      }}
+                    >{diary.mood}</span>
                   </div>
                   <p style={{ fontSize: '14px', color: 'var(--text-main)', margin: 0, lineHeight: '1.6', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>{diary.content}</p>
 
@@ -4735,13 +4755,22 @@ function App() {
                 <div key={diary.id} style={{ background: 'var(--bg-color)', padding: '28px', borderRadius: '16px', border: '1px solid var(--border)', boxShadow: '0 4px 20px rgba(0,0,0,0.01)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px', alignItems: 'center' }}>
                     <span style={{ fontSize: '14px', color: 'var(--text-sub)' }}>📅 {diary.date}</span>
-                    <span style={{
-                      background: (theme === 'gd' || theme === 'ive' || theme === 'babymonster' || theme === 'bts') ? '#000' : 'var(--bg-sec)',
-                      color: theme === 'gd' ? '#ffeb3b' : theme === 'bts' ? '#a17df0' : theme === 'seventeen' ? '#f59a98' : theme === 'anime' ? '#ff7fa9' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--text-main)',
-                      padding: '4px 12px', borderRadius: '20px', fontSize: '13px',
-                      border: theme === 'gd' ? '1px solid #ffeb3b' : theme === 'bts' ? '1px solid #a17df0' : theme === 'seventeen' ? '1px solid #f59a98' : theme === 'anime' ? '1px solid #ff7fa9' : theme === 'ive' ? '1px solid #ff4081' : theme === 'babymonster' ? '1px solid #ff1744' : '1px solid var(--border)',
-                      fontWeight: 'bold'
-                    }}>{diary.mood}</span>
+                    <span
+                      title={diary.mood}
+                      style={{
+                        background: (theme === 'gd' || theme === 'ive' || theme === 'babymonster' || theme === 'bts') ? '#000' : 'var(--bg-sec)',
+                        color: theme === 'gd' ? '#ffeb3b' : theme === 'bts' ? '#a17df0' : theme === 'seventeen' ? '#f59a98' : theme === 'anime' ? '#ff7fa9' : theme === 'ive' ? '#ff4081' : theme === 'babymonster' ? '#ff1744' : 'var(--text-main)',
+                        padding: '4px 12px', borderRadius: '20px', fontSize: '13px',
+                        border: theme === 'gd' ? '1px solid #ffeb3b' : theme === 'bts' ? '1px solid #a17df0' : theme === 'seventeen' ? '1px solid #f59a98' : theme === 'anime' ? '1px solid #ff7fa9' : theme === 'ive' ? '1px solid #ff4081' : theme === 'babymonster' ? '1px solid #ff1744' : '1px solid var(--border)',
+                        fontWeight: 'bold',
+                        display: 'inline-block',
+                        maxWidth: '180px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'middle'
+                      }}
+                    >{diary.mood}</span>
                   </div>
 
                   <h3 style={{
