@@ -13,6 +13,10 @@ declare global {
       [elemName: string]: any;
     }
   }
+  interface Window {
+    onYouTubeIframeAPIReady?: () => void;
+    YT?: any;
+  }
 }
 
 export {};

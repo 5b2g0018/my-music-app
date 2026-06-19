@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import './App.css'
 
 // 💡 引入音樂 App Firebase 設定
@@ -92,6 +92,67 @@ interface ScheduleItem {
   createdAt: number
 }
 
+interface AudioTrack {
+  title: string
+  artist: string
+  src: string
+  youtubeId?: string
+}
+
+const THEME_TRACKS: Record<string, AudioTrack[]> = {
+  gd: [
+    { title: "POWER", artist: "G-DRAGON", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", youtubeId: "NMjhjrBIrG8" },
+    { title: "Untitled, 2014 (無題)", artist: "G-DRAGON", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", youtubeId: "9kaCAbIXuyg" },
+    { title: "Crooked (放縱)", artist: "G-DRAGON", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", youtubeId: "RKhsHGfrFmY" }
+  ],
+  seventeen: [
+    { title: "Maestro", artist: "SEVENTEEN", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", youtubeId: "ThI0pBAbFnk" },
+    { title: "HOT", artist: "SEVENTEEN", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", youtubeId: "gRnuFC4Ualw" },
+    { title: "Don't Wanna Cry (울고 싶지 않아)", artist: "SEVENTEEN", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", youtubeId: "zEkg4GBTUMc" }
+  ],
+  bts: [
+    { title: "Dynamite", artist: "BTS", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", youtubeId: "gdZLi9oWNZg" },
+    { title: "Spring Day (봄날)", artist: "BTS", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", youtubeId: "xEeYspGOMyI" },
+    { title: "Butter", artist: "BTS", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3", youtubeId: "WMweEpGlu_U" }
+  ],
+  aespa: [
+    { title: "Supernova", artist: "aespa", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3", youtubeId: "phuiiNCxRMg" },
+    { title: "Drama", artist: "aespa", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3", youtubeId: "tBp5BxeHlgI" },
+    { title: "Next Level", artist: "aespa", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3", youtubeId: "4TWR90yRYms" }
+  ],
+  blackpink: [
+    { title: "Pink Venom", artist: "BLACKPINK", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3", youtubeId: "gQlMM-i4Exk" },
+    { title: "How You Like That", artist: "BLACKPINK", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3", youtubeId: "ioNng23DkIM" },
+    { title: "As If It's Your Last (마지막처럼)", artist: "BLACKPINK", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3", youtubeId: "Amq-qlqD_DY" }
+  ],
+  ive: [
+    { title: "HEYA (해야)", artist: "IVE", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3", youtubeId: "07EzMbVH3QE" },
+    { title: "LOVE DIVE", artist: "IVE", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", youtubeId: "Y8JFxS1HlDo" },
+    { title: "I AM", artist: "IVE", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", youtubeId: "6ZUIg8yv6UY" }
+  ],
+  babymonster: [
+    { title: "SHEESH", artist: "BABYMONSTER", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", youtubeId: "2wA_b6YHjqQ" },
+    { title: "Batter Up", artist: "BABYMONSTER", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", youtubeId: "mHQwG-SgK34" }
+  ],
+  anime: [
+    { title: "Suzume (すずめの戸締まり)", artist: "Radwimps", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", youtubeId: "1-729rK180A" },
+    { title: "Sparkle (スパークル)", artist: "Radwimps", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", youtubeId: "K_yBUf3XLyQ" },
+    { title: "Zenzenzense (前前前世)", artist: "Radwimps", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", youtubeId: "PDSkFeMV4ok" }
+  ],
+  kpop: [
+    { title: "FANCY", artist: "TWICE", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", youtubeId: "kQmaL194ZfQ" },
+    { title: "Talk That Talk", artist: "TWICE", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3", youtubeId: "i0p1_M1Qc78" }
+  ],
+  classic: [
+    { title: "Lofi Cafe Study Beats", artist: "Lofi Girl", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3", youtubeId: "jfKfPfyJRdk" },
+    { title: "Relaxing Ambient Music", artist: "Lofi Chill", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3", youtubeId: "tNkZs5bQDg0" }
+  ]
+};
+
+const getAccentButtonTextColor = (theme: string) => {
+  return ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff';
+};
+
 function App() {
   const [currentView, setCurrentView] = useState<'home' | 'editor' | 'register' | 'login' | 'capsule' | 'review' | 'publicWall' | 'viewer' | 'personalProfile' | 'admin'>('home')
   const [adminSearchQuery, setAdminSearchQuery] = useState('')
@@ -146,6 +207,23 @@ function App() {
   const [schedules, setSchedules] = useState<ScheduleItem[]>([])
   const [countdownEvents, setCountdownEvents] = useState<CountdownEventItem[]>([])
   const [currentTime, setCurrentTime] = useState<number>(() => Date.now())
+
+  // 🎵 浮動音樂播放器狀態
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [currentPlaylist, setCurrentPlaylist] = useState<AudioTrack[]>(THEME_TRACKS[theme] || THEME_TRACKS.classic);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [audioVolume, setAudioVolume] = useState<number>(0.5);
+  const [audioProgress, setAudioProgress] = useState<number>(0);
+  const [hasInteracted, setHasInteracted] = useState<boolean>(false);
+
+  // 📺 YouTube 播放核心狀態與 Refs
+  const ytPlayerRef = useRef<any>(null);
+  const [ytPlayerReady, setYtPlayerReady] = useState<boolean>(false);
+  const handleNextTrackRef = useRef<() => void>(() => {});
+
+  const activeTrack = currentPlaylist[currentTrackIndex] || null;
+
   const [showAddCountdownModal, setShowAddCountdownModal] = useState(false)
   const [newCountdownTitle, setNewCountdownTitle] = useState('')
   const [newCountdownDate, setNewCountdownDate] = useState('')
@@ -170,6 +248,277 @@ function App() {
   const [newReviewScheduleTitle, setNewReviewScheduleTitle] = useState('')
   const [newReviewScheduleType, setNewReviewScheduleType] = useState<'comeback' | 'concert' | 'birthday' | 'show' | 'other'>('comeback')
   const [showAddReviewScheduleForm, setShowAddReviewScheduleForm] = useState(false)
+
+  // 🎵 使用者互動監聽（繞過瀏覽器自動播放限制）
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      setHasInteracted(true);
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+    window.addEventListener('click', handleFirstInteraction);
+    window.addEventListener('keydown', handleFirstInteraction);
+    return () => {
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, []);
+
+  // 📺 載入與初始化 YouTube Iframe API
+  const initYoutubePlayer = () => {
+    if (ytPlayerRef.current) return;
+    try {
+      ytPlayerRef.current = new window.YT.Player('youtube-audio-player', {
+        height: '0',
+        width: '0',
+        videoId: activeTrack?.youtubeId || 'jfKfPfyJRdk',
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          rel: 0,
+          showinfo: 0,
+          modestbranding: 1
+        },
+        events: {
+          onReady: () => {
+            setYtPlayerReady(true);
+            if (ytPlayerRef.current && typeof ytPlayerRef.current.setVolume === 'function') {
+              ytPlayerRef.current.setVolume(audioVolume * 100);
+            }
+          },
+          onStateChange: (event: any) => {
+            // 0 代表播放結束 (YT.PlayerState.ENDED)
+            if (event.data === 0) {
+              handleNextTrackRef.current();
+            }
+          }
+        }
+      });
+    } catch (err) {
+      console.error("Failed to initialize YT Player:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (window.YT && window.YT.Player) {
+      initYoutubePlayer();
+      return;
+    }
+
+    const previousCallback = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      if (previousCallback) previousCallback();
+      initYoutubePlayer();
+    };
+
+    if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      if (firstScriptTag && firstScriptTag.parentNode) {
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      } else {
+        document.head.appendChild(tag);
+      }
+    }
+  }, []);
+
+  // 🎵 切換主題自動載入新歌單並播放
+  useEffect(() => {
+    const playlist = THEME_TRACKS[theme] || THEME_TRACKS.classic;
+    setCurrentPlaylist(playlist);
+    setCurrentTrackIndex(0);
+    setAudioProgress(0);
+
+    // 如果使用者已經有互動過，才自動播放（瀏覽器安全限制）
+    if (hasInteracted) {
+      setIsPlaying(true);
+    } else {
+      setIsPlaying(false);
+    }
+  }, [theme, hasInteracted]);
+
+  // 🎵 同步音樂播放器與 YouTube 狀態與音量
+  useEffect(() => {
+    if (!activeTrack) return;
+
+    const isYoutubeTrack = !!activeTrack.youtubeId;
+
+    if (isYoutubeTrack) {
+      // 暫停 HTML5 播放器
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+
+      if (ytPlayerRef.current && ytPlayerReady) {
+        try {
+          if (typeof ytPlayerRef.current.setVolume === 'function') {
+            ytPlayerRef.current.setVolume(audioVolume * 100);
+          }
+
+          let currentVideoUrl = "";
+          if (typeof ytPlayerRef.current.getVideoUrl === 'function') {
+            currentVideoUrl = ytPlayerRef.current.getVideoUrl();
+          }
+          const isSameVideo = currentVideoUrl.includes(activeTrack.youtubeId!);
+
+          if (!isSameVideo) {
+            if (isPlaying) {
+              ytPlayerRef.current.loadVideoById(activeTrack.youtubeId!);
+            } else {
+              ytPlayerRef.current.cueVideoById(activeTrack.youtubeId!);
+            }
+          } else {
+            if (isPlaying) {
+              ytPlayerRef.current.playVideo();
+            } else {
+              ytPlayerRef.current.pauseVideo();
+            }
+          }
+        } catch (err) {
+          console.error("YouTube player sync error:", err);
+        }
+      }
+    } else {
+      // 暫停 YouTube 播放器
+      if (ytPlayerRef.current && ytPlayerReady && typeof ytPlayerRef.current.pauseVideo === 'function') {
+        try {
+          ytPlayerRef.current.pauseVideo();
+        } catch (err) {
+          console.error("YouTube player pause error:", err);
+        }
+      }
+
+      // 控制 HTML5 音訊播放
+      if (audioRef.current) {
+        audioRef.current.volume = audioVolume;
+        
+        if (audioRef.current.src !== activeTrack.src) {
+          audioRef.current.src = activeTrack.src || '';
+          audioRef.current.load();
+        }
+
+        if (isPlaying) {
+          audioRef.current.play().catch(err => {
+            console.log("HTML5 audio playback error:", err);
+            setIsPlaying(false);
+          });
+        } else {
+          audioRef.current.pause();
+        }
+      }
+    }
+  }, [activeTrack, isPlaying, audioVolume, ytPlayerReady]);
+
+  // 📺 YouTube 播放進度輪詢
+  useEffect(() => {
+    let intervalId: any;
+    
+    if (isPlaying && activeTrack && activeTrack.youtubeId && ytPlayerReady && ytPlayerRef.current) {
+      intervalId = setInterval(() => {
+        try {
+          if (typeof ytPlayerRef.current.getCurrentTime === 'function' && typeof ytPlayerRef.current.getDuration === 'function') {
+            const current = ytPlayerRef.current.getCurrentTime();
+            const duration = ytPlayerRef.current.getDuration() || 1;
+            setAudioProgress((current / duration) * 100);
+          }
+        } catch (err) {
+          console.error("Error reading YT player progress:", err);
+        }
+      }, 500);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isPlaying, activeTrack, ytPlayerReady]);
+
+  const handlePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleNextTrack = () => {
+    setCurrentTrackIndex((prev) => (prev + 1) % currentPlaylist.length);
+    setAudioProgress(0);
+    setIsPlaying(true);
+  };
+
+  const handlePrevTrack = () => {
+    setCurrentTrackIndex((prev) => (prev - 1 + currentPlaylist.length) % currentPlaylist.length);
+    setAudioProgress(0);
+    setIsPlaying(true);
+  };
+
+  // 同步 handleNextTrack 到 ref，防止 YouTube 回呼閉包過期
+  useEffect(() => {
+    handleNextTrackRef.current = handleNextTrack;
+  }, [currentPlaylist, currentTrackIndex]);
+
+  // YouTube 網址解析器
+  const getYoutubeId = (url: string): string | null => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    if (match && match[2].length === 11) {
+      return match[2];
+    }
+    const shortsReg = /\/shorts\/([a-zA-Z0-9_-]{11})/;
+    const shortsMatch = url.match(shortsReg);
+    if (shortsMatch) {
+      return shortsMatch[1];
+    }
+    return null;
+  };
+
+  const handlePlayDiaryBgm = (bgmSrc: string, title?: string) => {
+    if (!bgmSrc) return;
+    
+    const isUrl = bgmSrc.startsWith('http://') || bgmSrc.startsWith('https://');
+    const youtubeId = isUrl ? getYoutubeId(bgmSrc) : null;
+    
+    let trackToPlay: AudioTrack;
+    if (youtubeId) {
+      trackToPlay = {
+        title: title || "日記專屬 YouTube 音樂",
+        artist: "YouTube BGM",
+        src: "",
+        youtubeId: youtubeId
+      };
+    } else if (isUrl) {
+      trackToPlay = {
+        title: title || "日記專屬背景音樂",
+        artist: "BGM",
+        src: bgmSrc
+      };
+    } else {
+      let foundTrack: AudioTrack | undefined;
+      for (const k in THEME_TRACKS) {
+        const match = THEME_TRACKS[k].find(t => t.title.toLowerCase().includes(bgmSrc.toLowerCase()) || bgmSrc.toLowerCase().includes(t.title.toLowerCase()));
+        if (match) {
+          foundTrack = match;
+          break;
+        }
+      }
+      
+      if (foundTrack) {
+        trackToPlay = foundTrack;
+      } else {
+        trackToPlay = {
+          title: bgmSrc,
+          artist: "推薦歌曲",
+          src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        };
+      }
+    }
+
+    setCurrentPlaylist([trackToPlay]);
+    setCurrentTrackIndex(0);
+    setAudioProgress(0);
+    setIsPlaying(true);
+  };
 
   const fetchCheers = async () => {
     try {
@@ -1192,16 +1541,11 @@ function App() {
                     borderRadius: '16px',
                     border: 'none',
                     background: 'var(--accent)',
-                    /* 🎨 樣式防禦：如果是 gd 主題就壓成黑色，其餘主題維持純白 */
-                    color: theme === 'gd' ? '#000000 !important' : '#ffffff',
+                    color: getAccentButtonTextColor(theme),
                     fontSize: '13px',
-                    fontWeight: '900', // 爆粗體，讓字體在小尺寸下依然清晰爆表
+                    fontWeight: '900',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
-                  }}
-                  /* 💡 雙重保險：直接跳過權重限制，由瀏覽器最底層強行渲染黑色字體 */
-                  ref={(el) => {
-                    if (el) el.style.setProperty('color', theme === 'gd' ? '#000000' : '#ffffff', 'important');
                   }}
                 >
                   登入 / 註冊
@@ -1278,7 +1622,7 @@ function App() {
                   }}
                   style={{
                     background: 'var(--accent)',
-                    color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff',
+                    color: getAccentButtonTextColor(theme),
                     border: 'none',
                     borderRadius: '12px',
                     padding: '4px 12px',
@@ -1287,9 +1631,6 @@ function App() {
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
                     transition: 'transform 0.2s'
-                  }}
-                  ref={(el) => {
-                    if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
                   }}
                 >
                   ✨ 應援
@@ -1380,7 +1721,7 @@ function App() {
                   width: '100%',
                   padding: '14px',
                   background: 'var(--accent)',
-                  color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff',
+                  color: getAccentButtonTextColor(theme),
                   border: 'none',
                   borderRadius: '12px',
                   fontWeight: '800',
@@ -1388,9 +1729,6 @@ function App() {
                   cursor: 'pointer',
                   boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
                   transition: 'all 0.2s'
-                }}
-                ref={(el) => {
-                  if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
                 }}
               >
                 🔓 讀取並收入膠囊箱
@@ -1488,12 +1826,9 @@ function App() {
                     borderRadius: '8px',
                     border: 'none',
                     background: 'var(--accent)',
-                    color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
+                    color: getAccentButtonTextColor(theme),
                     fontWeight: 'bold',
                     cursor: 'pointer'
-                  }}
-                  ref={(el) => {
-                    if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                   }}
                 >
                   儲存
@@ -1548,12 +1883,9 @@ function App() {
                     borderRadius: '8px',
                     border: 'none',
                     background: 'var(--accent)',
-                    color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
+                    color: getAccentButtonTextColor(theme),
                     fontWeight: 'bold',
                     cursor: 'pointer'
-                  }}
-                  ref={(el) => {
-                    if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                   }}
                 >
                   應援送出
@@ -1680,27 +2012,64 @@ function App() {
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: isDarkTheme ? '#ffffff' : 'var(--text-main)' }}>
               今日 BGM / 推薦歌曲
             </label>
-            <input
-              type="text"
-              placeholder={
-                theme === 'gd' ? "推薦一首 GD 的歌，如 Crooked..." :
-                  theme === 'bts' ? "推薦一首 BTS 的歌，如 Dynamite..." :
-                    theme === 'seventeen' ? "推薦一首 SEVENTEEN 的歌，如 Very Nice..." :
-                      theme === 'anime' ? "推薦一首動漫歌，如 殘酷天使的行動綱領..." :
-                        "輸入今日背景音樂歌曲..."
+            
+            {/* 🎵 下拉選擇選單 */}
+            <select
+              value={
+                (THEME_TRACKS[theme] || THEME_TRACKS.classic).some(t => t.title === diaryBgm)
+                  ? diaryBgm
+                  : diaryBgm === ''
+                    ? ''
+                    : 'custom'
               }
-              value={diaryBgm}
-              onChange={(e) => setDiaryBgm(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === 'custom') {
+                  setDiaryBgm('自訂歌曲');
+                } else {
+                  setDiaryBgm(val);
+                }
+              }}
               style={{
                 width: '100%',
                 padding: '12px',
                 borderRadius: '8px',
                 border: '1px solid var(--border)',
-                background: isDarkTheme ? 'rgba(255,255,255,0.1)' : 'var(--bg-color)',
+                background: isDarkTheme ? 'rgba(255,255,255,0.08)' : 'var(--bg-sec)',
                 color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                marginBottom: '10px',
+                fontWeight: '600',
+                cursor: 'pointer'
               }}
-            />
+            >
+              <option value="">✨ 選擇主題推薦歌曲 (自動載入播放) ✨</option>
+              {(THEME_TRACKS[theme] || THEME_TRACKS.classic).map((track, idx) => (
+                <option key={idx} value={track.title}>
+                  🎵 {track.title} ({track.artist})
+                </option>
+              ))}
+              <option value="custom">✏️ 手動輸入其他歌名或 MP3 音樂網址...</option>
+            </select>
+
+            {/* 如果選擇自訂，或者原本的值不是推薦列表中的歌，就顯示手動輸入框 */}
+            {(!((THEME_TRACKS[theme] || THEME_TRACKS.classic).some(t => t.title === diaryBgm)) && diaryBgm !== '') && (
+              <input
+                type="text"
+                placeholder="輸入自訂歌名，或輸入直連 MP3 網址 (如 https://...)"
+                value={diaryBgm === '自訂歌曲' ? '' : diaryBgm}
+                onChange={(e) => setDiaryBgm(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: isDarkTheme ? 'rgba(255,255,255,0.1)' : 'var(--bg-color)',
+                  color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
+                  boxSizing: 'border-box'
+                }}
+              />
+            )}
           </div>
 
           <div style={{ marginBottom: '24px' }}>
@@ -1908,12 +2277,9 @@ function App() {
                   borderRadius: '8px',
                   border: 'none',
                   background: 'var(--accent)',
-                  color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
+                  color: getAccentButtonTextColor(theme),
                   fontWeight: 'bold',
                   cursor: 'pointer'
-                }}
-                ref={(el) => {
-                  if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                 }}
               >
                 {editingId ? '更新日記' : '儲存日記'}
@@ -3056,12 +3422,9 @@ function App() {
                 borderRadius: '8px',
                 border: 'none',
                 background: 'var(--accent)',
-                color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
+                color: getAccentButtonTextColor(theme),
                 cursor: 'pointer',
                 fontWeight: 'bold'
-              }}
-              ref={(el) => {
-                if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
               }}
             >
               返回首頁
@@ -3247,6 +3610,7 @@ function App() {
                         <div style={{ fontSize: '12px', color: 'var(--text-sub)', marginTop: '4px' }}>
                           📅 發布日期：{diary.date}
                         </div>
+                        <button onClick={() => handlePlayDiaryBgm(diary.bgm || '', diary.title)}>播放 BGM</button>
                       </div>
 
                       {/* Action Button */}
@@ -3386,7 +3750,7 @@ function App() {
                         <div style={{
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '6px',
+                          gap: '8px',
                           background: isDarkTheme ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
                           border: '1px solid var(--border)',
                           padding: '4px 10px',
@@ -3397,7 +3761,22 @@ function App() {
                           marginTop: '4px',
                           marginBottom: '8px'
                         }}>
-                          🎵 {diary.bgm}
+                          <span>🎵 {diary.bgm}</span>
+                          <button
+                            onClick={() => handlePlayDiaryBgm(diary.bgm || '', diary.title)}
+                            style={{
+                              background: 'var(--accent)',
+                              color: getAccentButtonTextColor(theme),
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '2px 8px',
+                              fontSize: '10px',
+                              cursor: 'pointer',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            ▶ 播放 BGM
+                          </button>
                         </div>
                       )}
                     </div>
@@ -3472,10 +3851,7 @@ function App() {
                         onClick={() => handleCommentDiary(diary.id, diary.comments)}
                         className="comment-submit-btn"
                         style={{
-                          color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000 !important' : '#ffffff'
-                        }}
-                        ref={(el) => {
-                          if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
+                          color: getAccentButtonTextColor(theme)
                         }}
                       >
                         傳送
@@ -3491,16 +3867,13 @@ function App() {
                         borderRadius: '8px',
                         border: 'none',
                         background: 'var(--accent)',
-                        color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000 !important' : '#ffffff',
+                        color: getAccentButtonTextColor(theme),
                         cursor: 'pointer',
                         fontWeight: '900',
                         fontSize: '13px',
                         transition: 'all 0.2s ease',
                         width: '100%',
                         textAlign: 'center'
-                      }}
-                      ref={(el) => {
-                        if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
                       }}
                     >
                       閱讀完整日記
@@ -3617,13 +3990,10 @@ function App() {
                       width: '100%',
                       padding: '14px',
                       background: 'var(--accent)',
-                      color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
+                      color: getAccentButtonTextColor(theme),
                       border: 'none',
                       borderRadius: '8px',
                       fontWeight: 'bold'
-                    }}
-                    ref={(el) => {
-                      if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                     }}
                   >
                     註冊帳號
@@ -3640,15 +4010,12 @@ function App() {
                     width: '100%',
                     padding: '14px',
                     background: 'var(--accent)',
-                    color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
+                    color: getAccentButtonTextColor(theme),
                     border: 'none',
                     borderRadius: '8px',
                     fontSize: '16px',
                     fontWeight: '900'
-                  }}
-                    ref={(el) => {
-                      if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
-                    }}>
+                  }}>
                     登入系統
                   </button>
 
@@ -3695,21 +4062,37 @@ function App() {
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: isDarkTheme ? '#ffffff' : 'var(--text-main)' }}>
                 今日 BGM / 推薦歌曲
               </label>
-              <input
-                disabled
-                type="text"
-                value={diaryBgm}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border)',
-                  background: isDarkTheme ? 'rgba(255,255,255,0.05)' : 'var(--bg-sec)',
-                  color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
-                  boxSizing: 'border-box',
-                  opacity: 0.8
-                }}
-              />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input
+                  disabled
+                  type="text"
+                  value={diaryBgm}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border)',
+                    background: isDarkTheme ? 'rgba(255,255,255,0.05)' : 'var(--bg-sec)',
+                    color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
+                    boxSizing: 'border-box',
+                    opacity: 0.8
+                  }}
+                />
+                <button
+                  onClick={() => handlePlayDiaryBgm(diaryBgm, diaryTitle)}
+                  style={{
+                    padding: '12px 20px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'var(--accent)',
+                    color: getAccentButtonTextColor(theme),
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ▶ 播放 BGM
+                </button>
+              </div>
             </div>
           )}
 
@@ -3826,10 +4209,7 @@ function App() {
                     onClick={() => handleCommentDiary(activeDiary.id, activeDiary.comments)}
                     className="comment-submit-btn"
                     style={{
-                      color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000 !important' : '#ffffff'
-                    }}
-                    ref={(el) => {
-                      if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
+                      color: getAccentButtonTextColor(theme)
                     }}
                   >
                     傳送
@@ -4746,15 +5126,12 @@ function App() {
                           : theme === 'anime'
                             ? '#ff7fa9'
                             : 'linear-gradient(135deg, var(--accent), #ff4081)',
-                      color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
+                      color: getAccentButtonTextColor(theme),
                       boxShadow: theme === 'gd'
                         ? '0 4px 15px rgba(255, 235, 59, 0.2)'
                         : theme === 'seventeen'
                           ? '0 4px 15px rgba(247, 202, 201, 0.3)'
                           : '0 4px 15px rgba(255, 64, 129, 0.25)'
-                    }}
-                    ref={(el) => {
-                      if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                     }}
                   >
                     <span>➕</span> 新增倒數
@@ -4906,15 +5283,12 @@ function App() {
                           : theme === 'anime'
                             ? '#ff7fa9'
                             : 'linear-gradient(135deg, var(--accent), #ff4081)',
-                      color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
+                      color: getAccentButtonTextColor(theme),
                       boxShadow: theme === 'gd'
                         ? '0 4px 15px rgba(255, 235, 59, 0.2)'
                         : theme === 'seventeen'
                           ? '0 4px 15px rgba(247, 202, 201, 0.3)'
                           : '0 4px 15px rgba(255, 64, 129, 0.25)'
-                    }}
-                    ref={(el) => {
-                      if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                     }}
                   >
                     <span>➕</span> 新增行程
@@ -5078,7 +5452,7 @@ function App() {
               <button onClick={() => setCurrentView('login')} style={{
                 padding: '12px 28px',
                 background: 'var(--accent)',
-                color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000 !important' : '#ffffff',
+                color: getAccentButtonTextColor(theme),
                 border: 'none',
                 borderRadius: '8px',
                 cursor: 'pointer',
@@ -5086,10 +5460,7 @@ function App() {
                 fontWeight: '900',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                 transition: 'all 0.3s ease'
-              }}
-                ref={(el) => {
-                  if (el) el.style.setProperty('color', (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff', 'important');
-                }}>
+              }}>
                 立刻前往登入
               </button>
             </div>
@@ -5135,7 +5506,7 @@ function App() {
                     <div style={{
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '6px',
+                      gap: '8px',
                       background: isDarkTheme ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
                       border: '1px solid var(--border)',
                       padding: '4px 10px',
@@ -5146,7 +5517,22 @@ function App() {
                       marginTop: '4px',
                       marginBottom: '8px'
                     }}>
-                      🎵 {diary.bgm}
+                      <span>🎵 {diary.bgm}</span>
+                      <button
+                        onClick={() => handlePlayDiaryBgm(diary.bgm || '', diary.title)}
+                        style={{
+                          background: 'var(--accent)',
+                          color: getAccentButtonTextColor(theme),
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '2px 8px',
+                          fontSize: '10px',
+                          cursor: 'pointer',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        ▶ 播放 BGM
+                      </button>
                     </div>
                   )}
 
@@ -5293,12 +5679,9 @@ function App() {
                   borderRadius: '8px',
                   border: 'none',
                   background: 'var(--accent)',
-                  color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
+                  color: getAccentButtonTextColor(theme),
                   fontWeight: 'bold',
                   cursor: 'pointer'
-                }}
-                ref={(el) => {
-                  if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                 }}
               >
                 新增倒數
@@ -5391,16 +5774,116 @@ function App() {
                   borderRadius: '8px',
                   border: 'none',
                   background: 'var(--accent)',
-                  color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
+                  color: getAccentButtonTextColor(theme),
                   fontWeight: 'bold',
                   cursor: 'pointer'
-                }}
-                ref={(el) => {
-                  if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                 }}
               >
                 新增行程
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 🎵 隱藏 of HTML5 Audio 播放核心 */}
+      {activeTrack && (
+        <audio
+          ref={audioRef}
+          src={activeTrack.youtubeId ? undefined : activeTrack.src}
+          onTimeUpdate={() => {
+            if (audioRef.current) {
+              const current = audioRef.current.currentTime;
+              const duration = audioRef.current.duration || 1;
+              setAudioProgress((current / duration) * 100);
+            }
+          }}
+          onEnded={handleNextTrack}
+        />
+      )}
+
+      {/* 🎵 隱藏的 YouTube Iframe 播放核心 */}
+      <div style={{ display: 'none' }}>
+        <div id="youtube-audio-player"></div>
+      </div>
+
+      {/* 🎵 浮動音樂播放器 UI (在後台 admin 畫面隱藏) */}
+      {(currentView as string) !== 'admin' && activeTrack && (
+        <div className="music-player-widget">
+          {/* Mini progress bar at top of widget */}
+          <div className="player-progress-bar">
+            <div 
+              className="player-progress-fill" 
+              style={{ width: `${audioProgress}%` }}
+            />
+          </div>
+
+          {/* Vinyl record rotating animation */}
+          <div className="vinyl-container">
+            <div className={`vinyl-disc ${isPlaying ? 'vinyl-rotating' : ''}`}>
+              <div className="vinyl-center">
+                <div className="vinyl-center-dot" />
+              </div>
+            </div>
+          </div>
+
+          {/* Song Info */}
+          <div className="player-info">
+            <div className="player-title" title={activeTrack.title}>
+              {activeTrack.title}
+            </div>
+            <div className="player-artist" title={activeTrack.artist}>
+              {activeTrack.artist}
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="player-controls">
+            {/* Prev Track */}
+            <button 
+              className="player-btn" 
+              onClick={handlePrevTrack} 
+              title="上一首"
+            >
+              ⏮
+            </button>
+
+            {/* Play / Pause */}
+            <button 
+              className="player-btn player-btn-play" 
+              onClick={handlePlayPause}
+              title={isPlaying ? '暫停' : '播放'}
+              style={{ color: '#000000' }}
+            >
+              {isPlaying ? '⏸' : '▶'}
+            </button>
+
+            {/* Next Track */}
+            <button 
+              className="player-btn" 
+              onClick={handleNextTrack} 
+              title="下一首"
+            >
+              ⏭
+            </button>
+
+            {/* Volume Control */}
+            <div className="player-vol-container">
+              <button 
+                className="player-btn" 
+                onClick={() => setAudioVolume(prev => prev === 0 ? 0.5 : 0)}
+                title={audioVolume === 0 ? '取消靜音' : '靜音'}
+              >
+                {audioVolume === 0 ? '🔇' : '🔊'}
+              </button>
+              <input 
+                type="range" 
+                min="0" 
+                max="1" 
+                step="0.05"
+                value={audioVolume}
+                onChange={(e) => setAudioVolume(parseFloat(e.target.value))}
+                className="player-vol-slider"
+              />
             </div>
           </div>
         </div>
