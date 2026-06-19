@@ -161,6 +161,15 @@ function App() {
   const [unlockedNotifications, setUnlockedNotifications] = useState<TimeCapsuleItem[]>([])
   const [activeNotificationCapsule, setActiveNotificationCapsule] = useState<TimeCapsuleItem | null>(null)
 
+  // 📅 年度回顧行事曆 & 專屬行程狀態
+  const [reviewSchedules, setReviewSchedules] = useState<ScheduleItem[]>([])
+  const [calendarYear, setCalendarYear] = useState<number>(new Date().getFullYear())
+  const [calendarMonth, setCalendarMonth] = useState<number>(new Date().getMonth())
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(new Date())
+  const [newReviewScheduleTitle, setNewReviewScheduleTitle] = useState('')
+  const [newReviewScheduleType, setNewReviewScheduleType] = useState<'comeback' | 'concert' | 'birthday' | 'show' | 'other'>('comeback')
+  const [showAddReviewScheduleForm, setShowAddReviewScheduleForm] = useState(false)
+
   const fetchCheers = async () => {
     try {
       const snap = await getDocs(collection(db, 'cheers'))
@@ -403,6 +412,64 @@ function App() {
     try {
       await deleteDoc(doc(db, 'schedules', id))
       await fetchSchedules()
+    } catch (e) {
+      console.error(e)
+      alert('刪除失敗')
+    }
+  }
+
+  const fetchReviewSchedules = async () => {
+    try {
+      const snap = await getDocs(collection(db, 'review_schedules'))
+      const list: ScheduleItem[] = []
+      snap.forEach((d) => {
+        const data = d.data()
+        list.push({
+          id: d.id,
+          userEmail: data.userEmail || '',
+          title: data.title || '',
+          date: data.date || '',
+          type: data.type || 'other',
+          createdAt: data.createdAt || Date.now()
+        })
+      })
+      list.sort((a, b) => a.date.localeCompare(b.date))
+      setReviewSchedules(list)
+    } catch (e) {
+      console.error('Error fetching review schedules:', e)
+    }
+  }
+
+  const handleSaveReviewSchedule = async (selectedDateStr: string) => {
+    if (!newReviewScheduleTitle.trim()) {
+      alert('請填寫行程名稱！')
+      return
+    }
+    const emailLower = (userEmail || 'anonymous@memoir.com').trim().toLowerCase()
+    try {
+      const scheduleId = `rev_schedule_${Date.now()}`
+      await setDoc(doc(db, 'review_schedules', scheduleId), {
+        userEmail: emailLower,
+        title: newReviewScheduleTitle.trim(),
+        date: selectedDateStr,
+        type: newReviewScheduleType,
+        createdAt: Date.now()
+      })
+      setNewReviewScheduleTitle('')
+      setNewReviewScheduleType('comeback')
+      setShowAddReviewScheduleForm(false)
+      await fetchReviewSchedules()
+    } catch (e) {
+      console.error('Error saving review schedule:', e)
+      alert('新增行程失敗')
+    }
+  }
+
+  const handleDeleteReviewSchedule = async (id: string) => {
+    if (!confirm('確定要刪除此行程嗎？')) return
+    try {
+      await deleteDoc(doc(db, 'review_schedules', id))
+      await fetchReviewSchedules()
     } catch (e) {
       console.error(e)
       alert('刪除失敗')
@@ -896,6 +963,7 @@ function App() {
         await fetchTimeCapsules(emailLower)
         await fetchSchedules()
         await fetchCountdownEvents()
+        await fetchReviewSchedules()
         setCurrentView('home')
       } else {
         alert('密碼錯誤或帳號不存在')
@@ -936,6 +1004,7 @@ function App() {
     fetchCheers()
     fetchSchedules()
     fetchCountdownEvents()
+    fetchReviewSchedules()
     if (savedEmail) {
       fetchUserDiaries(savedEmail)
       fetchTimeCapsules(savedEmail)
@@ -1204,8 +1273,10 @@ function App() {
     setActiveNotificationCapsule(null)
     setSchedules([])
     setCountdownEvents([])
+    setReviewSchedules([])
     fetchSchedules()
     fetchCountdownEvents()
+    fetchReviewSchedules()
     setCurrentView('home')
   }
 
@@ -2247,6 +2318,84 @@ function App() {
     const cardStyle = getCardStyle();
     const isDark = ['blackpink', 'aespa', 'gd', 'babymonster', 'bts'].includes(theme);
 
+    const isToday = (d: Date) => {
+      const today = new Date();
+      return d.getDate() === today.getDate() &&
+             d.getMonth() === today.getMonth() &&
+             d.getFullYear() === today.getFullYear();
+    };
+
+    const isSelected = (d: Date) => {
+      if (!selectedCalendarDate) return false;
+      return d.getDate() === selectedCalendarDate.getDate() &&
+             d.getMonth() === selectedCalendarDate.getMonth() &&
+             d.getFullYear() === selectedCalendarDate.getFullYear();
+    };
+
+    const toDiaryDateStr = (d: Date) => {
+      return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+    };
+
+    const toScheduleDateStr = (d: Date) => {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+
+    const prevMonth = () => {
+      if (calendarMonth === 0) {
+        setCalendarMonth(11);
+        setCalendarYear(prev => prev - 1);
+      } else {
+        setCalendarMonth(prev => prev - 1);
+      }
+    };
+
+    const nextMonth = () => {
+      if (calendarMonth === 11) {
+        setCalendarMonth(0);
+        setCalendarYear(prev => prev + 1);
+      } else {
+        setCalendarMonth(prev => prev + 1);
+      }
+    };
+
+    const getCalendarDays = () => {
+      const firstDayIndex = new Date(calendarYear, calendarMonth, 1).getDay();
+      const totalDays = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+      const prevMonthTotalDays = new Date(calendarYear, calendarMonth, 0).getDate();
+      
+      const days: { date: Date; isCurrentMonth: boolean; dateString: string }[] = [];
+      
+      for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const d = new Date(calendarYear, calendarMonth - 1, prevMonthTotalDays - i);
+        days.push({
+          date: d,
+          isCurrentMonth: false,
+          dateString: toDiaryDateStr(d)
+        });
+      }
+      
+      for (let i = 1; i <= totalDays; i++) {
+        const d = new Date(calendarYear, calendarMonth, i);
+        days.push({
+          date: d,
+          isCurrentMonth: true,
+          dateString: toDiaryDateStr(d)
+        });
+      }
+      
+      const remaining = 42 - days.length;
+      for (let i = 1; i <= remaining; i++) {
+        const d = new Date(calendarYear, calendarMonth + 1, i);
+        days.push({
+          date: d,
+          isCurrentMonth: false,
+          dateString: toDiaryDateStr(d)
+        });
+      }
+      
+      return days;
+    };
+
     return (
       <>
         {renderNavbar()}
@@ -2450,6 +2599,365 @@ function App() {
                 </div>
               );
             })()}
+
+            {/* 📅 年度回顧行事曆 (Annual Review Calendar) */}
+            <style>{`
+              .calendar-layout {
+                display: grid;
+                grid-template-columns: 1.2fr 1fr;
+                gap: 24px;
+                margin-top: 24px;
+              }
+              @media (max-width: 768px) {
+                .calendar-layout {
+                  grid-template-columns: 1fr !important;
+                }
+              }
+            `}</style>
+            <div style={{
+              marginTop: '40px',
+              padding: '24px',
+              background: cardStyle.subCardBg,
+              border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid var(--border)',
+              borderRadius: '16px',
+            }}>
+              <h3 style={{
+                fontSize: '16px',
+                fontWeight: '800',
+                marginBottom: '16px',
+                textAlign: 'center',
+                color: 'var(--accent)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}>
+                <span>📅</span> 年度回顧月曆 (新增行程不加入中控台)
+              </h3>
+              
+              <div className="calendar-layout">
+                {/* Left side: Calendar Grid */}
+                <div className="calendar-container" style={{
+                  padding: '16px',
+                  background: isDark ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.5)',
+                  boxShadow: 'none',
+                  border: 'none',
+                }}>
+                  {/* Calendar Header with navigation */}
+                  <div className="calendar-header" style={{ marginBottom: '16px' }}>
+                    <button 
+                      onClick={prevMonth}
+                      style={{
+                        background: 'transparent',
+                        border: '1px solid var(--border)',
+                        borderRadius: '50%',
+                        width: '32px',
+                        height: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: 'var(--text-main)',
+                      }}
+                    >
+                      &lt;
+                    </button>
+                    <span style={{ fontWeight: 'bold', fontSize: '16px', color: 'var(--text-main)' }}>
+                      {calendarYear}年 {calendarMonth + 1}月
+                    </span>
+                    <button 
+                      onClick={nextMonth}
+                      style={{
+                        background: 'transparent',
+                        border: '1px solid var(--border)',
+                        borderRadius: '50%',
+                        width: '32px',
+                        height: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: 'var(--text-main)',
+                      }}
+                    >
+                      &gt;
+                    </button>
+                  </div>
+                  
+                  {/* Weekday headers */}
+                  <div className="calendar-grid-header">
+                    {['日', '一', '二', '三', '四', '五', '六'].map(w => (
+                      <span key={w} style={{ fontSize: '12px', opacity: 0.7 }}>{w}</span>
+                    ))}
+                  </div>
+                  
+                  {/* Day cells grid */}
+                  <div className="calendar-grid-days">
+                    {getCalendarDays().map((day, idx) => {
+                      const dayDiaryStr = toDiaryDateStr(day.date);
+                      const daySchStr = toScheduleDateStr(day.date);
+                      
+                      const dayDiaries = myDiaries.filter(d => d.date === dayDiaryStr);
+                      const daySchedules = reviewSchedules.filter(sch => 
+                        sch.date === daySchStr && 
+                        (sch.userEmail === 'system' || (userEmail && sch.userEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()))
+                      );
+                      
+                      const hasDiaries = dayDiaries.length > 0;
+                      const isTodayVal = isToday(day.date);
+                      const isSelectedVal = isSelected(day.date);
+                      
+                      return (
+                        <div
+                          key={`day-${idx}`}
+                          onClick={() => {
+                            setSelectedCalendarDate(day.date);
+                            setShowAddReviewScheduleForm(false);
+                          }}
+                          className={`calendar-day-cell ${!day.isCurrentMonth ? 'other-month' : ''} ${isTodayVal ? 'today' : ''}`}
+                          style={{
+                            borderColor: isSelectedVal ? 'var(--accent)' : undefined,
+                            borderWidth: isSelectedVal ? '2px' : undefined,
+                            background: isSelectedVal ? 'color-mix(in srgb, var(--accent) 15%, var(--bg-sec))' : undefined,
+                            boxShadow: isSelectedVal ? '0 4px 12px rgba(var(--accent), 0.15)' : undefined,
+                          }}
+                        >
+                          <span className="calendar-day-num" style={{
+                            opacity: day.isCurrentMonth ? 1 : 0.5,
+                            fontWeight: isTodayVal ? 'bold' : 'normal',
+                          }}>{day.date.getDate()}</span>
+                          
+                          <div className="calendar-day-dots">
+                            {hasDiaries && <span className="calendar-dot diary" title="有日記" />}
+                            {daySchedules.map(sch => (
+                              <span key={sch.id} className={`calendar-dot ${sch.type}`} title={sch.title} />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* Right side: Day Details */}
+                <div style={{
+                  padding: '16px',
+                  background: isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+                  borderRadius: '12px',
+                  border: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid var(--border)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px',
+                  minHeight: '300px'
+                }}>
+                  {selectedCalendarDate ? (() => {
+                    const diaryDateStr = toDiaryDateStr(selectedCalendarDate);
+                    const schDateStr = toScheduleDateStr(selectedCalendarDate);
+                    
+                    const dayDiaries = myDiaries.filter(d => d.date === diaryDateStr);
+                    const daySchedules = reviewSchedules.filter(sch => 
+                      sch.date === schDateStr &&
+                      (sch.userEmail === 'system' || (userEmail && sch.userEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()))
+                    );
+                    
+                    return (
+                      <>
+                        <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
+                          <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--text-main)' }}>
+                            📅 {selectedCalendarDate.getFullYear()}年{selectedCalendarDate.getMonth() + 1}月{selectedCalendarDate.getDate()}日 明細
+                          </h4>
+                        </div>
+                        
+                        {/* Diaries section */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--accent)' }}>📝 當日日記 ({dayDiaries.length})</div>
+                          {dayDiaries.length === 0 ? (
+                            <div style={{ fontSize: '12px', color: 'var(--text-sub)', fontStyle: 'italic' }}>今天沒有寫日記喔~</div>
+                          ) : (
+                            dayDiaries.map(diary => (
+                              <div key={diary.id} style={{
+                                padding: '8px 10px',
+                                background: isDark ? 'rgba(255,255,255,0.05)' : '#ffffff',
+                                borderRadius: '8px',
+                                border: '1px solid var(--border)',
+                                fontSize: '13px'
+                              }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: '4px' }}>
+                                  <span>{diary.title}</span>
+                                  <span style={{ color: 'var(--accent)', fontSize: '11px' }}>{diary.mood}</span>
+                                </div>
+                                <div style={{ 
+                                  color: 'var(--text-sub)', 
+                                  fontSize: '12px',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  {diary.content}
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        
+                        {/* Schedules section */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--accent)' }}>⭐ 回顧專屬行程 ({daySchedules.length})</div>
+                          {daySchedules.length === 0 ? (
+                            <div style={{ fontSize: '12px', color: 'var(--text-sub)', fontStyle: 'italic' }}>當天沒有設定回顧行程。</div>
+                          ) : (
+                            daySchedules.map(sch => {
+                              let typeText = '其他';
+                              let badgeColor = '#a855f7';
+                              if (sch.type === 'comeback') { typeText = '💿 回歸'; badgeColor = 'var(--accent)'; }
+                              else if (sch.type === 'concert') { typeText = '🎤 演唱會'; badgeColor = '#ff1744'; }
+                              else if (sch.type === 'birthday') { typeText = '🎂 生日'; badgeColor = '#ff80ab'; }
+                              else if (sch.type === 'show') { typeText = '📺 節目'; badgeColor = '#00e5ff'; }
+                              
+                              return (
+                                <div key={sch.id} style={{
+                                  padding: '8px 12px',
+                                  background: isDark ? 'rgba(255,255,255,0.05)' : '#ffffff',
+                                  borderRadius: '8px',
+                                  border: '1px solid var(--border)',
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  fontSize: '13px'
+                                }}>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                    <span style={{ fontWeight: 'bold' }}>{sch.title}</span>
+                                    <span style={{ fontSize: '10px', color: badgeColor, fontWeight: '800' }}>{typeText}</span>
+                                  </div>
+                                  {loggedInUser && (
+                                    <button 
+                                      onClick={() => handleDeleteReviewSchedule(sch.id)}
+                                      style={{
+                                        background: 'transparent',
+                                        border: 'none',
+                                        color: '#ff1744',
+                                        cursor: 'pointer',
+                                        fontSize: '14px',
+                                        padding: '4px'
+                                      }}
+                                    >
+                                      ✕
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                        
+                        {/* Add schedule form */}
+                        {loggedInUser && (
+                          <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                            {!showAddReviewScheduleForm ? (
+                              <button
+                                onClick={() => setShowAddReviewScheduleForm(true)}
+                                style={{
+                                  width: '100%',
+                                  padding: '8px 12px',
+                                  background: 'var(--accent)',
+                                  color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff',
+                                  border: 'none',
+                                  borderRadius: '6px',
+                                  fontWeight: 'bold',
+                                  cursor: 'pointer',
+                                  fontSize: '12.5px'
+                                }}
+                              >
+                                ➕ 新增回顧行程
+                              </button>
+                            ) : (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ fontSize: '12px', fontWeight: 'bold' }}>新增此日行程：</div>
+                                <input
+                                  type="text"
+                                  placeholder="行程名稱/標題"
+                                  value={newReviewScheduleTitle}
+                                  onChange={e => setNewReviewScheduleTitle(e.target.value)}
+                                  style={{
+                                    padding: '8px',
+                                    borderRadius: '6px',
+                                    border: '1px solid var(--border)',
+                                    background: 'var(--bg-sec)',
+                                    color: 'var(--text-main)',
+                                    fontSize: '12px'
+                                  }}
+                                />
+                                <select
+                                  value={newReviewScheduleType}
+                                  onChange={e => setNewReviewScheduleType(e.target.value as any)}
+                                  style={{
+                                    padding: '8px',
+                                    borderRadius: '6px',
+                                    border: '1px solid var(--border)',
+                                    background: 'var(--bg-sec)',
+                                    color: 'var(--text-main)',
+                                    fontSize: '12px'
+                                  }}
+                                >
+                                  <option value="comeback">💿 回歸/新歌發行</option>
+                                  <option value="concert">🎤 演唱會/見面會</option>
+                                  <option value="birthday">🎂 偶像生日</option>
+                                  <option value="show">📺 綜藝/打歌節目</option>
+                                  <option value="other">⭐ 其他活動</option>
+                                </select>
+                                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                                  <button
+                                    onClick={() => setShowAddReviewScheduleForm(false)}
+                                    style={{
+                                      padding: '6px 12px',
+                                      border: '1px solid var(--border)',
+                                      borderRadius: '4px',
+                                      background: 'transparent',
+                                      color: 'var(--text-main)',
+                                      fontSize: '11px',
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    取消
+                                  </button>
+                                  <button
+                                    onClick={() => handleSaveReviewSchedule(schDateStr)}
+                                    style={{
+                                      padding: '6px 12px',
+                                      border: 'none',
+                                      borderRadius: '4px',
+                                      background: 'var(--accent)',
+                                      color: (theme === 'gd' || theme === 'seventeen' || theme === 'anime') ? '#000000' : '#ffffff',
+                                      fontWeight: 'bold',
+                                      fontSize: '11px',
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    儲存
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })() : (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '100%',
+                      color: 'var(--text-sub)',
+                      fontStyle: 'italic',
+                      fontSize: '13px'
+                    }}>
+                      點選月曆日期以查看明細或新增行程
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -4042,9 +4550,13 @@ function App() {
               </div>
 
               <div className="kpop-dashboard-list">
-                {schedules
-                  .filter((sch) => sch.userEmail === 'system' || (userEmail && sch.userEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()))
-                  .map((sch) => {
+                {(() => {
+                  const today = new Date();
+                  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                  return schedules
+                    .filter((sch) => sch.userEmail === 'system' || (userEmail && sch.userEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()))
+                    .filter((sch) => sch.date >= todayStr)
+                    .map((sch) => {
                     const isSystem = sch.userEmail === 'system';
                     const getBadgeDetails = (type: string) => {
                       switch (type) {
@@ -4110,7 +4622,8 @@ function App() {
                         )}
                       </div>
                     );
-                  })}
+                  })
+                })()}
               </div>
             </div>
 
