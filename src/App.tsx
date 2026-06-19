@@ -93,7 +93,8 @@ interface ScheduleItem {
 }
 
 function App() {
-  const [currentView, setCurrentView] = useState<'home' | 'editor' | 'register' | 'login' | 'capsule' | 'review' | 'publicWall' | 'viewer' | 'personalProfile'>('home')
+  const [currentView, setCurrentView] = useState<'home' | 'editor' | 'register' | 'login' | 'capsule' | 'review' | 'publicWall' | 'viewer' | 'personalProfile' | 'admin'>('home')
+  const [adminSearchQuery, setAdminSearchQuery] = useState('')
   // 🛠️ 擴充主題類型：加入 bts, seventeen, anime
   const [theme, setTheme] = useState<'classic' | 'blackpink' | 'aespa' | 'kpop' | 'gd' | 'ive' | 'babymonster' | 'bts' | 'seventeen' | 'anime'>('classic')
   const [diaryTitle, setDiaryTitle] = useState('')
@@ -1087,6 +1088,27 @@ function App() {
                 🏠 個人主頁
               </a>
             </li>
+
+            {/* 🛡️ 系統後台 */}
+            {userEmail === 'admin@memoir.com' && (
+              <li style={{ whiteSpace: 'nowrap' }}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentView('admin');
+                  }}
+                  style={{
+                    textDecoration: 'none',
+                    color: 'var(--accent)',
+                    fontWeight: 'bold',
+                    fontSize: '14px'
+                  }}
+                >
+                  🛡️ 系統後台
+                </a>
+              </li>
+            )}
 
             {/* 🎨 風格切換 */}
             <li style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '4px', whiteSpace: 'nowrap' }}>
@@ -3014,6 +3036,270 @@ function App() {
 
         </div>
         {renderGlobalModals()}
+      </>
+    );
+  }
+
+  if (currentView === 'admin') {
+    if (userEmail !== 'admin@memoir.com') {
+      return (
+        <>
+          {renderNavbar()}
+          <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--text-main)' }}>
+            <h2>⚠️ 權限不足</h2>
+            <p>您沒有權限訪問系統管理後台。</p>
+            <button
+              onClick={() => setCurrentView('home')}
+              style={{
+                marginTop: '20px',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                border: 'none',
+                background: 'var(--accent)',
+                color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+              ref={(el) => {
+                if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
+              }}
+            >
+              返回首頁
+            </button>
+          </div>
+        </>
+      );
+    }
+
+    const isDarkTheme = (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd' || theme === 'bts');
+
+    const filteredDiaries = publicDiaries.filter(diary => {
+      const q = adminSearchQuery.trim().toLowerCase();
+      if (!q) return true;
+
+      const authorName = (diary.userEmail && usersCache[diary.userEmail.trim().toLowerCase()])
+        ? usersCache[diary.userEmail.trim().toLowerCase()]
+        : (diary.author || '');
+      const authorEmail = diary.userEmail || '';
+      const title = diary.title || '';
+      const content = diary.content || '';
+
+      return title.toLowerCase().includes(q) ||
+             content.toLowerCase().includes(q) ||
+             authorName.toLowerCase().includes(q) ||
+             authorEmail.toLowerCase().includes(q);
+    });
+
+    const handleDeleteDiaryAdmin = async (diaryId: string) => {
+      const confirmDelete = window.confirm('確定要刪除這篇公開日記嗎？此操作將永久從資料庫刪除此篇日記！');
+      if (!confirmDelete) return;
+      try {
+        await deleteDoc(doc(db, 'diaries', diaryId));
+        alert('日記已成功刪除！');
+        await fetchPublicDiaries();
+      } catch (err) {
+        console.error(err);
+        alert('刪除失敗，請檢查權限。');
+      }
+    };
+
+    return (
+      <>
+        {renderNavbar()}
+        <section style={{
+          maxWidth: '1200px',
+          margin: '40px auto',
+          padding: '40px 24px',
+          borderRadius: '24px',
+          background: isDarkTheme ? 'rgba(15,15,25,0.85)' : 'rgba(255,255,255,0.9)',
+          border: '1px solid var(--border)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+          backdropFilter: 'blur(10px)',
+          color: 'var(--text-main)'
+        }}>
+          {/* Dashboard Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '20px' }}>
+            <div>
+              <h2 style={{ fontSize: '28px', fontWeight: '900', color: 'var(--accent)', margin: '0 0 8px 0' }}>🛡️ Memoir 系統管理後台</h2>
+              <p style={{ margin: 0, color: 'var(--text-sub)', fontSize: '14px' }}>在此您可以瀏覽所有公開的日記、查看作者帳號、並管理/刪除不當言論內容。</p>
+            </div>
+            <button
+              onClick={() => setCurrentView('home')}
+              style={{
+                padding: '10px 24px',
+                borderRadius: '12px',
+                border: '1px solid var(--border)',
+                background: 'var(--bg-sec)',
+                color: 'var(--text-main)',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              返回首頁
+            </button>
+          </div>
+
+          {/* Stats Bar & Search */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: isDarkTheme ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
+            padding: '20px',
+            borderRadius: '16px',
+            marginBottom: '32px',
+            flexWrap: 'wrap',
+            gap: '20px',
+            border: '1px solid var(--border)'
+          }}>
+            <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
+              📊 公開日記總數：<span style={{ color: 'var(--accent)', fontSize: '20px' }}>{publicDiaries.length}</span> 篇
+              {filteredDiaries.length !== publicDiaries.length && (
+                <span style={{ fontSize: '14px', fontWeight: 'normal', marginLeft: '12px', color: 'var(--text-sub)' }}>
+                  (篩選出 {filteredDiaries.length} 篇)
+                </span>
+              )}
+            </div>
+            <div style={{ position: 'relative', width: '100%', maxWidth: '360px' }}>
+              <input
+                type="text"
+                placeholder="搜尋標題、內容、作者暱稱或信箱..."
+                value={adminSearchQuery}
+                onChange={(e) => setAdminSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-color)',
+                  color: 'var(--text-main)',
+                  boxSizing: 'border-box',
+                  fontSize: '14px'
+                }}
+              />
+              {adminSearchQuery && (
+                <button
+                  onClick={() => setAdminSearchQuery('')}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-sub)',
+                    cursor: 'pointer',
+                    fontSize: '16px'
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Diaries List */}
+          {filteredDiaries.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-sub)', background: 'var(--bg-sec)', borderRadius: '16px', border: '1px dashed var(--border)' }}>
+              <p style={{ fontSize: '16px', margin: 0 }}>沒有找到符合搜尋條件的公開日記 📝</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {filteredDiaries.map((diary) => {
+                const authorName = (diary.userEmail && usersCache[diary.userEmail.trim().toLowerCase()])
+                  ? usersCache[diary.userEmail.trim().toLowerCase()]
+                  : (diary.author && diary.author !== '匿名使用者' ? diary.author : '匿名使用者');
+                const authorEmail = diary.userEmail || '無信箱資訊';
+                return (
+                  <div
+                    key={diary.id}
+                    style={{
+                      background: 'var(--bg-sec)',
+                      padding: '24px',
+                      borderRadius: '16px',
+                      border: '1px solid var(--border)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '16px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+                    }}
+                  >
+                    {/* Header info */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                          <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--accent)' }}>
+                            👤 {authorName}
+                          </span>
+                          <span style={{ fontSize: '12px', color: 'var(--text-sub)' }}>
+                            ({authorEmail})
+                          </span>
+                          {diary.isSecret && (
+                            <span style={{ fontSize: '11px', background: 'rgba(255, 0, 0, 0.1)', color: '#ff4444', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
+                              🔒 密碼日記
+                            </span>
+                          )}
+                        </div>
+                        <h3 style={{ fontSize: '18px', margin: 0, fontWeight: 'bold', color: 'var(--text-main)' }}>
+                          {diary.title}
+                        </h3>
+                        <div style={{ fontSize: '12px', color: 'var(--text-sub)', marginTop: '4px' }}>
+                          📅 發布日期：{diary.date}
+                        </div>
+                      </div>
+
+                      {/* Action Button */}
+                      <button
+                        onClick={() => handleDeleteDiaryAdmin(diary.id)}
+                        style={{
+                          padding: '8px 18px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: '#ff4d4f',
+                          color: '#ffffff',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          transition: 'all 0.2s',
+                          boxShadow: '0 2px 8px rgba(255,77,79,0.2)'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#ff7875')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = '#ff4d4f')}
+                      >
+                        🗑️ 刪除日記
+                      </button>
+                    </div>
+
+                    {/* Content */}
+                    <div style={{
+                      fontSize: '14px',
+                      color: 'var(--text-main)',
+                      lineHeight: '1.6',
+                      background: 'var(--bg-color)',
+                      padding: '16px',
+                      borderRadius: '12px',
+                      border: '1px solid var(--border)',
+                      whiteSpace: 'pre-wrap',
+                      maxHeight: '200px',
+                      overflowY: 'auto'
+                    }}>
+                      {diary.content}
+                    </div>
+
+                    {/* Meta information */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px', color: 'var(--text-sub)' }}>
+                      <span>❤️ 按讚數：{diary.likes || 0}</span>
+                      <span>💬 留言數：{diary.comments?.length || 0}</span>
+                      {diary.bgm && <span>🎵 BGM：{diary.bgm}</span>}
+                      {diary.mood && <span> Mood：{diary.mood}</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
       </>
     );
   }
