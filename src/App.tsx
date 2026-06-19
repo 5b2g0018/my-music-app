@@ -1466,9 +1466,12 @@ function App() {
                     borderRadius: '8px',
                     border: 'none',
                     background: 'var(--accent)',
-                    color: '#fff',
+                    color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
                     fontWeight: 'bold',
                     cursor: 'pointer'
+                  }}
+                  ref={(el) => {
+                    if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                   }}
                 >
                   儲存
@@ -1523,9 +1526,12 @@ function App() {
                     borderRadius: '8px',
                     border: 'none',
                     background: 'var(--accent)',
-                    color: '#fff',
+                    color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
                     fontWeight: 'bold',
                     cursor: 'pointer'
+                  }}
+                  ref={(el) => {
+                    if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                   }}
                 >
                   應援送出
@@ -1873,7 +1879,23 @@ function App() {
 
             <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end' }}>
               <button onClick={() => { setCurrentView('home'); setEditingId(null); setIsSecret(false); setDiaryPassword(''); setIsPublic(false); setDiaryTitle(''); setDiaryContent(''); setDiaryBgm(''); setDiaryPhoto(''); }} style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-sec)', color: 'var(--text-main)' }}>取消</button>
-              <button onClick={handleSaveDiary} style={{ padding: '12px 32px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>{editingId ? '更新日記' : '儲存日記'}</button>
+              <button
+                onClick={handleSaveDiary}
+                style={{
+                  padding: '12px 32px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'var(--accent)',
+                  color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+                ref={(el) => {
+                  if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
+                }}
+              >
+                {editingId ? '更新日記' : '儲存日記'}
+              </button>
             </div>
           </div>
         </div>
@@ -3303,7 +3325,23 @@ function App() {
                   <input type="text" placeholder="使用者姓名" value={registerName} onChange={(e) => setRegisterName(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
                   <input type="email" placeholder="Email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
                   <input type="password" placeholder="設定密碼" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', borderRadius: '8px', border: '1px solid var(--border)', background: theme === 'blackpink' || theme === 'aespa' || theme === 'gd' || theme === 'babymonster' || theme === 'bts' ? 'rgba(255,255,255,0.08)' : 'var(--bg-color)', color: 'var(--text-main)' }} />
-                  <button type="submit" style={{ width: '100%', padding: '14px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold' }}>註冊帳號</button>
+                  <button
+                    type="submit"
+                    style={{
+                      width: '100%',
+                      padding: '14px',
+                      background: 'var(--accent)',
+                      color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: 'bold'
+                    }}
+                    ref={(el) => {
+                      if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
+                    }}
+                  >
+                    註冊帳號
+                  </button>
                   <p onClick={() => setCurrentView('login')} style={{ color: 'var(--accent)', textAlign: 'center', cursor: 'pointer', marginTop: '16px' }}>已有帳號？前往登入</p>
                 </form>
               ) : (
@@ -3316,14 +3354,14 @@ function App() {
                     width: '100%',
                     padding: '14px',
                     background: 'var(--accent)',
-                    color: theme === 'gd' ? '#000000 !important' : '#ffffff',
+                    color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
                     border: 'none',
                     borderRadius: '8px',
                     fontSize: '16px',
                     fontWeight: '900'
                   }}
                     ref={(el) => {
-                      if (el) el.style.setProperty('color', theme === 'gd' ? '#000000' : '#ffffff', 'important');
+                      if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                     }}>
                     登入系統
                   </button>
@@ -4963,9 +5001,12 @@ function App() {
                   borderRadius: '8px',
                   border: 'none',
                   background: 'var(--accent)',
-                  color: '#fff',
+                  color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
                   fontWeight: 'bold',
                   cursor: 'pointer'
+                }}
+                ref={(el) => {
+                  if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                 }}
               >
                 新增倒數
@@ -5058,9 +5099,12 @@ function App() {
                   borderRadius: '8px',
                   border: 'none',
                   background: 'var(--accent)',
-                  color: '#fff',
+                  color: ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff',
                   fontWeight: 'bold',
                   cursor: 'pointer'
+                }}
+                ref={(el) => {
+                  if (el) el.style.setProperty('color', ['gd', 'seventeen', 'anime', 'aespa'].includes(theme) ? '#000000' : '#ffffff', 'important');
                 }}
               >
                 新增行程
