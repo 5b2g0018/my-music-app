@@ -136,16 +136,16 @@ const THEME_TRACKS: Record<string, AudioTrack[]> = {
   ],
   anime: [
     { title: "Suzume (すずめの戸締まり)", artist: "Radwimps", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", youtubeId: "1-729rK180A" },
-    { title: "Sparkle (スパークル)", artist: "Radwimps", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", youtubeId: "K_yBUf3XLyQ" },
-    { title: "Zenzenzense (前前前世)", artist: "Radwimps", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", youtubeId: "PDSkFeMV4ok" }
+    { title: "Sparkle (スパークル)", artist: "Radwimps", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", youtubeId: "MgNItWdfEIU" },
+    { title: "Zenzenzense (前前前世)", artist: "Radwimps", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", youtubeId: "PDSkFeMVNFs" }
   ],
   kpop: [
     { title: "FANCY", artist: "TWICE", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", youtubeId: "kQmaL194ZfQ" },
     { title: "Talk That Talk", artist: "TWICE", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3", youtubeId: "i0p1_M1Qc78" }
   ],
   classic: [
-    { title: "Lofi Cafe Study Beats", artist: "Lofi Girl", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3", youtubeId: "jfKfPfyJRdk" },
-    { title: "Relaxing Ambient Music", artist: "Lofi Chill", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3", youtubeId: "tNkZs5bQDg0" }
+    { title: "1 A.M. Study Session", artist: "Lofi Girl", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3", youtubeId: "lTRiuFIWV54" },
+    { title: "2 A.M. Study Session", artist: "Lofi Girl", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3", youtubeId: "hHW1oY26kxQ" }
   ]
 };
 
@@ -271,7 +271,7 @@ function App() {
       ytPlayerRef.current = new window.YT.Player('youtube-audio-player', {
         height: '0',
         width: '0',
-        videoId: activeTrack?.youtubeId || 'jfKfPfyJRdk',
+        videoId: activeTrack?.youtubeId || 'lTRiuFIWV54',
         playerVars: {
           autoplay: 0,
           controls: 0,
@@ -292,6 +292,28 @@ function App() {
             // 0 代表播放結束 (YT.PlayerState.ENDED)
             if (event.data === 0) {
               handleNextTrackRef.current();
+            }
+          },
+          onError: (event: any) => {
+            console.error("YouTube Player error:", event.data);
+            if (activeTrack && activeTrack.src) {
+              console.log("Falling back to HTML5 audio for track:", activeTrack.title);
+              try {
+                if (ytPlayerRef.current && typeof ytPlayerRef.current.pauseVideo === 'function') {
+                  ytPlayerRef.current.pauseVideo();
+                }
+              } catch (e) {}
+
+              if (audioRef.current) {
+                audioRef.current.src = activeTrack.src;
+                audioRef.current.volume = audioVolume;
+                audioRef.current.load();
+                if (isPlaying) {
+                  audioRef.current.play().catch(err => {
+                    console.log("Fallback HTML5 playback failed:", err);
+                  });
+                }
+              }
             }
           }
         }
