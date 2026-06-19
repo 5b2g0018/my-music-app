@@ -1126,3 +1126,162 @@ footer {
   background: var(--accent);
   cursor: pointer;
 }
+
+/* ==================== 12. 📋 播放清單面板 (Playlist Panel) ==================== */
+.player-playlist-panel {
+  position: absolute;
+  bottom: calc(100% + 16px);
+  right: 0;
+  width: 280px;
+  max-height: 240px;
+  background: color-mix(in srgb, var(--bg-color) 88%, transparent);
+  border: 1.5px solid var(--border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: playlist-slide-up 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+}
+
+@keyframes playlist-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.playlist-header {
+  padding: 12px 14px;
+  border-bottom: 1.5px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-main);
+  background: rgba(128, 128, 128, 0.05);
+}
+
+.playlist-close {
+  background: transparent;
+  border: none;
+  color: var(--text-sub);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.playlist-close:hover {
+  color: var(--accent);
+}
+
+.playlist-tracks {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+.playlist-track-item {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  text-align: left;
+}
+
+.playlist-track-item:hover {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.playlist-track-item.active {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.track-number {
+  font-size: 10px;
+  color: var(--text-sub);
+  width: 14px;
+  text-align: center;
+}
+
+.playlist-track-item.active .track-number {
+  color: var(--accent);
+}
+
+.track-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.track-title {
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playlist-track-item.active .track-title {
+  color: var(--accent);
+}
+
+.track-artist {
+  font-size: 10px;
+  color: var(--text-sub);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 1px;
+}
+
+.player-btn-active {
+  color: var(--accent) !important;
+  background: rgba(128, 128, 128, 0.1) !important;
+}
+
+/* Playing equalizer animation */
+.playing-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  width: 12px;
+  height: 12px;
+}
+
+.playing-bars .bar {
+  width: 2px;
+  height: 100%;
+  background: var(--accent);
+  animation: bounce-bar 0.8s ease-in-out infinite alternate;
+}
+
+.playing-bars .bar:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.playing-bars .bar:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes bounce-bar {
+  0% { height: 20%; }
+  100% { height: 100%; }
+}

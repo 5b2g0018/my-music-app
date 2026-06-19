@@ -216,6 +216,7 @@ function App() {
   const [audioVolume, setAudioVolume] = useState<number>(0.5);
   const [audioProgress, setAudioProgress] = useState<number>(0);
   const [hasInteracted, setHasInteracted] = useState<boolean>(false);
+  const [showPlaylist, setShowPlaylist] = useState<boolean>(false);
 
   // 📺 YouTube 播放核心狀態與 Refs
   const ytPlayerRef = useRef<any>(null);
@@ -5831,6 +5832,45 @@ function App() {
       {/* 🎵 浮動音樂播放器 UI (在後台 admin 畫面隱藏) */}
       {(currentView as string) !== 'admin' && activeTrack && (
         <div className="music-player-widget">
+          {/* Playlist Panel */}
+          {showPlaylist && (
+            <div className="player-playlist-panel">
+              <div className="playlist-header">
+                <span>播放清單 ({currentPlaylist.length})</span>
+                <button className="playlist-close" onClick={() => setShowPlaylist(false)}>×</button>
+              </div>
+              <div className="playlist-tracks">
+                {currentPlaylist.map((track, idx) => {
+                  const isActive = idx === currentTrackIndex;
+                  return (
+                    <div 
+                      key={idx} 
+                      className={`playlist-track-item ${isActive ? 'active' : ''}`}
+                      onClick={() => {
+                        setCurrentTrackIndex(idx);
+                        setAudioProgress(0);
+                        setIsPlaying(true);
+                      }}
+                    >
+                      <span className="track-number">{idx + 1}</span>
+                      <div className="track-details">
+                        <span className="track-title">{track.title}</span>
+                        <span className="track-artist">{track.artist}</span>
+                      </div>
+                      {isActive && isPlaying && (
+                        <div className="playing-bars">
+                          <div className="bar"></div>
+                          <div className="bar"></div>
+                          <div className="bar"></div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Mini progress bar at top of widget */}
           <div className="player-progress-bar">
             <div 
@@ -5886,6 +5926,16 @@ function App() {
               title="下一首"
             >
               ⏭
+            </button>
+
+            {/* Playlist Toggle */}
+            <button 
+              className={`player-btn ${showPlaylist ? 'player-btn-active' : ''}`}
+              onClick={() => setShowPlaylist(!showPlaylist)} 
+              title="播放清單"
+              style={{ fontSize: '15px' }}
+            >
+              📋
             </button>
 
             {/* Volume Control */}
