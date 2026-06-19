@@ -3951,8 +3951,10 @@ function App() {
               {[...myDiaries]
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 .map((diary) => {
-                  const hasPhoto = !!diary.photo && !diary.isSecret;
-                  const excerpt = diary.content ? diary.content.replace(/<[^>]*>/g, '').slice(0, 80) : '';
+                  const hasPhoto = !!diary.photo;
+                  const excerpt = diary.isSecret
+                    ? "🔒 這是一篇秘密日記，請點擊輸入密碼閱讀。"
+                    : (diary.content ? diary.content.replace(/<[^>]*>/g, '').slice(0, 80) : '');
                   return (
                     <div
                       key={diary.id}
