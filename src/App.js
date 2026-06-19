@@ -216,7 +216,7 @@ function App() {
             setCurrentView('review');
         } }} style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px' }}>📊 年度回顧</a></li>
 
-          {/* 💻 開發者連結 */}
+          {/* 🏠 個人主頁連結 */}
           <li style={{ whiteSpace: 'nowrap' }}>
             <a href="https://5b2g0018.github.io/my/" target="_blank" rel="noopener noreferrer" style={{
                 textDecoration: 'none',
@@ -224,7 +224,7 @@ function App() {
                 fontWeight: 'bold',
                 fontSize: '14px'
             }}>
-              💻 開發者
+              🏠 個人主頁
             </a>
           </li>
 

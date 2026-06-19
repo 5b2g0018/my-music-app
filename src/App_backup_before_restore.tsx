@@ -93,7 +93,7 @@ interface ScheduleItem {
 }
 
 function App() {
-  const [currentView, setCurrentView] = useState<'home' | 'editor' | 'register' | 'login' | 'capsule' | 'review' | 'publicWall' | 'viewer' | 'personalProfile'>('home')
+  const [currentView, setCurrentView] = useState<'home' | 'editor' | 'register' | 'login' | 'capsule' | 'review' | 'publicWall' | 'viewer'>('home')
   // 🛠️ 擴充主題類型：加入 bts, seventeen, anime
   const [theme, setTheme] = useState<'classic' | 'blackpink' | 'aespa' | 'kpop' | 'gd' | 'ive' | 'babymonster' | 'bts' | 'seventeen' | 'anime'>('classic')
   const [diaryTitle, setDiaryTitle] = useState('')
@@ -131,10 +131,6 @@ function App() {
   // ⚙️ 設定 Modal 狀態與使用者名稱修改
   const [showSettingsModal, setShowSettingsModal] = useState(false)
   const [newUsername, setNewUsername] = useState('')
-  const [userBio, setUserBio] = useState('任性小松鼠(￣▽￣)')
-  const [userAvatar, setUserAvatar] = useState('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop')
-  const [newBio, setNewBio] = useState('')
-  const [newAvatar, setNewAvatar] = useState('')
 
   // 📣 應援跑馬燈狀態
   const [cheers, setCheers] = useState<CheerItem[]>([])
@@ -271,20 +267,6 @@ function App() {
     }
   }
 
-  const fetchUserProfile = async (email: string) => {
-    try {
-      const emailLower = email.trim().toLowerCase()
-      const userDoc = await getDoc(doc(db, 'app_users', emailLower))
-      if (userDoc.exists()) {
-        const data = userDoc.data()
-        if (data.bio !== undefined) setUserBio(data.bio)
-        if (data.avatar !== undefined) setUserAvatar(data.avatar)
-      }
-    } catch (e) {
-      console.error('Error fetching user profile:', e)
-    }
-  }
-
   const handleUpdateUsername = async () => {
     if (!newUsername.trim()) {
       alert('請輸入姓名喔！')
@@ -294,22 +276,18 @@ function App() {
     const emailLower = userEmail.trim().toLowerCase()
     try {
       await updateDoc(doc(db, 'app_users', emailLower), {
-        name: newUsername.trim(),
-        bio: newBio.trim(),
-        avatar: newAvatar
+        name: newUsername.trim()
       })
       localStorage.setItem('loggedInUser', newUsername.trim())
       setLoggedInUser(newUsername.trim())
-      setUserBio(newBio.trim())
-      setUserAvatar(newAvatar)
       setUsersCache(prev => ({ ...prev, [emailLower]: newUsername.trim() }))
       await fetchUsersCache()
       await fetchUserDiaries(emailLower)
       setShowSettingsModal(false)
-      alert('個人資料更新成功！')
+      alert('姓名更新成功！')
     } catch (e) {
       console.error('Error updating username:', e)
-      alert('更新個人資料失敗')
+      alert('更新姓名失敗')
     }
   }
 
@@ -891,7 +869,6 @@ function App() {
         localStorage.setItem('userEmail', emailLower)
         setLoggedInUser(name)
         setUserEmail(emailLower)
-        await fetchUserProfile(emailLower)
         await fetchUserDiaries(emailLower)
         await fetchTimeCapsules(emailLower)
         await fetchSchedules()
@@ -939,7 +916,6 @@ function App() {
     if (savedEmail) {
       fetchUserDiaries(savedEmail)
       fetchTimeCapsules(savedEmail)
-      fetchUserProfile(savedEmail)
     } else {
       fetchPublicDiaries()
     }
@@ -995,19 +971,12 @@ function App() {
             <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); if (!loggedInUser) { alert('請先登入！'); setCurrentView('login'); } else { setCurrentView('capsule'); } }} style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px' }}>📬 時光膠囊</a></li>
             <li style={{ whiteSpace: 'nowrap' }}><a href="#" onClick={(e) => { e.preventDefault(); if (!loggedInUser) { alert('請先登入！'); setCurrentView('login'); } else { setCurrentView('review'); } }} style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 'bold', fontSize: '14px' }}>📊 年度回顧</a></li>
 
-            {/* 🏠 個人主頁 */}
+            {/* 🏠 個人主頁連結 */}
             <li style={{ whiteSpace: 'nowrap' }}>
               <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (!loggedInUser) {
-                    alert('請先登入！');
-                    setCurrentView('login');
-                  } else {
-                    setCurrentView('personalProfile');
-                  }
-                }}
+                href="https://5b2g0018.github.io/my/"
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{
                   textDecoration: 'none',
                   color: 'var(--accent)',
@@ -1307,52 +1276,6 @@ function App() {
                     background: 'var(--bg-sec)',
                     color: 'var(--text-main)',
                     boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>修改個人頭像</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img
-                    src={newAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop'}
-                    alt="Avatar Preview"
-                    style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent)' }}
-                  />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0]
-                      if (file) {
-                        try {
-                          const base64 = await compressImage(file)
-                          setNewAvatar(base64)
-                        } catch (err) {
-                          alert('圖片壓縮失敗')
-                        }
-                      }
-                    }}
-                    style={{ fontSize: '12px', color: 'var(--text-main)' }}
-                  />
-                </div>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>修改個人簡介</label>
-                <textarea
-                  value={newBio}
-                  onChange={(e) => setNewBio(e.target.value)}
-                  placeholder="介紹一下你自己吧..."
-                  rows={3}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border)',
-                    background: 'var(--bg-sec)',
-                    color: 'var(--text-main)',
-                    boxSizing: 'border-box',
-                    resize: 'none',
-                    lineHeight: '1.5'
                   }}
                 />
               </div>
@@ -3005,503 +2928,6 @@ function App() {
       </>
     )
   }
-
-  if (currentView === 'personalProfile') {
-    const isDark = ['blackpink', 'aespa', 'gd', 'babymonster', 'bts'].includes(theme);
-    const publicDiariesCount = myDiaries.filter(d => d.isPublic).length;
-    const secretDiariesCount = myDiaries.filter(d => d.isSecret).length;
-
-    return (
-      <>
-        {renderNavbar()}
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;700&family=Caveat:wght@400;600&display=swap');
-
-          .diary-profile-page {
-            min-height: calc(100vh - 60px);
-            padding: 40px 20px 80px;
-            box-sizing: border-box;
-            transition: all 0.5s ease;
-          }
-
-          .diary-cover {
-            max-width: 760px;
-            margin: 0 auto 48px;
-            border-radius: 16px;
-            overflow: hidden;
-            border-left: 6px solid var(--accent);
-            display: flex;
-            position: relative;
-          }
-
-          .diary-spine {
-            width: 32px;
-            background: var(--accent);
-            opacity: 0.12;
-            flex-shrink: 0;
-          }
-
-          .diary-cover-inner {
-            flex: 1;
-            padding: 36px 32px 32px 24px;
-          }
-
-          .diary-header-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 24px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-          }
-
-          .diary-avatar-frame {
-            position: relative;
-            flex-shrink: 0;
-          }
-
-          .diary-avatar-frame img {
-            width: 96px;
-            height: 96px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--accent);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            display: block;
-          }
-
-          .diary-avatar-stamp {
-            position: absolute;
-            bottom: -4px;
-            right: -4px;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-          }
-
-          .diary-user-info {
-            flex: 1;
-          }
-
-          .diary-username {
-            font-size: 24px;
-            font-weight: 700;
-            margin: 0 0 4px;
-            color: var(--text-main);
-            line-height: 1.2;
-            font-family: 'Noto Serif TC', serif;
-          }
-
-          .diary-sub-label {
-            font-size: 14px;
-            color: var(--text-sub);
-            margin-bottom: 14px;
-            font-family: 'Caveat', cursive;
-            letter-spacing: 1px;
-          }
-
-          .diary-edit-btn {
-            padding: 6px 16px;
-            border-radius: 20px;
-            border: 1.5px solid var(--accent);
-            background: transparent;
-            color: var(--accent);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Noto Serif TC', serif;
-          }
-          .diary-edit-btn:hover {
-            background: var(--accent);
-            color: #fff;
-          }
-
-          .diary-bio-block {
-            border-left: 3px solid var(--accent);
-            padding: 10px 0 10px 16px;
-            margin-bottom: 24px;
-            font-size: 15px;
-            line-height: 1.8;
-            color: var(--text-main);
-            white-space: pre-wrap;
-            font-style: italic;
-            font-family: 'Noto Serif TC', serif;
-          }
-
-          .diary-stats-row {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-          }
-
-          .diary-stat-chip {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border-radius: 12px;
-            padding: 10px 18px;
-            min-width: 72px;
-          }
-
-          .diary-stat-num {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--accent);
-            line-height: 1;
-            font-family: 'Caveat', cursive;
-          }
-
-          .diary-stat-label {
-            font-size: 11px;
-            color: var(--text-sub);
-            margin-top: 4px;
-            letter-spacing: 0.5px;
-          }
-
-          .diary-section-label {
-            max-width: 760px;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 12px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--text-sub);
-            font-family: 'Caveat', cursive;
-            font-size: 16px;
-          }
-
-          .diary-section-label::before,
-          .diary-section-label::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-          }
-
-          .diary-entries-list {
-            max-width: 760px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-          }
-
-          .diary-entry-card {
-            border-radius: 12px;
-            border-left: 4px solid var(--accent);
-            display: flex;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            position: relative;
-          }
-
-          .diary-entry-card:hover {
-            transform: translateY(-3px);
-          }
-
-          .diary-entry-date-col {
-            flex-shrink: 0;
-            width: 68px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 14px 6px;
-            gap: 2px;
-          }
-
-          .diary-entry-day {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--accent);
-            line-height: 1;
-            font-family: 'Caveat', cursive;
-          }
-
-          .diary-entry-month {
-            font-size: 11px;
-            letter-spacing: 1px;
-            color: var(--text-sub);
-            text-transform: uppercase;
-          }
-
-          .diary-entry-body {
-            flex: 1;
-            padding: 14px 16px;
-            display: flex;
-            gap: 14px;
-            align-items: flex-start;
-          }
-
-          .diary-entry-thumb {
-            width: 66px;
-            height: 66px;
-            border-radius: 8px;
-            object-fit: cover;
-            flex-shrink: 0;
-          }
-
-          .diary-entry-text {
-            flex: 1;
-            min-width: 0;
-          }
-
-          .diary-entry-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-main);
-            margin-bottom: 5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-family: 'Noto Serif TC', serif;
-          }
-
-          .diary-entry-excerpt {
-            font-size: 13px;
-            color: var(--text-sub);
-            line-height: 1.6;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-
-          .diary-entry-footer {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 8px;
-            font-size: 12px;
-            color: var(--text-sub);
-            flex-wrap: wrap;
-          }
-
-          .diary-entry-secret-badge {
-            padding: 2px 8px;
-            border-radius: 8px;
-            background: rgba(220,30,30,0.08);
-            color: #e05555;
-            font-size: 11px;
-            font-weight: 600;
-          }
-
-          .diary-empty-state {
-            text-align: center;
-            padding: 80px 20px;
-            color: var(--text-sub);
-          }
-
-          .diary-empty-icon {
-            font-size: 56px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-          }
-
-          @media (max-width: 600px) {
-            .diary-header-row { gap: 16px; }
-            .diary-cover-inner { padding: 20px 14px 18px; }
-            .diary-entry-date-col { width: 54px; }
-            .diary-entry-day { font-size: 22px; }
-          }
-        `}</style>
-
-        <div
-          className="diary-profile-page"
-          style={{
-            background: theme === 'gd' ? 'linear-gradient(135deg, #0f0c1a 0%, #1a1626 100%)' :
-              theme === 'blackpink' ? 'linear-gradient(135deg, #050505 0%, #1f0d15 100%)' :
-              theme === 'aespa' ? 'linear-gradient(135deg, #060212 0%, #0d1624 100%)' :
-              theme === 'kpop' ? 'linear-gradient(135deg, #fff8f2 0%, #ffeee4 100%)' :
-              theme === 'ive' ? 'linear-gradient(135deg, #f3f6fd 0%, #eaf0fb 100%)' :
-              theme === 'babymonster' ? 'linear-gradient(135deg, #0a0505 0%, #1a0808 100%)' :
-              theme === 'bts' ? 'linear-gradient(135deg, #080410 0%, #150b26 100%)' :
-              theme === 'seventeen' ? 'linear-gradient(135deg, #fdf4f5 0%, #eef3fc 100%)' :
-              theme === 'anime' ? 'linear-gradient(135deg, #eef7fc 0%, #dbeafe 100%)' :
-              'var(--bg-color)',
-            color: 'var(--text-main)'
-          }}
-        >
-          {/* ── 日記封面卡片 ── */}
-          <div
-            className="diary-cover"
-            style={{
-              background: isDark
-                ? 'linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))'
-                : 'linear-gradient(145deg, #fffdf7, #f7f0e4)',
-              boxShadow: isDark
-                ? '0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)'
-                : '0 20px 60px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.8)',
-              border: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(0,0,0,0.06)'
-            }}
-          >
-            <div className="diary-spine" />
-            <div className="diary-cover-inner">
-              <div className="diary-header-row">
-                {/* 頭像 */}
-                <div className="diary-avatar-frame">
-                  <img
-                    src={userAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop'}
-                    alt="Avatar"
-                  />
-                  <div className="diary-avatar-stamp">📖</div>
-                </div>
-
-                {/* 用戶資訊 */}
-                <div className="diary-user-info">
-                  <h1 className="diary-username">{loggedInUser || '使用者'}</h1>
-                  <div className="diary-sub-label">✦ 我的日記空間 ✦</div>
-                  <button
-                    className="diary-edit-btn"
-                    onClick={() => {
-                      setNewUsername(loggedInUser || '');
-                      setNewBio(userBio);
-                      setNewAvatar(userAvatar);
-                      setShowSettingsModal(true);
-                    }}
-                  >
-                    ✎ 編輯個人主頁
-                  </button>
-                </div>
-              </div>
-
-              {/* Bio */}
-              <div
-                className="diary-bio-block"
-                style={{ opacity: userBio ? 1 : 0.38 }}
-              >
-                {userBio || '還沒有留下任何自我介紹… 點擊上方按鈕來填寫吧 ✨'}
-              </div>
-
-              {/* 統計 */}
-              <div className="diary-stats-row">
-                <div
-                  className="diary-stat-chip"
-                  style={{
-                    background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-                    border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)'
-                  }}
-                >
-                  <span className="diary-stat-num">{myDiaries.length}</span>
-                  <span className="diary-stat-label">日記篇數</span>
-                </div>
-                <div
-                  className="diary-stat-chip"
-                  style={{
-                    background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-                    border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)'
-                  }}
-                >
-                  <span className="diary-stat-num">{publicDiariesCount}</span>
-                  <span className="diary-stat-label">公開日記</span>
-                </div>
-                <div
-                  className="diary-stat-chip"
-                  style={{
-                    background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-                    border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)'
-                  }}
-                >
-                  <span className="diary-stat-num">{secretDiariesCount}</span>
-                  <span className="diary-stat-label">秘密日記</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── 日記列表標題 ── */}
-          <div className="diary-section-label">✦ 我的日記列表 ✦</div>
-
-          {/* ── 日記列表 ── */}
-          {myDiaries.length === 0 ? (
-            <div className="diary-empty-state">
-              <div className="diary-empty-icon">📔</div>
-              <p style={{ fontSize: '16px', fontStyle: 'italic' }}>這裡還很安靜，快來寫下第一篇日記吧</p>
-            </div>
-          ) : (
-            <div className="diary-entries-list">
-              {[...myDiaries]
-                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                .map((diary) => {
-                  const dateObj = new Date(diary.date);
-                  const day = isNaN(dateObj.getTime()) ? '--' : dateObj.getDate().toString();
-                  const monthStr = isNaN(dateObj.getTime()) ? '' : dateObj.toLocaleDateString('zh-TW', { month: 'short' });
-                  const hasPhoto = !!diary.photo && !diary.isSecret;
-                  const excerpt = diary.content ? diary.content.replace(/<[^>]*>/g, '').slice(0, 80) : '';
-                  return (
-                    <div
-                      key={diary.id}
-                      className="diary-entry-card"
-                      onClick={() => handleViewDiary(diary)}
-                      style={{
-                        background: isDark
-                          ? 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))'
-                          : 'linear-gradient(135deg, #fffdf7, #f9f5ea)',
-                        border: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(0,0,0,0.07)',
-                        borderLeft: '4px solid var(--accent)',
-                        boxShadow: isDark ? '0 4px 16px rgba(0,0,0,0.25)' : '0 4px 16px rgba(0,0,0,0.06)'
-                      }}
-                    >
-                      {/* 日期欄 */}
-                      <div
-                        className="diary-entry-date-col"
-                        style={{
-                          borderRight: isDark ? '1px dashed rgba(255,255,255,0.1)' : '1px dashed rgba(0,0,0,0.08)'
-                        }}
-                      >
-                        <span className="diary-entry-day">{day}</span>
-                        <span className="diary-entry-month">{monthStr}</span>
-                      </div>
-
-                      {/* 內容 */}
-                      <div className="diary-entry-body">
-                        {hasPhoto && (
-                          <img
-                            className="diary-entry-thumb"
-                            src={diary.photo}
-                            alt="封面"
-                            style={{
-                              border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.06)'
-                            }}
-                          />
-                        )}
-                        <div className="diary-entry-text">
-                          <div className="diary-entry-title">{diary.title}</div>
-                          {excerpt && (
-                            <div className="diary-entry-excerpt">{excerpt}</div>
-                          )}
-                          <div className="diary-entry-footer">
-                            <span>{diary.mood?.split(' ')[0]}</span>
-                            <span>❤️ {diary.likes || 0}</span>
-                            <span>💬 {diary.comments?.length || 0}</span>
-                            {diary.isSecret && (
-                              <span className="diary-entry-secret-badge">🔒 私密</span>
-                            )}
-                            {diary.isPublic && (
-                              <span style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 600 }}>🌍 公開</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          )}
-        </div>
-        {renderGlobalModals()}
-      </>
-    );
-  }
-
 
   const isDarkTheme = (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd' || theme === 'bts');
 
