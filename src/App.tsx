@@ -6,28 +6,28 @@ import { db } from './firebase'
 import { doc, getDoc, setDoc, collection, query, where, getDocs, updateDoc, deleteDoc } from 'firebase/firestore'
 
 // 🍭 TWICE 
-const twiceAllMembersBg = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1500&auto=format&fit=crop"
+const twiceAllMembersBg = "https://preview.redd.it/230522-twitter-update-twice-photos-from-their-tokyo-concert-v0-b7605sklic1b1.jpg?width=1080&crop=smart&auto=webp&s=d0947bc756083070ae6b3e624a5f7cdab745bd70"
 
 // 🖤 BLACKPINK 霸氣黑粉專屬大圖
-const blackpinkBg = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1500&auto=format&fit=crop"
+const blackpinkBg = "https://www.hollywoodreporter.com/wp-content/uploads/2025/07/3.jpg?w=3000"
 
 // 🌌 aespa 虛擬未來科幻風大圖
-const aespaBg = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1500&auto=format&fit=crop"
+const aespaBg = "https://www.freestyle666.com/uploads/allimg/230227/1K94R3Z-2.jpg"
 
 // 👑 GD 權志龍潮流大圖（極具個人色彩的街頭塗鴉與黑金視覺）
-const gdragonBg = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1500&auto=format&fit=crop"
+const gdragonBg = "https://media.gq.com.tw/photos/6908cbccf6cdb30785272713/16:9/w_2560%2Cc_limit/20251101%2520GD_00031-1.jpg"
 
 // ✨ IVE 華麗大千金視覺大圖（充滿少女鑽石光芒、精緻高奢感的夢幻派對視覺）
-const iveBg = "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=1500&auto=format&fit=crop";
+const iveBg = "https://pic3.zhimg.com/v2-30154211b4ea674dfee035e72b77f3fa_1440w.jpg";
 
 // 👹 BABYMONSTER 怪物新人大圖（充滿地下重工業嘻哈、煙霧與暗黑美式街頭感）
-const babymonsterBg = "https://images.unsplash.com/photo-1557672172-298e090bd0f1?q=80&w=1500&auto=format&fit=crop"
+const babymonsterBg = "https://www.allkpop.com/upload/2023/11/content/191119/1700410740-1699557293-untitled-1.jpg"
 
 // 💜 BTS 主題大圖 (防彈少年團深紫色星夜/舞台視覺)
-const btsBg = "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=1500&auto=format&fit=crop"
+const btsBg = "https://cc.tvbs.com.tw/img/upload/2026/03/05/20260305113033-da4089d7.jpg"
 
 // 💎 SEVENTEEN 主題大圖 (雙官色 Rose Quartz & Serenity 寧靜粉藍粉雲/晚霞)
-const seventeenBg = "https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=1500&auto=format&fit=crop"
+const seventeenBg = "https://www.nme.com/wp-content/uploads/2022/04/seventeen-darling-music-video-english-single-2022.jpg"
 
 // 🌸 Anime 日本動漫主題大圖 (新海誠風格蔚藍天空與粉櫻綻放)
 const animeBg = "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1500&auto=format&fit=crop"
@@ -628,7 +628,7 @@ function App() {
 
       setPublicDiaries(prev => updateState(prev))
       setMyDiaries(prev => updateState(prev))
-      
+
       // Also update activeDiary if it matches
       setActiveDiary(prev => (prev && prev.id === diaryId) ? { ...prev, likedBy: newLikedBy, likes: newLikedBy.length } : prev)
     } catch (e) {
@@ -675,10 +675,10 @@ function App() {
 
       setPublicDiaries(prev => updateState(prev))
       setMyDiaries(prev => updateState(prev))
-      
+
       // Also update activeDiary if it matches
       setActiveDiary(prev => (prev && prev.id === diaryId) ? { ...prev, comments: newComments } : prev)
-      
+
       // Clear input
       setCommentInputs(prev => ({ ...prev, [diaryId]: '' }))
     } catch (e) {
@@ -2321,15 +2321,15 @@ function App() {
     const isToday = (d: Date) => {
       const today = new Date();
       return d.getDate() === today.getDate() &&
-             d.getMonth() === today.getMonth() &&
-             d.getFullYear() === today.getFullYear();
+        d.getMonth() === today.getMonth() &&
+        d.getFullYear() === today.getFullYear();
     };
 
     const isSelected = (d: Date) => {
       if (!selectedCalendarDate) return false;
       return d.getDate() === selectedCalendarDate.getDate() &&
-             d.getMonth() === selectedCalendarDate.getMonth() &&
-             d.getFullYear() === selectedCalendarDate.getFullYear();
+        d.getMonth() === selectedCalendarDate.getMonth() &&
+        d.getFullYear() === selectedCalendarDate.getFullYear();
     };
 
     const toDiaryDateStr = (d: Date) => {
@@ -2362,9 +2362,9 @@ function App() {
       const firstDayIndex = new Date(calendarYear, calendarMonth, 1).getDay();
       const totalDays = new Date(calendarYear, calendarMonth + 1, 0).getDate();
       const prevMonthTotalDays = new Date(calendarYear, calendarMonth, 0).getDate();
-      
+
       const days: { date: Date; isCurrentMonth: boolean; dateString: string }[] = [];
-      
+
       for (let i = firstDayIndex - 1; i >= 0; i--) {
         const d = new Date(calendarYear, calendarMonth - 1, prevMonthTotalDays - i);
         days.push({
@@ -2373,7 +2373,7 @@ function App() {
           dateString: toDiaryDateStr(d)
         });
       }
-      
+
       for (let i = 1; i <= totalDays; i++) {
         const d = new Date(calendarYear, calendarMonth, i);
         days.push({
@@ -2382,7 +2382,7 @@ function App() {
           dateString: toDiaryDateStr(d)
         });
       }
-      
+
       const remaining = 42 - days.length;
       for (let i = 1; i <= remaining; i++) {
         const d = new Date(calendarYear, calendarMonth + 1, i);
@@ -2392,7 +2392,7 @@ function App() {
           dateString: toDiaryDateStr(d)
         });
       }
-      
+
       return days;
     };
 
@@ -2634,7 +2634,7 @@ function App() {
               }}>
                 <span>📅</span> 年度回顧月曆 (新增行程不加入中控台)
               </h3>
-              
+
               <div className="calendar-layout">
                 {/* Left side: Calendar Grid */}
                 <div className="calendar-container" style={{
@@ -2645,7 +2645,7 @@ function App() {
                 }}>
                   {/* Calendar Header with navigation */}
                   <div className="calendar-header" style={{ marginBottom: '16px' }}>
-                    <button 
+                    <button
                       onClick={prevMonth}
                       style={{
                         background: 'transparent',
@@ -2665,7 +2665,7 @@ function App() {
                     <span style={{ fontWeight: 'bold', fontSize: '16px', color: 'var(--text-main)' }}>
                       {calendarYear}年 {calendarMonth + 1}月
                     </span>
-                    <button 
+                    <button
                       onClick={nextMonth}
                       style={{
                         background: 'transparent',
@@ -2683,30 +2683,30 @@ function App() {
                       &gt;
                     </button>
                   </div>
-                  
+
                   {/* Weekday headers */}
                   <div className="calendar-grid-header">
                     {['日', '一', '二', '三', '四', '五', '六'].map(w => (
                       <span key={w} style={{ fontSize: '12px', opacity: 0.7 }}>{w}</span>
                     ))}
                   </div>
-                  
+
                   {/* Day cells grid */}
                   <div className="calendar-grid-days">
                     {getCalendarDays().map((day, idx) => {
                       const dayDiaryStr = toDiaryDateStr(day.date);
                       const daySchStr = toScheduleDateStr(day.date);
-                      
+
                       const dayDiaries = myDiaries.filter(d => d.date === dayDiaryStr);
-                      const daySchedules = reviewSchedules.filter(sch => 
-                        sch.date === daySchStr && 
+                      const daySchedules = reviewSchedules.filter(sch =>
+                        sch.date === daySchStr &&
                         (sch.userEmail === 'system' || (userEmail && sch.userEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()))
                       );
-                      
+
                       const hasDiaries = dayDiaries.length > 0;
                       const isTodayVal = isToday(day.date);
                       const isSelectedVal = isSelected(day.date);
-                      
+
                       return (
                         <div
                           key={`day-${idx}`}
@@ -2726,7 +2726,7 @@ function App() {
                             opacity: day.isCurrentMonth ? 1 : 0.5,
                             fontWeight: isTodayVal ? 'bold' : 'normal',
                           }}>{day.date.getDate()}</span>
-                          
+
                           <div className="calendar-day-dots">
                             {hasDiaries && <span className="calendar-dot diary" title="有日記" />}
                             {daySchedules.map(sch => (
@@ -2738,7 +2738,7 @@ function App() {
                     })}
                   </div>
                 </div>
-                
+
                 {/* Right side: Day Details */}
                 <div style={{
                   padding: '16px',
@@ -2753,13 +2753,13 @@ function App() {
                   {selectedCalendarDate ? (() => {
                     const diaryDateStr = toDiaryDateStr(selectedCalendarDate);
                     const schDateStr = toScheduleDateStr(selectedCalendarDate);
-                    
+
                     const dayDiaries = myDiaries.filter(d => d.date === diaryDateStr);
-                    const daySchedules = reviewSchedules.filter(sch => 
+                    const daySchedules = reviewSchedules.filter(sch =>
                       sch.date === schDateStr &&
                       (sch.userEmail === 'system' || (userEmail && sch.userEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()))
                     );
-                    
+
                     return (
                       <>
                         <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
@@ -2767,7 +2767,7 @@ function App() {
                             📅 {selectedCalendarDate.getFullYear()}年{selectedCalendarDate.getMonth() + 1}月{selectedCalendarDate.getDate()}日 明細
                           </h4>
                         </div>
-                        
+
                         {/* Diaries section */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--accent)' }}>📝 當日日記 ({dayDiaries.length})</div>
@@ -2786,8 +2786,8 @@ function App() {
                                   <span>{diary.title}</span>
                                   <span style={{ color: 'var(--accent)', fontSize: '11px' }}>{diary.mood}</span>
                                 </div>
-                                <div style={{ 
-                                  color: 'var(--text-sub)', 
+                                <div style={{
+                                  color: 'var(--text-sub)',
                                   fontSize: '12px',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
@@ -2799,7 +2799,7 @@ function App() {
                             ))
                           )}
                         </div>
-                        
+
                         {/* Schedules section */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--accent)' }}>⭐ 回顧專屬行程 ({daySchedules.length})</div>
@@ -2813,7 +2813,7 @@ function App() {
                               else if (sch.type === 'concert') { typeText = '🎤 演唱會'; badgeColor = '#ff1744'; }
                               else if (sch.type === 'birthday') { typeText = '🎂 生日'; badgeColor = '#ff80ab'; }
                               else if (sch.type === 'show') { typeText = '📺 節目'; badgeColor = '#00e5ff'; }
-                              
+
                               return (
                                 <div key={sch.id} style={{
                                   padding: '8px 12px',
@@ -2830,7 +2830,7 @@ function App() {
                                     <span style={{ fontSize: '10px', color: badgeColor, fontWeight: '800' }}>{typeText}</span>
                                   </div>
                                   {loggedInUser && (
-                                    <button 
+                                    <button
                                       onClick={() => handleDeleteReviewSchedule(sch.id)}
                                       style={{
                                         background: 'transparent',
@@ -2849,7 +2849,7 @@ function App() {
                             })
                           )}
                         </div>
-                        
+
                         {/* Add schedule form */}
                         {loggedInUser && (
                           <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
@@ -3839,14 +3839,14 @@ function App() {
           style={{
             background: theme === 'gd' ? 'linear-gradient(135deg, #0f0c1a 0%, #1a1626 100%)' :
               theme === 'blackpink' ? 'linear-gradient(135deg, #050505 0%, #1f0d15 100%)' :
-              theme === 'aespa' ? 'linear-gradient(135deg, #060212 0%, #0d1624 100%)' :
-              theme === 'kpop' ? 'linear-gradient(135deg, #fff8f2 0%, #ffeee4 100%)' :
-              theme === 'ive' ? 'linear-gradient(135deg, #f3f6fd 0%, #eaf0fb 100%)' :
-              theme === 'babymonster' ? 'linear-gradient(135deg, #0a0505 0%, #1a0808 100%)' :
-              theme === 'bts' ? 'linear-gradient(135deg, #080410 0%, #150b26 100%)' :
-              theme === 'seventeen' ? 'linear-gradient(135deg, #fdf4f5 0%, #eef3fc 100%)' :
-              theme === 'anime' ? 'linear-gradient(135deg, #eef7fc 0%, #dbeafe 100%)' :
-              'var(--bg-color)',
+                theme === 'aespa' ? 'linear-gradient(135deg, #060212 0%, #0d1624 100%)' :
+                  theme === 'kpop' ? 'linear-gradient(135deg, #fff8f2 0%, #ffeee4 100%)' :
+                    theme === 'ive' ? 'linear-gradient(135deg, #f3f6fd 0%, #eaf0fb 100%)' :
+                      theme === 'babymonster' ? 'linear-gradient(135deg, #0a0505 0%, #1a0808 100%)' :
+                        theme === 'bts' ? 'linear-gradient(135deg, #080410 0%, #150b26 100%)' :
+                          theme === 'seventeen' ? 'linear-gradient(135deg, #fdf4f5 0%, #eef3fc 100%)' :
+                            theme === 'anime' ? 'linear-gradient(135deg, #eef7fc 0%, #dbeafe 100%)' :
+                              'var(--bg-color)',
             color: 'var(--text-main)'
           }}
         >
@@ -4038,7 +4038,7 @@ function App() {
                   : theme === 'blackpink'
                     ? `linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(20,20,20,0.85)), url(${blackpinkBg})`
                     : theme === 'kpop'
-                      ? `linear-gradient(180deg, rgba(255, 247, 251, 0.92) 0%, rgba(255, 233, 242, 0.92) 50%, rgba(255, 213, 232, 0.96) 100%), url(${twiceAllMembersBg})`
+                      ? `linear-gradient(180deg, rgba(255, 247, 251, 0.55) 0%, rgba(255, 233, 242, 0.6) 50%, rgba(255, 213, 232, 0.7) 100%), url(${twiceAllMembersBg})`
                       : theme === 'bts'
                         ? `linear-gradient(to bottom, rgba(15,8,29,0.65), rgba(25,12,45,0.9)), url(${btsBg})`
                         : theme === 'seventeen'
@@ -4562,72 +4562,72 @@ function App() {
                     .filter((sch) => sch.userEmail === 'system' || (userEmail && sch.userEmail.toLowerCase().trim() === userEmail.toLowerCase().trim()))
                     .filter((sch) => sch.date >= todayStr)
                     .map((sch) => {
-                    const isSystem = sch.userEmail === 'system';
-                    const getBadgeDetails = (type: string) => {
-                      switch (type) {
-                        case 'comeback': return { text: '💿 回歸', color: 'var(--accent)', bg: 'rgba(255, 64, 129, 0.12)' };
-                        case 'concert': return { text: '🎤 演唱會', color: '#ff1744', bg: 'rgba(255, 23, 68, 0.12)' };
-                        case 'birthday': return { text: '🎂 生日', color: '#ff80ab', bg: 'rgba(255, 128, 171, 0.12)' };
-                        case 'show': return { text: '📺 節目', color: '#00e5ff', bg: 'rgba(0, 229, 255, 0.12)' };
-                        default: return { text: '⭐ 其他', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.12)' };
-                      }
-                    };
-                    const badge = getBadgeDetails(sch.type);
-                    return (
-                      <div
-                        key={sch.id}
-                        className="kpop-dashboard-card"
-                        style={{
-                          background: isDarkTheme ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.45)',
-                          border: `1px solid ${isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.5)'}`,
-                          borderLeft: `5px solid ${badge.color}`,
-                          borderRadius: '16px',
-                          padding: '14px 18px',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.02)'
-                        }}
-                      >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <span style={{
-                              background: badge.bg,
-                              color: badge.color,
-                              fontSize: '11px',
+                      const isSystem = sch.userEmail === 'system';
+                      const getBadgeDetails = (type: string) => {
+                        switch (type) {
+                          case 'comeback': return { text: '💿 回歸', color: 'var(--accent)', bg: 'rgba(255, 64, 129, 0.12)' };
+                          case 'concert': return { text: '🎤 演唱會', color: '#ff1744', bg: 'rgba(255, 23, 68, 0.12)' };
+                          case 'birthday': return { text: '🎂 生日', color: '#ff80ab', bg: 'rgba(255, 128, 171, 0.12)' };
+                          case 'show': return { text: '📺 節目', color: '#00e5ff', bg: 'rgba(0, 229, 255, 0.12)' };
+                          default: return { text: '⭐ 其他', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.12)' };
+                        }
+                      };
+                      const badge = getBadgeDetails(sch.type);
+                      return (
+                        <div
+                          key={sch.id}
+                          className="kpop-dashboard-card"
+                          style={{
+                            background: isDarkTheme ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.45)',
+                            border: `1px solid ${isDarkTheme ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.5)'}`,
+                            borderLeft: `5px solid ${badge.color}`,
+                            borderRadius: '16px',
+                            padding: '14px 18px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.02)'
+                          }}
+                        >
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <span style={{
+                                background: badge.bg,
+                                color: badge.color,
+                                fontSize: '11px',
+                                fontWeight: '800',
+                                padding: '3px 10px',
+                                borderRadius: '20px',
+                                whiteSpace: 'nowrap',
+                                border: `1px solid color-mix(in srgb, ${badge.color} 20%, transparent)`
+                              }}>
+                                {badge.text}
+                              </span>
+                              <span style={{ fontSize: '11px', color: 'var(--text-sub)', fontWeight: 'bold' }}>{sch.date}</span>
+                            </div>
+                            <div style={{
+                              fontSize: '13.5px',
                               fontWeight: '800',
-                              padding: '3px 10px',
-                              borderRadius: '20px',
+                              color: 'var(--text-main)',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
                               whiteSpace: 'nowrap',
-                              border: `1px solid color-mix(in srgb, ${badge.color} 20%, transparent)`
-                            }}>
-                              {badge.text}
-                            </span>
-                            <span style={{ fontSize: '11px', color: 'var(--text-sub)', fontWeight: 'bold' }}>{sch.date}</span>
+                              letterSpacing: '0.2px'
+                            }} title={sch.title}>
+                              {sch.title}
+                            </div>
                           </div>
-                          <div style={{
-                            fontSize: '13.5px',
-                            fontWeight: '800',
-                            color: 'var(--text-main)',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            letterSpacing: '0.2px'
-                          }} title={sch.title}>
-                            {sch.title}
-                          </div>
+                          {loggedInUser && (sch.userEmail === userEmail || isSystem) && (
+                            <button
+                              onClick={() => handleDeleteSchedule(sch.id)}
+                              className="delete-btn"
+                            >
+                              ✕
+                            </button>
+                          )}
                         </div>
-                        {loggedInUser && (sch.userEmail === userEmail || isSystem) && (
-                          <button
-                            onClick={() => handleDeleteSchedule(sch.id)}
-                            className="delete-btn"
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })
+                      );
+                    })
                 })()}
               </div>
             </div>
