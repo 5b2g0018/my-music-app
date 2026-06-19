@@ -3694,121 +3694,114 @@ function App() {
           }
 
           .diary-entries-list {
-            max-width: 760px;
+            max-width: 960px;
             margin: 0 auto;
-            display: flex;
-            flex-direction: row;
-            overflow-x: auto;
-            gap: 16px;
-            padding: 8px 4px 20px;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: thin;
-            scroll-behavior: smooth;
-          }
-
-          .diary-entries-list::-webkit-scrollbar {
-            height: 6px;
-          }
-          .diary-entries-list::-webkit-scrollbar-track {
-            background: transparent;
-          }
-          .diary-entries-list::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            padding: 20px 4px;
           }
 
           .diary-entry-card {
-            flex-shrink: 0;
-            width: 320px;
-            scroll-snap-align: start;
-            border-radius: 12px;
-            border-left: 4px solid var(--accent);
-            display: flex;
+            border-radius: 16px;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
           }
 
           .diary-entry-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
           }
 
-          .diary-entry-date-col {
+          .diary-card-header {
+            position: relative;
+            height: 150px;
+            width: 100%;
+            overflow: hidden;
             flex-shrink: 0;
-            width: 68px;
+          }
+
+          .diary-card-cover-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+          }
+
+          .diary-entry-card:hover .diary-card-cover-img {
+            transform: scale(1.06);
+          }
+
+          .diary-card-cover-placeholder {
+            width: 100%;
+            height: 100%;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 14px 6px;
-            gap: 2px;
+            font-size: 36px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--bg-sec) 100%);
+            opacity: 0.85;
           }
 
-          .diary-entry-day {
-            font-size: 28px;
+          .diary-card-date-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 10px;
             font-weight: 700;
-            color: var(--accent);
-            line-height: 1;
-            font-family: 'Caveat', cursive;
+            z-index: 2;
           }
 
-          .diary-entry-month {
-            font-size: 11px;
-            letter-spacing: 1px;
-            color: var(--text-sub);
-            text-transform: uppercase;
-          }
-
-          .diary-entry-body {
+          .diary-card-body {
             flex: 1;
-            padding: 14px 16px;
+            padding: 16px;
             display: flex;
-            gap: 14px;
-            align-items: flex-start;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 120px;
           }
 
-          .diary-entry-thumb {
-            width: 66px;
-            height: 66px;
-            border-radius: 8px;
-            object-fit: cover;
-            flex-shrink: 0;
-          }
-
-          .diary-entry-text {
-            flex: 1;
-            min-width: 0;
-          }
-
-          .diary-entry-title {
+          .diary-card-title {
             font-size: 15px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-main);
-            margin-bottom: 5px;
+            margin: 0 0 6px 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             font-family: 'Noto Serif TC', serif;
           }
 
-          .diary-entry-excerpt {
-            font-size: 13px;
+          .diary-card-excerpt {
+            font-size: 12px;
             color: var(--text-sub);
-            line-height: 1.6;
+            line-height: 1.5;
+            margin: 0;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            flex-grow: 1;
           }
 
-          .diary-entry-footer {
+          .diary-card-footer {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-top: 8px;
-            font-size: 12px;
+            margin-top: 12px;
+            font-size: 11px;
             color: var(--text-sub);
+            border-top: 1px solid var(--border);
+            padding-top: 8px;
             flex-wrap: wrap;
           }
 
@@ -3958,9 +3951,6 @@ function App() {
               {[...myDiaries]
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 .map((diary) => {
-                  const dateObj = new Date(diary.date);
-                  const day = isNaN(dateObj.getTime()) ? '--' : dateObj.getDate().toString();
-                  const monthStr = isNaN(dateObj.getTime()) ? '' : dateObj.toLocaleDateString('zh-TW', { month: 'short' });
                   const hasPhoto = !!diary.photo && !diary.isSecret;
                   const excerpt = diary.content ? diary.content.replace(/<[^>]*>/g, '').slice(0, 80) : '';
                   return (
@@ -3973,49 +3963,43 @@ function App() {
                           ? 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))'
                           : 'linear-gradient(135deg, #fffdf7, #f9f5ea)',
                         border: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(0,0,0,0.07)',
-                        borderLeft: '4px solid var(--accent)',
                         boxShadow: isDark ? '0 4px 16px rgba(0,0,0,0.25)' : '0 4px 16px rgba(0,0,0,0.06)'
                       }}
                     >
-                      {/* 日期欄 */}
-                      <div
-                        className="diary-entry-date-col"
-                        style={{
-                          borderRight: isDark ? '1px dashed rgba(255,255,255,0.1)' : '1px dashed rgba(0,0,0,0.08)'
-                        }}
-                      >
-                        <span className="diary-entry-day">{day}</span>
-                        <span className="diary-entry-month">{monthStr}</span>
-                      </div>
-
-                      {/* 內容 */}
-                      <div className="diary-entry-body">
-                        {hasPhoto && (
+                      {/* Card Cover (Photo or Mood Placeholder) */}
+                      <div className="diary-card-header">
+                        <div className="diary-card-date-badge">
+                          📅 {diary.date}
+                        </div>
+                        {hasPhoto ? (
                           <img
-                            className="diary-entry-thumb"
+                            className="diary-card-cover-img"
                             src={diary.photo}
                             alt="封面"
-                            style={{
-                              border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.06)'
-                            }}
                           />
-                        )}
-                        <div className="diary-entry-text">
-                          <div className="diary-entry-title">{diary.title}</div>
-                          {excerpt && (
-                            <div className="diary-entry-excerpt">{excerpt}</div>
-                          )}
-                          <div className="diary-entry-footer">
-                            <span>{diary.mood?.split(' ')[0]}</span>
-                            <span>❤️ {diary.likes || 0}</span>
-                            <span>💬 {diary.comments?.length || 0}</span>
-                            {diary.isSecret && (
-                              <span className="diary-entry-secret-badge">🔒 私密</span>
-                            )}
-                            {diary.isPublic && (
-                              <span style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 600 }}>🌍 公開</span>
-                            )}
+                        ) : (
+                          <div className="diary-card-cover-placeholder">
+                            {diary.mood?.split(' ')[0] || '📔'}
                           </div>
+                        )}
+                      </div>
+
+                      {/* Card Body */}
+                      <div className="diary-card-body">
+                        <div className="diary-card-title" title={diary.title}>{diary.title}</div>
+                        {excerpt && (
+                          <p className="diary-card-excerpt">{excerpt}</p>
+                        )}
+                        <div className="diary-card-footer">
+                          <span>{diary.mood?.split(' ')[0]}</span>
+                          <span>❤️ {diary.likes || 0}</span>
+                          <span>💬 {diary.comments?.length || 0}</span>
+                          {diary.isSecret && (
+                            <span className="diary-entry-secret-badge">🔒 私密</span>
+                          )}
+                          {diary.isPublic && (
+                            <span style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 600 }}>🌍 公開</span>
+                          )}
                         </div>
                       </div>
                     </div>
