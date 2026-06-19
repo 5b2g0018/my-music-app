@@ -1108,8 +1108,26 @@ function App() {
             {/* 🔐 修正後的登入狀態判斷區（直接渲染變數本身，完美解除紅線） */}
             {loggedInUser ? (
               <li style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: '8px', whiteSpace: 'nowrap' }}>
-                <span style={{ fontSize: '14px', color: 'var(--text-main)', fontWeight: '500' }}>
-                  👤 {loggedInUser}
+                <span style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '14px',
+                  color: 'var(--text-main)',
+                  fontWeight: '500'
+                }}>
+                  <img
+                    src={userAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop'}
+                    alt="avatar"
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '1px solid var(--border)'
+                    }}
+                  />
+                  {loggedInUser}
                 </span>
                 <button
                   onClick={() => {
@@ -4363,7 +4381,7 @@ function App() {
             color: 'var(--accent)',
             letterSpacing: '0.5px'
           }}>
-            📅 K-Pop 追星應援中控台 (Dashboard)
+            📅 追星應援中控台
           </h2>
 
           <div style={{
