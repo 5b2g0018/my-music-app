@@ -5855,8 +5855,8 @@ function App() {
         <div id="youtube-audio-player"></div>
       </div>
 
-      {/* 🎵 浮動音樂播放器 UI (在後台 admin 畫面隱藏) */}
-      {(currentView as string) !== 'admin' && activeTrack && (
+      {/* 🎵 浮動音樂播放器 UI (未登入 & admin 畫面隱藏) */}
+      {(currentView as string) !== 'admin' && loggedInUser && activeTrack && (
         <div className="music-player-widget">
           {/* Playlist Panel */}
           {showPlaylist && (
