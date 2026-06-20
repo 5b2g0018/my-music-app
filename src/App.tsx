@@ -3745,9 +3745,11 @@ function App() {
                           color: 'var(--accent)',
                           fontWeight: 'bold',
                           marginTop: '4px',
-                          marginBottom: '8px'
+                          marginBottom: '8px',
+                          whiteSpace: 'nowrap',
+                          flexWrap: 'nowrap'
                         }}>
-                          <span>🎵 {diary.bgm}</span>
+                          <span style={{ whiteSpace: 'nowrap' }}>🎵 {diary.bgm}</span>
                           <button
                             onClick={() => handlePlayDiaryBgm(diary.bgm || '', diary.title)}
                             style={{
@@ -3758,7 +3760,9 @@ function App() {
                               padding: '2px 8px',
                               fontSize: '10px',
                               cursor: 'pointer',
-                              fontWeight: 'bold'
+                              fontWeight: 'bold',
+                              whiteSpace: 'nowrap',
+                              flexShrink: 0
                             }}
                           >
                             ▶ 播放 BGM
@@ -5503,9 +5507,11 @@ function App() {
                       color: 'var(--accent)',
                       fontWeight: 'bold',
                       marginTop: '4px',
-                      marginBottom: '8px'
+                      marginBottom: '8px',
+                      whiteSpace: 'nowrap',
+                      flexWrap: 'nowrap'
                     }}>
-                      <span>🎵 {diary.bgm}</span>
+                      <span style={{ whiteSpace: 'nowrap' }}>🎵 {diary.bgm}</span>
                       <button
                         onClick={() => handlePlayDiaryBgm(diary.bgm || '', diary.title)}
                         style={{
@@ -5516,7 +5522,9 @@ function App() {
                           padding: '2px 8px',
                           fontSize: '10px',
                           cursor: 'pointer',
-                          fontWeight: 'bold'
+                          fontWeight: 'bold',
+                          whiteSpace: 'nowrap',
+                          flexShrink: 0
                         }}
                       >
                         ▶ 播放 BGM
