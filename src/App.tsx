@@ -105,28 +105,28 @@ const THEME_TRACKS: Record<string, AudioTrack[]> = {
     { title: "POWER", artist: "G-DRAGON", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/G-DRAGON - POWER.mp3" }
   ],
   seventeen: [
-    { title: "Local Media", artist: "SEVENTEEN", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/SEVENTEEN.mp4" }
+    { title: "SEVENTEEN Local Media", artist: "SEVENTEEN", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/SEVENTEEN.mp4" }
   ],
   bts: [
-    { title: "Local Media", artist: "BTS", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/BTS.mp4" },
+    { title: "BTS Local Media", artist: "BTS", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/BTS.mp4" },
   ],
   aespa: [
-    { title: "Local Media", artist: "aespa", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/AESPA.mp4" }
+    { title: "aespa Local Media", artist: "aespa", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/AESPA.mp4" }
   ],
   blackpink: [
-    { title: "Local Media", artist: "BLACKPINK", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/BLACKPINK.mp4" }
+    { title: "BLACKPINK Local Media", artist: "BLACKPINK", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/BLACKPINK.mp4" }
   ],
   ive: [
-    { title: "Local Media", artist: "IVE", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/ive.mp4" }
+    { title: "IVE Local Media", artist: "IVE", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/ive.mp4" }
   ],
   babymonster: [
-    { title: "Local Media", artist: "BABYMONSTER", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/BABYMONSTER.mp4" }
+    { title: "BABYMONSTER Local Media", artist: "BABYMONSTER", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/BABYMONSTER.mp4" }
   ],
   anime: [
     { title: "動漫櫻花天空 BGM", artist: "Anime", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/動漫.mp4" }
   ],
   kpop: [
-    { title: "Local Media", artist: "TWICE", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/TWICE.mp4" }
+    { title: "TWICE Local Media", artist: "TWICE", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/TWICE.mp4" }
   ],
   classic: [
     { title: "輕音樂", artist: "Lofi", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/輕音樂.mp4" }
@@ -2023,11 +2023,17 @@ function App() {
             {/* 🎵 下拉選擇選單 */}
             <select
               value={
-                (THEME_TRACKS[theme] || THEME_TRACKS.classic).some(t => t.title === diaryBgm)
-                  ? diaryBgm
-                  : diaryBgm === ''
-                    ? ''
-                    : 'custom'
+                (() => {
+                  if (diaryBgm === 'Local Media') {
+                    const localTrack = (THEME_TRACKS[theme] || THEME_TRACKS.classic).find(t => t.title.toLowerCase().includes('local media'));
+                    return localTrack ? localTrack.title : 'custom';
+                  }
+                  return (THEME_TRACKS[theme] || THEME_TRACKS.classic).some(t => t.title === diaryBgm)
+                    ? diaryBgm
+                    : diaryBgm === ''
+                      ? ''
+                      : 'custom';
+                })()
               }
               onChange={(e) => {
                 const val = e.target.value;
@@ -2053,14 +2059,14 @@ function App() {
               <option value="">✨ 選擇主題推薦歌曲 (自動載入播放) ✨</option>
               {(THEME_TRACKS[theme] || THEME_TRACKS.classic).map((track, idx) => (
                 <option key={idx} value={track.title}>
-                  🎵 {track.title} ({track.artist})
+                  🎵 {track.title.toLowerCase().includes(track.artist.toLowerCase()) ? track.title : `${track.title} (${track.artist})`}
                 </option>
               ))}
               <option value="custom">✏️ 手動輸入其他歌名或 MP3 音樂網址...</option>
             </select>
 
             {/* 如果選擇自訂，或者原本的值不是推薦列表中的歌，就顯示手動輸入框 */}
-            {(!((THEME_TRACKS[theme] || THEME_TRACKS.classic).some(t => t.title === diaryBgm)) && diaryBgm !== '') && (
+            {(!((THEME_TRACKS[theme] || THEME_TRACKS.classic).some(t => t.title === diaryBgm || (diaryBgm === 'Local Media' && t.title.toLowerCase().includes('local media')))) && diaryBgm !== '') && (
               <input
                 type="text"
                 placeholder="輸入自訂歌名，或輸入直連 MP3 網址 (如 https://...)"
