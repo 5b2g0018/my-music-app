@@ -1494,17 +1494,32 @@ function App() {
                   color: 'var(--text-main)',
                   fontWeight: '500'
                 }}>
-                  <img
-                    src={userAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop'}
-                    alt="avatar"
-                    style={{
+                  {userAvatar ? (
+                    <img
+                      src={userAvatar}
+                      alt="avatar"
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '1px solid var(--border)'
+                      }}
+                    />
+                  ) : (
+                    <div style={{
                       width: '24px',
                       height: '24px',
                       borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '1px solid var(--border)'
-                    }}
-                  />
+                      border: '1px solid var(--border)',
+                      background: 'var(--card-bg, rgba(128,128,128,0.2))',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '14px',
+                      color: 'var(--text-sub)'
+                    }}>👤</div>
+                  )}
                   {loggedInUser}
                 </span>
                 <button
@@ -1771,11 +1786,21 @@ function App() {
               <div>
                 <label style={{ display: 'block', fontSize: '13px', marginBottom: '8px', fontWeight: 'bold', color: 'var(--text-main)' }}>修改個人頭像</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img
-                    src={newAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop'}
-                    alt="Avatar Preview"
-                    style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent)' }}
-                  />
+                  {newAvatar ? (
+                    <img
+                      src={newAvatar}
+                      alt="Avatar Preview"
+                      style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent)' }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '50px', height: '50px', borderRadius: '50%',
+                      border: '2px solid var(--accent)',
+                      background: 'rgba(128,128,128,0.15)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '26px'
+                    }}>👤</div>
+                  )}
                   <input
                     type="file"
                     accept="image/*"
@@ -4602,10 +4627,23 @@ function App() {
               <div className="diary-header-row">
                 {/* 頭像 */}
                 <div className="diary-avatar-frame">
-                  <img
-                    src={userAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop'}
-                    alt="Avatar"
-                  />
+                  {userAvatar ? (
+                    <img
+                      src={userAvatar}
+                      alt="Avatar"
+                    />
+                  ) : (
+                    <div style={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '48px',
+                      background: 'rgba(128,128,128,0.15)',
+                      borderRadius: 'inherit'
+                    }}>👤</div>
+                  )}
                   <div className="diary-avatar-stamp">📖</div>
                 </div>
 
