@@ -1166,7 +1166,7 @@ function App() {
         timestamp: now,
         isSecret: isSecret || false,
         isPublic: isPublic || false,
-        bgm: diaryBgm.trim(),
+        bgm: diaryBgm.trim() || ((THEME_TRACKS[theme] || THEME_TRACKS.classic)[0]?.title || ''),
         photo: diaryPhoto.trim()
       }
       if (isSecret && diaryPassword.trim()) payload.password = diaryPassword.trim()
@@ -2026,22 +2026,16 @@ function App() {
                 (() => {
                   if (diaryBgm === 'Local Media') {
                     const localTrack = (THEME_TRACKS[theme] || THEME_TRACKS.classic).find(t => t.title.toLowerCase().includes('local media'));
-                    return localTrack ? localTrack.title : 'custom';
+                    return localTrack ? localTrack.title : '';
                   }
-                  return (THEME_TRACKS[theme] || THEME_TRACKS.classic).some(t => t.title === diaryBgm)
+                  const tracks = THEME_TRACKS[theme] || THEME_TRACKS.classic;
+                  return tracks.some(t => t.title === diaryBgm)
                     ? diaryBgm
-                    : diaryBgm === ''
-                      ? ''
-                      : 'custom';
+                    : (tracks[0]?.title || '');
                 })()
               }
               onChange={(e) => {
-                const val = e.target.value;
-                if (val === 'custom') {
-                  setDiaryBgm('自訂歌曲');
-                } else {
-                  setDiaryBgm(val);
-                }
+                setDiaryBgm(e.target.value);
               }}
               style={{
                 width: '100%',
@@ -2056,33 +2050,12 @@ function App() {
                 cursor: 'pointer'
               }}
             >
-              <option value="">✨ 選擇主題推薦歌曲 (自動載入播放) ✨</option>
               {(THEME_TRACKS[theme] || THEME_TRACKS.classic).map((track, idx) => (
                 <option key={idx} value={track.title}>
                   🎵 {track.title.toLowerCase().includes(track.artist.toLowerCase()) ? track.title : `${track.title} (${track.artist})`}
                 </option>
               ))}
-              <option value="custom">✏️ 手動輸入其他歌名或 MP3 音樂網址...</option>
             </select>
-
-            {/* 如果選擇自訂，或者原本的值不是推薦列表中的歌，就顯示手動輸入框 */}
-            {(!((THEME_TRACKS[theme] || THEME_TRACKS.classic).some(t => t.title === diaryBgm || (diaryBgm === 'Local Media' && t.title.toLowerCase().includes('local media')))) && diaryBgm !== '') && (
-              <input
-                type="text"
-                placeholder="輸入自訂歌名，或輸入直連 MP3 網址 (如 https://...)"
-                value={diaryBgm === '自訂歌曲' ? '' : diaryBgm}
-                onChange={(e) => setDiaryBgm(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border)',
-                  background: isDarkTheme ? 'rgba(255,255,255,0.1)' : 'var(--bg-color)',
-                  color: isDarkTheme ? '#ffffff' : 'var(--text-main)',
-                  boxSizing: 'border-box'
-                }}
-              />
-            )}
           </div>
 
           <div style={{ marginBottom: '24px' }}>
