@@ -339,13 +339,13 @@ function App() {
     setCurrentTrackIndex(0);
     setAudioProgress(0);
 
-    // 如果使用者已經有互動過，才自動播放（瀏覽器安全限制）
-    if (hasInteracted) {
+    // 只有「已登入」且「使用者有互動過」才自動播放
+    if (hasInteracted && loggedInUser) {
       setIsPlaying(true);
     } else {
       setIsPlaying(false);
     }
-  }, [theme, hasInteracted]);
+  }, [theme, hasInteracted, loggedInUser]);
 
   // 🎵 同步音樂播放器與 YouTube 狀態與音量
   useEffect(() => {
@@ -445,6 +445,7 @@ function App() {
   }, [isPlaying, activeTrack, ytPlayerReady]);
 
   const handlePlayPause = () => {
+    if (!loggedInUser) return; // 未登入不允許播放
     setIsPlaying(!isPlaying);
   };
 
