@@ -101,7 +101,7 @@ interface AudioTrack {
 
 const THEME_TRACKS: Record<string, AudioTrack[]> = {
   gd: [
-    { title: "POWER", artist: "G-DRAGON", src: "/G-DRAGON - POWER.mp3" },
+    { title: "POWER", artist: "G-DRAGON", src: "./G-DRAGON - POWER.mp3" },
     { title: "Untitled, 2014 (無題)", artist: "G-DRAGON", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", youtubeId: "9kaCAbIXuyg" },
     { title: "Crooked (放縱)", artist: "G-DRAGON", src: "https://rr5---sn-3cu-3iil.googlevideo.com/videoplayback?expire=1781905158&ei=pmI1aobnLu-BkucPwqaP6Qg&ip=82.23.203.122&id=o-AMSuzvXIWlaEKP-TF3SE6y4jGx6iczAtEjwxOz8mGKCp&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&rms=au%2Cau&bui=ARmQxEWre2DY5oPl4dh84vaO1JAA5J8xnSuzJ6N77KzilzG1FXk67fNEBF4xiXtqwvjwFYBK1gBHN3HT&spc=SQ-umsEsvXlNZNdD_0Tw3c6KXuG7SlXOEnclH5Ld6Cno6_NyCA-M4aeU9IeGkqo-c4w&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&cnr=14&ratebypass=yes&dur=225.024&lmt=1741917616040976&fexp=51565115,51565682,51987687&c=ANDROID&txp=5438534&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AHEqNM4wRQIhAO07X3WMA_cXqFiLo_1w8-wsuBuuGjkazOtaRYdz5T0-AiBeWZrAO9QD-ugZmHcQJRLyDjLh7vTBpJfxLWhfe09PkA%3D%3D&redirect_counter=1&rm=sn-p5qeld7s&rrc=104&req_id=e19d6a870888a3ee&cms_redirect=yes&cps=32&ipbypass=yes&met=1781883561,&mh=42&mip=61.71.149.197&mm=31&mn=sn-3cu-3iil&ms=au&mt=1781883210&mv=m&mvi=5&pcm2cms=yes&pl=21&lsparams=cps,ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pcm2cms,pl,rms&lsig=APaTxxMwRQIgcpt8aKlV8cvTXnqXoigaxnVn679zfh5mIht9gOozisgCIQDVLLPMNGLgs1IbmXj9PBwLNX_rEKfXpz1--_cOOE1arA%3D%3D" }
   ],
@@ -111,7 +111,7 @@ const THEME_TRACKS: Record<string, AudioTrack[]> = {
     { title: "Don't Wanna Cry (울고 싶지 않아)", artist: "SEVENTEEN", src: "https://rr2---sn-3cu-3iiz.googlevideo.com/videoplayback?expire=1781900341&ei=1U81ateQEP7ImLAPgtqj0QM&ip=82.24.237.115&id=o-AKQ8bVyF3BTZYOFxVhYfKkkm1_rJjGlOn1TDXkS5FNma&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&rms=au%2Cau&bui=ARmQxEUBm8zoGPFtpb8lJMqLORPG40c96HMUb4Umya5GGwoPAXCDo1cDkDrHAGAFSdKRF3n-uDCcyX85&spc=SQ-umimM-ONSQob6qDq4_cQ8D_60rTMW_DmbyafOUgYdf1qogzMxPWyUXD8MaadNEO4&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&cnr=14&ratebypass=yes&dur=206.169&lmt=1779530788244836&fexp=51565116,51565681,51987687,51992868&c=ANDROID&txp=5538534&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AHEqNM4wRgIhAOTy3XwM8U5Jv_wGA4RFK8glj4ZwnTvCMuhZlVoByIH7AiEAuUVAm4aRi7AtvuO52kjWnYe1xFx-fMFkGoRg9bbaCY4%3D&redirect_counter=1&rm=sn-aigyyr7z&rrc=104&req_id=a92595b70776a3ee&cms_redirect=yes&cps=147&ipbypass=yes&met=1781878746,&mh=Ag&mip=61.71.149.197&mm=31&mn=sn-3cu-3iiz&ms=au&mt=1781878182&mv=m&mvi=2&pl=21&lsparams=cps,ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pl,rms&lsig=APaTxxMwRQIgK9XhnaelXSlnKJayeuCXrSGDfSUCVS6GNGzGyKVNXQACIQDWnqEnb-6EY03gFleB0DsmPPKwfIu7qrdFs-gtUOLzZw%3D%3D" }
   ],
   bts: [
-    { title: "Local Media", artist: "BTS", src: "/BTS.mp4" },
+    { title: "Local Media", artist: "BTS", src: "./BTS.mp4" },
   ],
   aespa: [
     { title: "Supernova", artist: "aespa", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3", youtubeId: "phuiiNCxRMg" },
