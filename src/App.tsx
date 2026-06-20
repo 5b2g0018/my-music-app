@@ -102,14 +102,10 @@ interface AudioTrack {
 const THEME_TRACKS: Record<string, AudioTrack[]> = {
   gd: [
     { title: "G-DRAGON Live / MV", artist: "G-DRAGON", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/G-DRAGON權志龍.mp4" },
-    { title: "POWER", artist: "G-DRAGON", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/G-DRAGON - POWER.mp3" },
-    { title: "Untitled, 2014 (無題)", artist: "G-DRAGON", src: "https://rr1---sn-un57enel.googlevideo.com/videoplayback?expire=1781940501&ei=tew1auW2CJru2roPr_L-uAQ&ip=2402%3A7500%3A505%3Ae172%3A18a3%3A1999%3Ace5b%3A8dc3&id=o-AAIKhBQIUokVZgix7Lyg_8FDtq13XjTsGlV1Lr5uSqv6&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=555&gcr=tw&bui=ARmQxEXeHWNqktClzVqlECGaX2MlkyXnE2gPUt9cwoMGKZI4bI1av_F92gsu8oAqW1kslM4PoIh-sGVq&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&gir=yes&clen=224357655&ratebypass=yes&dur=10485.690&lmt=1777321499242401&fexp=51565115,51565682,51946838,51987687&c=ANDROID_VR&txp=5438534&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cgcr%2Cbui%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cratebypass%2Cdur%2Clmt&sig=AHEqNM4wRAIgfnbV-N-zVzxyrLFMSPzlRwaDsmViHgV0Kc3CYb2lOJQCIHsosM9vHr3xA5TWtee9hYj59qR-lFpCrBLUkvp4mrGs&title=%5BPLAYLIST%5D%20G-DRAGON%20%EC%A7%80%EB%93%9C%EB%9E%98%EA%B3%A4%20%EC%BD%98%EC%84%9C%ED%8A%B8%20%EA%B0%80%EA%B3%A4%20%EC%B6%94%EC%83%81&rm=sn-ufohvc-u2xe7d,sn-u4o-u2xee7e,sn-un5ed7e&rrc=79,79,104&req_id=29ddb254df3ca3ee&cmsv=e&rms=nxu,au&redirect_counter=3&cms_redirect=yes&ipbypass=yes&met=1781918904,&mh=7V&mip=61.71.149.197&mm=30&mn=sn-un57enel&ms=nxu&mt=1781918425&mv=m&mvi=1&pl=21&lsparams=cps,ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pl,rms&lsig=APaTxxMwRgIhAPhZGgidjA8pLKJXYBBm0lU1V1ujV-AE3wFu1WPf-PzaAiEAq" }
+    { title: "POWER", artist: "G-DRAGON", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/G-DRAGON - POWER.mp3" }
   ],
   seventeen: [
-    { title: "Local Media", artist: "SEVENTEEN", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/SEVENTEEN.mp4" },
-    { title: "Maestro", artist: "SEVENTEEN", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", youtubeId: "ThI0pBAbFnk" },
-    { title: "HOT", artist: "SEVENTEEN", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", youtubeId: "gRnuFC4Ualw" },
-    { title: "Don't Wanna Cry (울고 싶지 않아)", artist: "SEVENTEEN", src: "https://rr2---sn-3cu-3iiz.googlevideo.com/videoplayback?expire=1781900341&ei=1U81ateQEP7ImLAPgtqj0QM&ip=82.24.237.115&id=o-AKQ8bVyF3BTZYOFxVhYfKkkm1_rJjGlOn1TDXkS5FNma&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&rms=au%2Cau&bui=ARmQxEUBm8zoGPFtpb8lJMqLORPG40c96HMUb4Umya5GGwoPAXCDo1cDkDrHAGAFSdKRF3n-uDCcyX85&spc=SQ-umimM-ONSQob6qDq4_cQ8D_60rTMW_DmbyafOUgYdf1qogzMxPWyUXD8MaadNEO4&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&cnr=14&ratebypass=yes&dur=206.169&lmt=1779530788244836&fexp=51565116,51565681,51987687,51992868&c=ANDROID&txp=5538534&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AHEqNM4wRgIhAOTy3XwM8U5Jv_wGA4RFK8glj4ZwnTvCMuhZlVoByIH7AiEAuUVAm4aRi7AtvuO52kjWnYe1xFx-fMFkGoRg9bbaCY4%3D&redirect_counter=1&rm=sn-aigyyr7z&rrc=104&req_id=a92595b70776a3ee&cms_redirect=yes&cps=147&ipbypass=yes&met=1781878746,&mh=Ag&mip=61.71.149.197&mm=31&mn=sn-3cu-3iiz&ms=au&mt=1781878182&mv=m&mvi=2&pl=21&lsparams=cps,ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pl,rms&lsig=APaTxxMwRQIgK9XhnaelXSlnKJayeuCXrSGDfSUCVS6GNGzGyKVNXQACIQDWnqEnb-6EY03gFleB0DsmPPKwfIu7qrdFs-gtUOLzZw%3D%3D" }
+    { title: "Local Media", artist: "SEVENTEEN", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/SEVENTEEN.mp4" }
   ],
   bts: [
     { title: "Local Media", artist: "BTS", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/BTS.mp4" },
@@ -118,37 +114,22 @@ const THEME_TRACKS: Record<string, AudioTrack[]> = {
     { title: "Local Media", artist: "aespa", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/AESPA.mp4" }
   ],
   blackpink: [
-    { title: "Local Media", artist: "BLACKPINK", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/BLACKPINK.mp4" },
-    { title: "Pink Venom", artist: "BLACKPINK", src: "https://rr1---sn-3cu-u2xd.googlevideo.com/videoplayback?expire=1781900137&ei=CU81aoTPM8LGi9oPi7CD4Q4&ip=82.24.232.118&id=o-AJfBp8rw9GZKRIGEHIYAWbAbT3OCOfkst-0BbVArSl79&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&rms=au%2Cau&bui=ARmQxEX9snqIathjIrAKEI-KEcDvbOr6TopzMyXXLPDirLZs5FH2eW0tYRzkM8boK98evn6APcpk1pg_&spc=SQ-ummC-iCh6U2XrzSspi1smjy2UzF02M5V6WYUPpPkUyTw21mPZWStZso5psHsVTuE&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&cnr=14&ratebypass=yes&dur=193.840&lmt=1755995071633971&fexp=51565115,51565682,51987687&c=ANDROID&txp=5538534&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AHEqNM4wRQIgVpiHXiNEK9XwdhBZ1uEbQM9avc6n6HKrzyOV9vf62p8CIQCDGz2uhu1as6R_h2OKA8E60QAhrZ_zRQlrgF29JT6nXA%3D%3D&redirect_counter=1&rm=sn-4g5le77e&rrc=104&req_id=60f3ff6b25eaa3ee&cms_redirect=yes&cmsv=e&cps=486&ipbypass=yes&met=1781878541,&mh=1t&mip=61.71.149.197&mm=31&mn=sn-3cu-3iiz&ms=au&mt=1781878003&mv=u&mvi=1&pl=18&lsparams=cps,ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pl,rms&lsig=APaTxxMwRAIgToPi2WPYwsj3MRJ35PeCZLqphNV5Ye4OED5LZdyPdzwCIDzp1VOMFYxgWQb_rLGVxVIcS1dnbGPkhCrsEjFjbMm8" },
-    { title: "How You Like That", artist: "BLACKPINK", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3", youtubeId: "ioNng23DkIM" },
-    { title: "As If It's Your Last (마지막처럼)", artist: "BLACKPINK", src: "https://rr1---sn-3cu-3iiz.googlevideo.com/videoplayback?expire=1781899555&ei=w0w1aoynDouQr9gPqJWssA8&ip=82.23.206.5&id=o-AJe6WiWRpMkaAspEH2WcEEYNfTXn7iERnweR8JWJKLIm&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&rms=au%2Cau&bui=ARmQxEVYBGfRQkOAQacyBZs240CxiZgFz90IjducbVA4X17iAe0kCTkALIem_OCkKp_FYcIz2OSrhrkM&spc=SQ-umksmL_WdtNVD4dB_NdCnZyjWowEQ9ZKnrUEDOcCt24I3qiMQF-RXfjNpJG71MU8&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&gir=yes&clen=20509226&ratebypass=yes&dur=216.851&lmt=1772007580443598&fexp=51565115,51565681,51987687&c=ANDROID&txp=5538534&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cratebypass%2Cdur%2Clmt&sig=AHEqNM4wRQIgexz2cgLMuIYZLoRegojLRh94d9SJGuo6haoBh4PA2_sCIQCk2WYkx1sMGHD1CMJah3oL5BHVPc7l2HOW8Xkfatbtcg%3D%3D&redirect_counter=1&rm=sn-ab5es67s&rrc=104&req_id=17d56680625ba3ee&cms_redirect=yes&ipbypass=yes&met=1781877960,&mh=Mc&mip=61.71.149.197&mm=31&mn=sn-3cu-3iiz&ms=au&mt=1781877714&mv=m&mvi=1&pl=21&lsparams=ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pl,rms&lsig=APaTxxMwRQIhAIR0SU6yTmK3d7Iue1dQzZ-FuPQgFvX_8CA2OOcwXfycAiBwr_ZhBAksMwOS8VRt9BvKwHgJaDQqW-6UzzuJfpxrsw%3D%3D" }
+    { title: "Local Media", artist: "BLACKPINK", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/BLACKPINK.mp4" }
   ],
   ive: [
-    { title: "Local Media", artist: "IVE", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/ive.mp4" },
-    { title: "HEYA (해야)", artist: "IVE", src: "https://www.youtube.com/watch?v=TT1rdIBPfmY&list=RDTT1rdIBPfmY&start_radio=1", youtubeId: "07EzMbVH3QE" },
-    { title: "LOVE DIVE", artist: "IVE", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", youtubeId: "Y8JFxS1HlDo" },
-    { title: "I AM", artist: "IVE", src: "https://rr1---sn-un57enel.googlevideo.com/videoplayback?expire=1781900266&ei=ik81ap7QIOyG1sQPzqHuyAk&ip=45.39.25.152&id=o-AHRyKvqGy-tVesexl1Rw-QnR63uYh3wyq1LlIb9EMaHY&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=172&bui=ARmQxEUgyXl5hG7w44llVxbDFnYxydE5hFOQhL2ry2VkXZN4gPaJfTPhi7PdFYRItRiSa0l76T3oR8XZ&spc=SQ-umjGa4fD9qYwd3dDaIpDQFUJMAbxyBun1UWnkgeYRkQ1ZdjCbzzXwt6Ck7da4Px4&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&cnr=14&ratebypass=yes&dur=182.880&lmt=1739790961697915&fexp=51565115,51565681,51987687&c=ANDROID&txp=5538534&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AHEqNM4wRAIgWtiIH-6QPvzwAjX9hNQtXzhsXxJpMQMpYek_AsEBORYCIEvcIQqkGxvEfPocDCkQ36zevmld30KCD-5ZZ-2dU1Kh&rm=sn-pmcg-bg0e76,sn-bg0e7y7l&rrc=79,104&req_id=3a685194afcaa3ee&cmsv=e&rms=nxu,au&redirect_counter=2&cms_redirect=yes&ipbypass=yes&met=1781878671,&mh=mz&mip=61.71.149.197&mm=30&mn=sn-un57enel&ms=nxu&mt=1781878357&mv=m&mvi=1&pl=21&lsparams=cps,ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pl,rms&lsig=APaTxxMwRAIgJdrz-8Cmt_fP-y8wbTgPsCLHOkWmFgZZdtTBigL0KrkCIExfOydD2O6B3vb6IrEjWwTMYyMAEUtUHmD3lDd7yqLv" }
+    { title: "Local Media", artist: "IVE", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/ive.mp4" }
   ],
   babymonster: [
-    { title: "Local Media", artist: "BABYMONSTER", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/BABYMONSTER.mp4" },
-    { title: "SHEESH", artist: "BABYMONSTER", src: "https://rr2---sn-3cu-3iiz.googlevideo.com/videoplayback?expire=1781904476&ei=_F81auScOIOP8uMPjdzpoQc&ip=140.99.194.54&id=o-AGyPyFndHVSyWqK9jaK_e6d0v7Y5Zs3f6dwUdGV0rWgu&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=866&rms=au%2Cau&bui=ARmQxEUwUUb6BzcoPshYtx22tvyIMUjWmiBWYFgr8bdD9DycmI9m_0XRflqiNb6A3KiwbVffa-7rITQ4&spc=SQ-ums_VqyBzJENkgVWb7l2wos1bhWa16TQWfs2fscCdmS57VArK9NHzp279CV_qKew&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&cnr=14&ratebypass=yes&dur=185.132&lmt=1777118177140614&fexp=51565116,51565682,51987687&c=ANDROID&txp=5538534&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AHEqNM4wRQIhAMlvBXgfQGUCIqrUyR6YLMWRi0BzOLET7dMyFhXv5ubfAiATIUqhZcqURIsaHYaPGr5pkm_mz6nFMVRYb54U7mJWkg%3D%3D&redirect_counter=1&rm=sn-p5qelk7z&rrc=104&req_id=5542fb0527fba3ee&cms_redirect=yes&ipbypass=yes&met=1781882880,&mh=La&mip=61.71.149.197&mm=31&mn=sn-3cu-3iiz&ms=au&mt=1781882500&mv=m&mvi=2&pcm2cms=yes&pl=21&lsparams=cps,ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pcm2cms,pl,rms&lsig=APaTxxMwRQIhAJLkTRnjVRj0Qa-JzmESyabznSYZgT6froQ4d9GxTmK8AiA7yXobBsqzU0pw2_V34Xt01k3UCkU9Ui3Gofa1K7D1mQ%3D%3D" },
-    { title: "LIKE THAT", artist: "BABYMONSTER", src: "https://rr3---sn-3cu-3iiz.googlevideo.com/videoplayback?expire=1781902930&ei=8lk1au_JLerq9fwPjOWcwAQ&ip=46.203.218.59&id=o-ADFnvzaRJSEDEF-XquXHJw24rusBil5gwEzJg5ZkqorC&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&rms=au%2Cau&bui=ARmQxEVum-W6mPG0mtP2eMs4WbBS-UN9uywbfk7Xzpq-PyS3Z_f0Lpy6dUTYzC4YkINd-iE6AuVDQzVY&spc=SQ-umvHNFLuzvtYEWCnYra4QcZhcVrlnmT_wcwTJnujXJwURIzigPvXs8nsiepSsdeM&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&gir=yes&clen=14857118&ratebypass=yes&dur=177.237&lmt=1774710026144430&fexp=51565116,51565681,51987687&c=ANDROID&txp=5538534&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AHEqNM4wRAIgCJTAnhGhHb7K3W0bs-l1ZBKuRIxXvwjQ8b5lREYw-9ICIGLLCYusIRPMtbsgMI7Dsl5mVQBiRN1qNWYGzfMYhck3&redirect_counter=1&rm=sn-ntqsd7l&rrc=104&req_id=e97f3634226aa3ee&cms_redirect=yes&cps=549&ipbypass=yes&met=1781881334,&mh=jr&mip=61.71.149.197&mm=31&mn=sn-3cu-3iiz&ms=au&mt=1781880825&mv=m&mvi=3&pl=21&lsparams=cps,ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pl,rms&lsig=APaTxxMwRAIgBlmEaFrFY80MHTgBDfrrk5aZIiufkjoOg3vA7GW1rhMCICO15Uwd4MiC5yADpKbetFHvojZuf-vOsPt8zprTRJDj" },
-    { title: "DRIP", artist: "BABYMONSTER", src: "https://rr1---sn-3cu-3ii6.googlevideo.com/videoplayback?expire=1781903053&ei=bVo1as-LBN6Ep-oPos61uQo&ip=31.58.32.162&id=o-ABOfG1eBfimMTBuhl5skTy13S-zIJmrDdBsS7mTshaBU&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&rms=au%2Cau&bui=ARmQxEWDOUoWm4Od7LRp_eETnTKJG1a5_33OVb-XSMAbD3ALp84k8U8uOopetx0juG9fEH-_bl1sZnan&spc=SQ-umjHBc8ZOfz3EasEI78jtjOrrQtliMSdBOAzHu21xXVmfRecAs1UVa-_5P-dliOo&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&gir=yes&clen=16631591&ratebypass=yes&dur=187.059&lmt=1752922535812009&fexp=51565115,51565682,51987687&c=ANDROID&txp=5538534&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cratebypass%2Cdur%2Clmt&sig=AHEqNM4wRAIgVxu1xi9DA0chFGUQRIzMrmSFfhLr0ysGgqbr1ZYGDZACIF_OOnihHwjCFFz5GnpeBNXObrN20n13oVJ73z1Odf44&redirect_counter=1&rm=sn-aigyyk7z&rrc=104&req_id=6b81997b3612a3ee&cms_redirect=yes&cps=637&ipbypass=yes&met=1781882271,&mh=kI&mip=61.71.149.197&mm=31&mn=sn-3cu-3ii6&ms=au&mt=1781881775&mv=m&mvi=1&pl=21&lsparams=cps,ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pl,rms&lsig=APaTxxMwRgIhAKBS2TLf183gotrP2ABrxQlhEQaOfePiiHLo67FfPIAMAiEA9MUfG_xKsD_CA0H9Mf00K3145GUTR8vB50a8TTFi9MY%3D" },
+    { title: "Local Media", artist: "BABYMONSTER", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/BABYMONSTER.mp4" }
   ],
   anime: [
-    { title: "動漫櫻花天空 BGM", artist: "Anime", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/動漫.mp4" },
-    { title: "Suzume (すずめの戸締まり)", artist: "Radwimps", src: "https://rr6---sn-3cu-3iil.googlevideo.com/videoplayback?expire=1781902462&ei=Hlg1auGKJKT7xs0PoJr8mAk&ip=82.21.244.12&id=o-AOUrbKUEsMvcc4CdooWgwyGNfuh69LM8xJCc6lZ7sbaA&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&rms=au%2Cau&bui=ARmQxEVxTiwNTPRWkPtKA_n4dYQeht7yzW3KS4_nM46Fln1beVdVAiokJu5KMIZoBTdo3BHpRhC5k0Tn&spc=SQ-ump8w7GOk5VG_eNb-dEiSST6UZ_AszRahJAFYgoGRV7m8oXG-jUN9bDIag4HI7eI&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&cnr=14&ratebypass=yes&dur=235.612&lmt=1737892674612089&fexp=51565115,51565682,51987687&c=ANDROID&txp=5538534&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AHEqNM4wRgIhAK6ve-lR_ibbPcEQ8YeUHW4HWZHwaSZ4_4o0fyrY4DwFAiEA2SJWGS8_7_--SDR1tVh1DJxy6COsbhKlue9Atz-e14s%3D&redirect_counter=1&rm=sn-wocl77z&rrc=104&req_id=c63a3943e191a3ee&cms_redirect=yes&cps=241&ipbypass=yes&met=1781880867,&mh=TU&mip=61.71.149.197&mm=31&mn=sn-3cu-3iil&ms=au&mt=1781880349&mv=m&mvi=6&pcm2cms=yes&pl=21&lsparams=cps,ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pcm2cms,pl,rms&lsig=APaTxxMwRAIgIwmNQSc4F-Lb-nRfKoK2IoNDDkczt4GJal_iBRtThakCIF96KASNS8yPHyB0r1CMINKOqx9hVNH9TgaUNRa1AoDR" },
-    { title: "Sparkle (スパークル)", artist: "Radwimps", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", youtubeId: "MgNItWdfEIU" },
-    { title: "Zenzenzense (前前前世)", artist: "Radwimps", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", youtubeId: "PDSkFeMVNFs" }
+    { title: "動漫櫻花天空 BGM", artist: "Anime", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/動漫.mp4" }
   ],
   kpop: [
-    { title: "Local Media", artist: "TWICE", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/TWICE.mp4" },
-    { title: "This is for", artist: "TWICE", src: "https://rr3---sn-3cu-3iiz.googlevideo.com/videoplayback?expire=1781900813&ei=rVE1arqGNpyG6dsP4dm7mQg&ip=45.117.55.234&id=o-ACBi-Zc8a2Md886aGLSitmDwJQ95S8stk3ybe555luIj&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&rms=au%2Cau&bui=ARmQxEU4I5slOcN2h9NZvTTPgRC4ft7Og9DQemyGV5qpM1RDx2qvISDQEfT_DopJk1BzlZZY5rG-CO-x&spc=SQ-umt5VxsJz7CXexUccgghUJybbsdRmK4-k2hCT0LGPyRCIXSq4AdAey3LeabF4cyY&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&cnr=14&ratebypass=yes&dur=133.816&lmt=1776047085180873&fexp=51565116,51565681,51987687&c=ANDROID&txp=5538534&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AHEqNM4wRAIgLOhDmOzlkA2PcxMCHk0D3SS7t3wVZnZCQZaPu2q8BHsCIAxrEuFG0sJEersU-vf0aD4CW2CsEb-Agm8upXPLO2PD&redirect_counter=1&rm=sn-5hnezd7e&rrc=104&req_id=de9e03fca70fa3ee&cms_redirect=yes&cmsv=e&cps=281&ipbypass=yes&met=1781879218,&mh=Ay&mip=61.71.149.197&mm=31&mn=sn-3cu-3iiz&ms=au&mt=1781878655&mv=m&mvi=3&pl=21&lsparams=cps,ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pl,rms&lsig=APaTxxMwRgIhAKKQKGHmUYAoY_8X7WW-i78y1CV6r46xq5JtbwqYd9RvAiEAgR8eCL9LqEnBy6YKAcy45rmS6BuMvl2TEmTX-ABeug4%3D" },
-    { title: "ONE SPARK", artist: "TWICE", src: "https://rr2---sn-3cu-u2x6.googlevideo.com/videoplayback?expire=1781901168&ei=EFM1apmxFOTNz7sPzN2skAQ&ip=85.198.41.106&id=o-APzAd1GQeLfoLBBrKJ92miFYtLHzxMTOmAMwOoEneQos&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&rms=au%2Cau&bui=ARmQxEUPP56MXzByXQm23oPs8ONhXvzsydtszIxsgltfNvJS-tsTTYeAqKbdH7IQGCjXbHYC9V_iTJ7E&spc=SQ-umpHoE-QhDe0dQeJ03IKXrLV0XwBIt_07expUkjbOiDy1ODQZ3-HGA-k3r48ySOU&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&cnr=14&ratebypass=yes&dur=184.064&lmt=1743279849593971&fexp=51565116,51565682,51987687&c=ANDROID&txp=5538534&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AHEqNM4wRAIgF61TvFq5WHQau6Ue0vmkxSgmuo9UjffKr57wZQIkcGwCIFahNg8FSnU-k5pURzYFe5rYd1afu7z97WLq91iP_6g3&rm=sn-ntqs67z&rrc=104,191&req_id=4f227759fbc2a3ee&cps=183&ipbypass=yes&redirect_counter=2&cm2rm=sn-3cu-3ii67e&cms_redirect=yes&cmsv=e&met=1781879573,&mh=Yi&mip=61.71.149.197&mm=29&mn=sn-3cu-u2x6&ms=rdu&mt=1781879128&mv=m&mvi=2&pcm2cms=yes&pl=21&lsparams=cps,ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pcm2cms,pl,rms&lsig=APaTxxMwRQIgYCIeqjCEGKrHG8Rww1pVs4XRBQv7SChVgzFAm271cGoCIQCl3EmxhHqPkrjlhrBHyzGNRKSPfwldlyHaUVsetuXkXQ%3D%3D" }
+    { title: "Local Media", artist: "TWICE", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/TWICE.mp4" }
   ],
   classic: [
-    { title: "輕音樂", artist: "Lofi", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/輕音樂.mp4" },
-    { title: "1 A.M. Study Session", artist: "Lofi Girl", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3", youtubeId: "lTRiuFIWV54" }
+    { title: "輕音樂", artist: "Lofi", src: "https://media.githubusercontent.com/media/5b2g0018/my-music-app/main/media/輕音樂.mp4" }
   ]
 };
 
@@ -1924,7 +1905,7 @@ function App() {
     );
   };
 
-  if (currentView === 'editor') {
+  const renderEditorView = () => {
     const isDarkTheme = (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd' || theme === 'bts');
 
     return (
@@ -2315,10 +2296,10 @@ function App() {
         </div>
         {renderGlobalModals()}
       </>
-    )
-  }
+    );
+  };
 
-  if (currentView === 'capsule') {
+  const renderCapsuleView = () => {
     const getCardStyle = () => {
       switch (theme) {
         case 'blackpink':
@@ -2674,10 +2655,10 @@ function App() {
         </div>
         {renderGlobalModals()}
       </>
-    )
-  }
+    );
+  };
 
-  if (currentView === 'review') {
+  const renderReviewView = () => {
     // 根據不同主題定義「年度回顧卡片」的高階美學設定
     const getCardStyle = () => {
       switch (theme) {
@@ -3430,9 +3411,9 @@ function App() {
         {renderGlobalModals()}
       </>
     );
-  }
+  };
 
-  if (currentView === 'admin') {
+  const renderAdminView = () => {
     if (userEmail !== 'admin@memoir.com') {
       return (
         <>
@@ -3692,9 +3673,9 @@ function App() {
         </section>
       </>
     );
-  }
+  };
 
-  if (currentView === 'publicWall') {
+  const renderPublicWallView = () => {
     const isDarkTheme = (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd' || theme === 'bts');
 
     return (
@@ -3933,9 +3914,9 @@ function App() {
         {renderGlobalModals()}
       </>
     );
-  }
+  };
 
-  if (currentView === 'register' || currentView === 'login') {
+  const renderRegisterLoginView = () => {
     return (
       <>
         {/* 🎯 終極全螢幕背景外盒：直接當作最外層，把所有人包進去！徹底吞噬 BABYMONSTER 下方的白底！ */}
@@ -4063,9 +4044,9 @@ function App() {
         </div> /* 👈 整個頁面的大盒子完美閉合 */
         {renderGlobalModals()}
       </>
-    )
-  }
-  if (currentView === 'viewer') {
+    );
+  };
+  const renderViewerView = () => {
     const isDarkTheme = (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd' || theme === 'bts');
     return (
       <>
@@ -4279,10 +4260,10 @@ function App() {
         </div>
         {renderGlobalModals()}
       </>
-    )
-  }
+    );
+  };
 
-  if (currentView === 'personalProfile') {
+  const renderPersonalProfileView = () => {
     const isDark = ['blackpink', 'aespa', 'gd', 'babymonster', 'bts'].includes(theme);
     const publicDiariesCount = myDiaries.filter(d => d.isPublic).length;
     const secretDiariesCount = myDiaries.filter(d => d.isSecret).length;
@@ -4781,14 +4762,16 @@ function App() {
         {renderGlobalModals()}
       </>
     );
-  }
+  };
 
 
   const isDarkTheme = (theme === 'blackpink' || theme === 'babymonster' || theme === 'aespa' || theme === 'gd' || theme === 'bts');
 
   return (
     <>
-      {renderNavbar()}
+      {currentView === 'home' && (
+        <>
+          {renderNavbar()}
 
       {/* 🚀 HERO 主頁區塊 */}
       <section
@@ -5811,6 +5794,18 @@ function App() {
           </div>
         </div>
       )}
+        </>
+      )}
+
+      {currentView === 'editor' && renderEditorView()}
+      {currentView === 'capsule' && renderCapsuleView()}
+      {currentView === 'review' && renderReviewView()}
+      {currentView === 'admin' && renderAdminView()}
+      {currentView === 'publicWall' && renderPublicWallView()}
+      {(currentView === 'register' || currentView === 'login') && renderRegisterLoginView()}
+      {currentView === 'viewer' && renderViewerView()}
+      {currentView === 'personalProfile' && renderPersonalProfileView()}
+
       {/* 🎵 隱藏 of HTML5 Audio 播放核心 */}
       {activeTrack && (
         <audio
