@@ -177,8 +177,8 @@ function App() {
   // ⚙️ 設定 Modal 狀態與使用者名稱修改
   const [showSettingsModal, setShowSettingsModal] = useState(false)
   const [newUsername, setNewUsername] = useState('')
-  const [userBio, setUserBio] = useState('任性小松鼠(￣▽￣)')
-  const [userAvatar, setUserAvatar] = useState('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop')
+  const [userBio, setUserBio] = useState('')
+  const [userAvatar, setUserAvatar] = useState('')
   const [newBio, setNewBio] = useState('')
   const [newAvatar, setNewAvatar] = useState('')
 
@@ -1509,7 +1509,9 @@ function App() {
                 </span>
                 <button
                   onClick={() => {
-                    setNewUsername(loggedInUser);
+                    setNewUsername(loggedInUser || '');
+                    setNewBio(userBio);
+                    setNewAvatar(userAvatar);
                     setShowSettingsModal(true);
                   }}
                   style={{
